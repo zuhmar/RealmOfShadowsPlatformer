@@ -32,6 +32,7 @@ export type Actor = {
   vy: number;
   facing: number;
   grounded: boolean;
+  climbing?: boolean;
   platform: string;
   dropUntil: number;
 };
@@ -91,6 +92,8 @@ export type Event = {
   y: number;
   text: string;
   playerId?: string;
+  deathX?: number;
+  deathY?: number;
 };
 export function createPlayer(id: string, name: string, mapId = 'woods'): Player {
   const m = MAPS[mapId];
@@ -158,7 +161,11 @@ export function moveActor(p: Actor, input: Input, map: GameMap, dt: number, now:
     p.vy = -RULES.jump;
     p.grounded = false;
   }
-  const climbing = !!ladder && (input.up || input.down) && !input.jump;
+  const climbing =
+    !!ladder &&
+    (input.up || input.down || p.climbing === true) &&
+    !input.jump &&
+    Math.abs(p.vx) < 1;
   if (climbing) {
     p.vy = (Number(input.down) - Number(input.up)) * RULES.climb;
     p.x += Math.sign(ladder!.x - p.x) * Math.min(Math.abs(ladder!.x - p.x), RULES.speed * dt);
@@ -166,6 +173,7 @@ export function moveActor(p: Actor, input: Input, map: GameMap, dt: number, now:
   } else p.vy += RULES.gravity * dt;
   p.x = Math.max(22, Math.min(map.width - 22, p.x + p.vx * dt));
   p.y += p.vy * dt;
+  p.climbing = climbing;
   p.grounded = false;
   if (p.vy >= 0 && !climbing) {
     for (const floor of [...map.platforms].sort((a, b) => a.y - b.y)) {
@@ -196,6 +204,7 @@ export function moveActor(p: Actor, input: Input, map: GameMap, dt: number, now:
     p.vy = 0;
     p.grounded = true;
   }
+  if (p.grounded) p.climbing = false;
 }
 export function platformRoute(
   map: GameMap,
@@ -289,6 +298,10 @@ export class World {
         p.y = this.map.spawn.y;
         p.hp = maxHp(p.level);
         p.vy = 0;
+        p.vx = 0;
+        p.climbing = false;
+        p.grounded = true;
+        p.platform = 'ground';
       }
       if (now - p.lastHit > 6000) p.hp = Math.min(maxHp(p.level), p.hp + dt * 3);
       p.mp = Math.min(50, p.mp + dt * 1.5);
@@ -328,17 +341,24 @@ export class World {
             playerId: nearest.id,
           });
           if (nearest.hp <= 0) {
+            const deathX = nearest.x,
+              deathY = nearest.y;
             nearest.hp = maxHp(nearest.level);
             nearest.x = this.map.spawn.x;
             nearest.y = this.map.spawn.y;
             nearest.platform = 'ground';
             nearest.auto = false;
             nearest.vy = 0;
+            nearest.vx = 0;
+            nearest.climbing = false;
+            nearest.grounded = true;
             this.events.push({
               type: 'respawn',
               x: nearest.x,
               y: nearest.y,
               text: 'Returned to safety',
+              deathX,
+              deathY,
               playerId: nearest.id,
             });
           }

@@ -69,6 +69,8 @@ node scripts/browser-check.mjs
 node scripts/browser-game.mjs
 # Wolf animation lifecycle (web server only; no database required):
 npm run test:browser:wolf
+# Character animation lifecycle (web server only):
+npm run test:browser:characters
 ```
 
 The integration tests create and remove their own test users. They require the matching schema and should target an isolated development database. They exercise real HTTP requests, two Colyseus clients, authentication failures, forged input, shared combat, manual override, chat, saves/re-entry, offline double-claim prevention, and guest upgrade. The browser journey creates and removes its own guest, walks through the actual portal, hunts, opens inventory, sends chat, tests mobile manual override, and leaves/rejoins.
@@ -77,7 +79,7 @@ Browser captures go into ignored `artifacts/`. Assertions and game-logic tests s
 
 ## Structure and authority
 
-- `apps/web`: React + Vite + Tailwind HUD and Phaser 3 rendering/Arcade bodies. Phaser is lazy loaded when entering the world. Characters and environments use original vector/code drawings; wolves load their original transparent animation sheet from `public/assets/monsters`. Idle/walk loops and attack/hurt/death clips follow authoritative snapshots; animation timing does not change combat.
+- `apps/web`: React + Vite + Tailwind HUD and Phaser 3 rendering/Arcade bodies. Phaser is lazy loaded when entering the world. Player characters load original male/female texture atlases from `public/assets/characters`; wolves use their animation sheet in `public/assets/monsters`. Environments and village NPCs retain code-drawn placeholders. Idle/walk, attacks and hit reactions follow server snapshots; jumping follows physics and climbing pauses on a stationary ladder. Outfit colors and equipped swords render separately. Defeat creates a cosmetic death animation without delaying the authoritative respawn. HUD and character previews use the same Citizen artwork.
 - `apps/server`: Colyseus map rooms, HTTP guest/account/character APIs, Prisma persistence, schema, and initial SQL migration.
 - `packages/shared`: pure deterministic movement/collision, ladder graph routing, combat, loot ownership, XP, and offline reward calculations. Tests run the same code the server uses.
 - `packages/game-data`: rules, items, maps, progression formulas, island reservations, class/skill definitions, and a Tiled object-layer adapter.

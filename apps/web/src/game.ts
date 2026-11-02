@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { CharacterVisual, preloadCharacters, registerCharacters } from './character';
 import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
 import { MAPS, RULES, type GameMap } from '@ros/game-data';
 import { idleInput, type Input, type Snapshot, type Event, type Player } from '@ros/shared';
@@ -10,6 +11,7 @@ export type Bridge = {
   onReady?: () => void;
 };
 export function mountGame(parent: HTMLElement, bridge: Bridge) {
+  parent.setAttribute('aria-busy', 'true');
   class RealmScene extends Phaser.Scene {
     map!: GameMap;
     actors = new Map<string, Phaser.GameObjects.Container>();
@@ -20,10 +22,12 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     floor!: Phaser.Physics.Arcade.StaticGroup;
     playerBody?: Phaser.Physics.Arcade.Sprite;
     wolves = new Map<string, WolfVisual>();
+    characters = new Map<string, CharacterVisual>();
     constructor() {
       super('realm');
     }
     preload() {
+      preloadCharacters(this);
       this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
       this.load.spritesheet(WOLF_TEXTURE, '/assets/monsters/wolf-spritesheet.png', {
         frameWidth: WOLF_FRAME_SIZE,
@@ -32,6 +36,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     create() {
       registerWolfAnimations(this);
+      registerCharacters(this);
       const id = bridge.snapshot?.mapId ?? 'village';
       this.map = MAPS[id];
       this.cameras.main.setBackgroundColor(id === 'woods' ? '#b6c9b2' : '#c1d6c5');
@@ -43,6 +48,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         false,
       ) as typeof this.keys;
       this.events.on('float', (e: Event) => {
+        if (e.type === 'respawn' && e.playerId)
+          this.characters.get(e.playerId)?.die(e.deathX, e.deathY);
         const t = this.add
           .text(e.x, e.y, e.text, {
             fontFamily: 'Georgia',
@@ -61,6 +68,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           onComplete: () => t.destroy(),
         });
       });
+      parent.setAttribute('aria-busy', 'false');
       bridge.onReady?.();
     }
     drawWorld() {
@@ -238,10 +246,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       for (const p of s.players) {
         const key = p.id;
         alive.add(key);
-        let c = this.actors.get(key);
-        if (!c) {
-          c = this.character(p.x, p.y, p.outfit, false, p.appearance);
-          this.actors.set(key, c);
+        let visual = this.characters.get(key);
+        if (!visual) {
+          visual = new CharacterVisual(this, p);
+          this.characters.set(key, visual);
           const label = this.add
             .text(0, 0, p.name, {
               fontFamily: 'Georgia',
@@ -260,13 +268,18 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             this.cameras.main.setZoom(this.scale.width < 700 ? 0.85 : 1.05);
           }
         }
-        c.x = Phaser.Math.Linear(c.x, p.x, 0.55);
-        c.y = Phaser.Math.Linear(c.y, p.y, 0.55);
-        c.scaleX = p.facing;
-        c.setDepth(10);
-        this.labels.get(key)!.setPosition(c.x, c.y - 94);
+        visual.sync(p, this.map, this.time.now);
+        const c = visual.container;
+        this.labels.get(key)!.setPosition(c.x, c.y - 90);
         if (key === bridge.id && this.playerBody) this.playerBody.setPosition(c.x, c.y - 90);
       }
+      for (const [id, visual] of this.characters)
+        if (!alive.has(id)) {
+          visual.destroy();
+          this.characters.delete(id);
+          this.labels.get(id)?.destroy();
+          this.labels.delete(id);
+        }
       const wolfIds = new Set(s.wolves.map((w) => w.id));
       for (const [id, visual] of this.wolves)
         if (!wolfIds.has(id)) {

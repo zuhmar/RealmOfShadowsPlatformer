@@ -859,8 +859,7 @@ function App() {
             {panel === 'inventory' && (
               <>
                 <div className="inventory-summary">
-                  ◈ {p.gold} gold{' '}
-                  <span>Weapon: {p.weapon ? ITEMS.sword.name : 'Training blade'}</span>
+                  ◈ {p.gold} gold <span>Weapon: {p.weapon ? ITEMS.sword.name : 'Unarmed'}</span>
                 </div>
                 <div className="inventory-grid">
                   {Array.from({ length: 24 }, (_, i) => {
@@ -921,7 +920,7 @@ function App() {
                     ['Attack', `${RULES.baseDamage + (p.level - 1) * 3 + (p.weapon ? 5 : 0)}`],
                     ['Wolves defeated', p.kills],
                     ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
-                    ['Weapon', p.weapon ? 'Wayfarer Blade' : 'Training blade'],
+                    ['Weapon', p.weapon ? 'Wayfarer Blade' : 'Unarmed'],
                   ].map(([k, v]) => (
                     <div key={k}>
                       <span>{k}</span>

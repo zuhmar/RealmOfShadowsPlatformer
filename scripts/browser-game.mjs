@@ -27,9 +27,16 @@ try {
     .first()
     .click();
   await page.getByLabel('Character name', { exact: true }).fill('Willow');
+  await page.getByLabel('Appearance').selectOption('female');
+  await page.getByLabel('Starting outfit').selectOption('ember');
+  await expect(page.getByRole('img', { name: 'female ember adventurer' })).toHaveAttribute(
+    'aria-busy',
+    'false',
+  );
+  await expect(page.locator('.modal svg image')).toHaveAttribute('href', /^data:image\/png/);
   await page.getByRole('button', { name: 'Create adventurer' }).click();
   await page.getByRole('button', { name: 'Enter world' }).click();
-  await page.locator('canvas').waitFor();
+  await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
   await expect(page.getByRole('heading', { name: 'Elderwood Village' })).toBeVisible();
   await page.waitForTimeout(1000);
   const token = await page.evaluate(() => localStorage.getItem('ros-session'));
@@ -43,7 +50,7 @@ try {
   await page.keyboard.up('d');
   await page.keyboard.press('e');
   await expect(page.getByRole('heading', { name: 'Wolf Hollow' })).toBeVisible({ timeout: 10000 });
-  await page.locator('canvas').waitFor();
+  await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
   await page.getByRole('button', { name: /AUTO OFF/ }).click();
   await expect(page.getByRole('button', { name: /AUTO ON/ })).toBeVisible();
   await page.waitForTimeout(18000);

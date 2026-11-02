@@ -1804,3 +1804,16 @@ footer i {
     height: 48px;
   }
 }
+.phaser-host[aria-busy='true']::after {
+  content: 'Preparing your adventure…';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #20382c;
+  color: #ded6ae;
+  font:
+    18px Georgia,
+    serif;
+  pointer-events: none;
+}
