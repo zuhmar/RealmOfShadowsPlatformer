@@ -19,7 +19,8 @@
     "test:browser": "node --env-file-if-exists=apps/server/.env scripts/browser-check.mjs && node --env-file-if-exists=apps/server/.env scripts/browser-game.mjs",
     "format": "prettier --write apps packages tests scripts README.md *.json *.yaml",
     "test:browser:wolf": "node scripts/browser-wolf.mjs",
-    "test:browser:characters": "node scripts/browser-characters.mjs"
+    "test:browser:characters": "node scripts/browser-characters.mjs",
+    "test:browser:woods": "node scripts/browser-woods.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

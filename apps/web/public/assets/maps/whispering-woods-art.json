@@ -1,12 +1,12 @@
 {
   "name": "Whispering Woods",
-  "status": "art-assets-only",
+  "status": "integrated",
   "background": {
     "image": "/assets/backgrounds/whispering-woods.png",
     "width": 1536,
     "height": 1024,
     "opaque": true,
-    "layering": "single flattened panorama; not a seamless tile or separate parallax layers"
+    "layering": "single panorama with viewport fitting and subtle camera-relative parallax drift"
   },
   "atlases": {
     "platforms": {
