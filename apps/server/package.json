@@ -1,0 +1,35 @@
+{
+  "name": "@ros/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --import tsx --env-file-if-exists=.env --watch src/index.ts",
+    "start": "node --import tsx --env-file-if-exists=.env src/index.ts",
+    "build": "tsc --noEmit -p ../../tsconfig.json",
+    "db:generate": "node generate-client.mjs",
+    "db:migrate": "node --env-file-if-exists=.env migrate.mjs"
+  },
+  "dependencies": {
+    "@colyseus/core": "^0.16.18",
+    "@colyseus/ws-transport": "^0.16.5",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@ros/game-data": "*",
+    "@ros/shared": "*",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "pg": "^8.23.1",
+    "tsx": "^4.20.0"
+  },
+  "devDependencies": {
+    "@prisma/client-generator-js": "7.10.1",
+    "@prisma/driver-adapter-utils": "7.10.1",
+    "@prisma/engines-version": "8.1.0-1.d1b3f377ca835d73fd50954a5e22128b9ebdd6b8",
+    "@prisma/get-dmmf": "7.10.1",
+    "@prisma/schema-engine-wasm": "8.1.0-1.d1b3f377ca835d73fd50954a5e22128b9ebdd6b8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "prisma": "7.10.1"
+  }
+}

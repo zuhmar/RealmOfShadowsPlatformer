@@ -1,0 +1,33 @@
+{
+  "name": "realm-of-shadows",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm run dev -w @ros/server",
+    "dev:web": "npm run dev -w @ros/web",
+    "build": "npm run build -w @ros/web && npm run build -w @ros/server",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "db:generate": "npm run db:generate -w @ros/server",
+    "db:migrate": "npm run db:migrate -w @ros/server",
+    "test:integration": "node --env-file-if-exists=apps/server/.env --import tsx --test tests/*.integration.ts",
+    "test:browser": "node --env-file-if-exists=apps/server/.env scripts/browser-check.mjs && node --env-file-if-exists=apps/server/.env scripts/browser-game.mjs",
+    "format": "prettier --write apps packages tests scripts README.md *.json *.yaml"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.15.0",
+    "concurrently": "^9.1.2",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.0",
+    "typescript": "~5.8.3"
+  },
+  "engines": {
+    "node": ">=24.0.0 <25"
+  }
+}

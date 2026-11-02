@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: realm-of-shadows-server
+    runtime: node
+    plan: starter
+    numInstances: 1
+    buildCommand: npm ci --include=dev && npm run db:generate && npm run build
+    preDeployCommand: npm run db:migrate
+    startCommand: npm run start -w @ros/server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false

@@ -1,0 +1,1 @@
+Original placeholders are drawn in Phaser. Future exported artwork belongs in apps/web/public/assets/{characters,monsters,maps,tilesets,backgrounds,equipment,cosmetics,effects,ui}; load through /assets/. No borrowed game assets are used.

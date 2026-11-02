@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "client"
+}
+datasource db {
+  provider = "postgresql"
+}
+model User {
+  id String @id @default(cuid())
+  email String? @unique
+  passwordHash String?
+  guest Boolean @default(true)
+  createdAt DateTime @default(now())
+  sessions Session[]
+  characters Character[]
+}
+model Session {
+  id String @id
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+}
+model Character {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name String
+  class String @default("Citizen")
+  appearance String @default("male")
+  outfit String @default("sage")
+  data Json
+  updatedAt DateTime @updatedAt
+  stats CharacterStats?
+  skills CharacterSkill[]
+  inventory Inventory[]
+  equipment Equipment[]
+  quests QuestProgress[]
+  offline OfflineActivity?
+  rewards OfflineReward[]
+  cosmetics CharacterCosmetic[]
+}
+model CharacterStats {
+  characterId String @id
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  strength Int @default(5)
+  dexterity Int @default(5)
+  intelligence Int @default(5)
+  defense Int @default(0)
+  criticalChance Float @default(0.05)
+  attackSpeed Float @default(1)
+}
+model CharacterSkill {
+  id String @id @default(cuid())
+  characterId String
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name String
+  level Int @default(1)
+  xp Int @default(0)
+  @@unique([characterId, name])
+}
+model Item {
+  id String @id
+  name String
+  definition Json
+  inventory Inventory[]
+  equipment Equipment[]
+}
+model Inventory {
+  id String @id @default(cuid())
+  characterId String
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  itemId String
+  item Item @relation(fields: [itemId], references: [id])
+  quantity Int
+  @@unique([characterId, itemId])
+}
+model Equipment {
+  id String @id @default(cuid())
+  characterId String
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  slot String
+  itemId String
+  item Item @relation(fields: [itemId], references: [id])
+  @@unique([characterId, slot])
+}
+model Quest {
+  id String @id
+  definition Json
+  progress QuestProgress[]
+}
+model QuestProgress {
+  id String @id @default(cuid())
+  characterId String
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  questId String
+  quest Quest @relation(fields: [questId], references: [id])
+  progress Int @default(0)
+  claimed Boolean @default(false)
+  @@unique([characterId, questId])
+}
+model OfflineActivity {
+  characterId String @id
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  kind String
+  startedAt DateTime @default(now())
+}
+model OfflineReward {
+  id String @id @default(cuid())
+  characterId String
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  xp Int
+  gold Int
+  claimedAt DateTime @default(now())
+}
+model Cosmetic {
+  id String @id
+  kind String
+  definition Json
+  characters CharacterCosmetic[]
+}
+model CharacterCosmetic {
+  id String @id @default(cuid())
+  characterId String
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  cosmeticId String
+  cosmetic Cosmetic @relation(fields: [cosmeticId], references: [id])
+  equipped Boolean @default(false)
+  @@unique([characterId, cosmeticId])
+}
