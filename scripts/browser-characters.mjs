@@ -63,6 +63,13 @@ try {
     const t = window.characterTest,
       s = t.game.scene.getScene('realm');
     s.cameras.main.centerOn(700, 650);
+    for (const [id, v] of s.characters) {
+      const record = (_animation, frame) => {
+        (t.frames[id] ??= []).push(String(frame.textureFrame));
+      };
+      v.sprite.on('animationstart', record);
+      v.sprite.on('animationupdate', record);
+    }
     s.events.on('postupdate', () => {
       for (const [id, v] of s.characters) {
         const frame = String(v.sprite.frame.name);
@@ -127,8 +134,21 @@ try {
   await mutate({ grounded: true, climbing: false, vy: 0, lastAttack: 100, weapon: 'sword' });
   await allFrames('attack');
   expect((await state()).characters.every((c) => c.weapon)).toBe(true);
+  await mutate({ vx: 200 });
+  await expect
+    .poll(async () => (await state()).characters.every((c) => c.frame.startsWith('walk-')), {
+      timeout: 5000,
+    })
+    .toBe(true);
   await mutate({ hp: 93, lastHit: 200 });
-  await allFrames('hurt');
+  await page.waitForTimeout(250);
+  expect((await state()).characters.every((c) => c.frame.startsWith('walk-'))).toBe(true);
+  expect(
+    Object.values((await state()).frames)
+      .flat()
+      .some((f) => f.startsWith('hurt-')),
+  ).toBe(false);
+  await mutate({ vx: 0 });
   await mutate({ facing: -1 });
   await page.waitForTimeout(120);
   expect((await state()).characters.every((c) => c.flip === -1)).toBe(true);
@@ -167,7 +187,7 @@ try {
     .toBe(true);
   expect(errors).toEqual([]);
   console.log(
-    'PASS: both appearances, six outfits, all 84 pose frames, physics-selected jump, paused/resumed climb, attack/hurt, facing, equipped blades, defeat/fade and mobile render.',
+    'PASS: both appearances, six outfits, all 72 active pose frames, physics-selected jump, paused/resumed climb, attacks uninterrupted by damage, facing, equipped blades, defeat/fade and mobile render.',
   );
 } finally {
   await browser.close();

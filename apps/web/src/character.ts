@@ -49,13 +49,15 @@ export function registerCharacters(scene: Phaser.Scene) {
         if (!texture) throw new Error('Cannot prepare character outfit texture');
         scene.textures.addAtlas(key, texture, atlas);
       }
-      for (const [name, clip] of Object.entries(clips.animations))
+      for (const [name, clip] of Object.entries(clips.animations)) {
+        if (name === 'hurt') continue;
         scene.anims.create({
           key: `${key}-${name}`,
           frames: clip.frames.map((frame) => ({ key, frame })),
           frameRate: clip.frameRate,
           repeat: clip.repeat,
         });
+      }
     }
   }
 }
@@ -101,7 +103,7 @@ export class CharacterVisual {
       this.landedUntil = now + 100;
     const playing = this.sprite.anims.isPlaying;
     const clip = this.sprite.anims.currentAnim?.key ?? '';
-    const oneShot = playing && (clip.endsWith('-attack') || clip.endsWith('-hurt'));
+    const oneShot = playing && clip.endsWith('-attack');
     if (action) this.sprite.play(`${key}-${action}`);
     else if (!oneShot) {
       if (motion === 'air' || now < this.landedUntil) {

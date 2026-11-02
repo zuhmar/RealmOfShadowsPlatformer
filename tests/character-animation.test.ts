@@ -25,16 +25,19 @@ test('characters choose movement from authoritative state; jump and ladder are d
     assert.equal(jumpFrame({ vy, grounded: false }, false), frame);
   assert.equal(jumpFrame(p, true), 'jump-5');
 });
-test('attack and hurt clips trigger once from server timestamps', () => {
+test('attacks trigger once and incoming damage does not trigger a player animation', () => {
   const p = createPlayer('p', 'Hero');
   const previous = { ...p };
   assert.equal(characterAction(p, undefined), null);
   p.lastAttack = 100;
   assert.equal(characterAction(p, previous), 'attack');
   assert.equal(characterAction(p, { ...p }), null);
+  const afterAttack = { ...p };
   p.hp = 93;
   p.lastHit = 150;
-  assert.equal(characterAction(p, previous), 'hurt');
+  assert.equal(characterAction(p, afterAttack), null);
+  p.lastAttack = 200;
+  assert.equal(characterAction(p, afterAttack), 'attack');
 });
 test('stopping on a ladder keeps the player attached; horizontal input detaches', () => {
   const p = createPlayer('p', 'Climber');

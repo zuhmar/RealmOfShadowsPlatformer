@@ -12,12 +12,8 @@ export function characterMotion(p: Player, map: GameMap): CharacterMotion {
   }
   return Math.abs(p.vx) > 1 ? 'walk' : 'idle';
 }
-export function characterAction(
-  p: Player,
-  previous: CharacterState | undefined,
-): 'attack' | 'hurt' | null {
+export function characterAction(p: Player, previous: CharacterState | undefined): 'attack' | null {
   if (!previous) return null;
-  if (p.lastHit > previous.lastHit && p.hp < previous.hp) return 'hurt';
   if (p.lastAttack > previous.lastAttack || p.lastSkill > previous.lastSkill) return 'attack';
   return null;
 }
