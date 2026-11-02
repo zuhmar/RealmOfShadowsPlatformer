@@ -1,0 +1,54 @@
+{
+  "frames": {
+    "ladder-short": {
+      "frame": {
+        "x": 115,
+        "y": 685,
+        "w": 316,
+        "h": 820
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 316,
+        "h": 820
+      },
+      "sourceSize": {
+        "w": 316,
+        "h": 820
+      }
+    },
+    "ladder-tall": {
+      "frame": {
+        "x": 588,
+        "y": 97,
+        "w": 321,
+        "h": 1408
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 321,
+        "h": 1408
+      },
+      "sourceSize": {
+        "w": 321,
+        "h": 1408
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "whispering-woods-ladders.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1024,
+      "h": 1536
+    },
+    "scale": "1"
+  }
+}

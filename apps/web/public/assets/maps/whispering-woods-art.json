@@ -1,0 +1,69 @@
+{
+  "name": "Whispering Woods",
+  "status": "art-assets-only",
+  "background": {
+    "image": "/assets/backgrounds/whispering-woods.png",
+    "width": 1536,
+    "height": 1024,
+    "opaque": true,
+    "layering": "single flattened panorama; not a seamless tile or separate parallax layers"
+  },
+  "atlases": {
+    "platforms": {
+      "image": "/assets/tilesets/whispering-woods-platforms.png",
+      "atlas": "/assets/tilesets/whispering-woods-platforms.json",
+      "width": 1536,
+      "height": 1024,
+      "frames": ["ground", "platform-wide", "platform-medium", "platform-small"],
+      "alignmentHints": {
+        "ground": {
+          "surfaceY": 26,
+          "meaning": "Initial visible top alignment hint in source-frame pixels; verify against map collision geometry when wiring."
+        },
+        "platform-wide": {
+          "surfaceY": 25,
+          "meaning": "Initial visible top alignment hint in source-frame pixels; verify against map collision geometry when wiring."
+        },
+        "platform-medium": {
+          "surfaceY": 25,
+          "meaning": "Initial visible top alignment hint in source-frame pixels; verify against map collision geometry when wiring."
+        },
+        "platform-small": {
+          "surfaceY": 22,
+          "meaning": "Initial visible top alignment hint in source-frame pixels; verify against map collision geometry when wiring."
+        }
+      }
+    },
+    "ladders": {
+      "image": "/assets/tilesets/whispering-woods-ladders.png",
+      "atlas": "/assets/tilesets/whispering-woods-ladders.json",
+      "width": 1024,
+      "height": 1536,
+      "frames": ["ladder-short", "ladder-tall"],
+      "rungCounts": {
+        "ladder-short": 6,
+        "ladder-tall": 10
+      }
+    },
+    "props": {
+      "image": "/assets/props/whispering-woods-props.png",
+      "atlas": "/assets/props/whispering-woods-props.json",
+      "width": 1536,
+      "height": 1024,
+      "frames": [
+        "moss-boulder",
+        "tree-stump",
+        "hollow-log",
+        "fern",
+        "leafy-bush",
+        "mushrooms",
+        "trail-sign",
+        "lantern-post",
+        "waystone",
+        "treasure-chest",
+        "berry-bush",
+        "stone-arch"
+      ]
+    }
+  }
+}

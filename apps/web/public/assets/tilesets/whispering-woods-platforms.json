@@ -1,0 +1,94 @@
+{
+  "frames": {
+    "ground": {
+      "frame": {
+        "x": 44,
+        "y": 76,
+        "w": 1448,
+        "h": 188
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1448,
+        "h": 188
+      },
+      "sourceSize": {
+        "w": 1448,
+        "h": 188
+      }
+    },
+    "platform-wide": {
+      "frame": {
+        "x": 151,
+        "y": 361,
+        "w": 1234,
+        "h": 159
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1234,
+        "h": 159
+      },
+      "sourceSize": {
+        "w": 1234,
+        "h": 159
+      }
+    },
+    "platform-medium": {
+      "frame": {
+        "x": 312,
+        "y": 611,
+        "w": 909,
+        "h": 155
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 909,
+        "h": 155
+      },
+      "sourceSize": {
+        "w": 909,
+        "h": 155
+      }
+    },
+    "platform-small": {
+      "frame": {
+        "x": 516,
+        "y": 838,
+        "w": 504,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 504,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 504,
+        "h": 128
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "whispering-woods-platforms.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}

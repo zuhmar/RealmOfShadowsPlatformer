@@ -1,0 +1,254 @@
+{
+  "frames": {
+    "moss-boulder": {
+      "frame": {
+        "x": 41,
+        "y": 63,
+        "w": 301,
+        "h": 226
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 301,
+        "h": 226
+      },
+      "sourceSize": {
+        "w": 301,
+        "h": 226
+      }
+    },
+    "tree-stump": {
+      "frame": {
+        "x": 406,
+        "y": 72,
+        "w": 343,
+        "h": 219
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 343,
+        "h": 219
+      },
+      "sourceSize": {
+        "w": 343,
+        "h": 219
+      }
+    },
+    "hollow-log": {
+      "frame": {
+        "x": 790,
+        "y": 88,
+        "w": 340,
+        "h": 190
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 190
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 190
+      }
+    },
+    "fern": {
+      "frame": {
+        "x": 1177,
+        "y": 52,
+        "w": 332,
+        "h": 236
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 332,
+        "h": 236
+      },
+      "sourceSize": {
+        "w": 332,
+        "h": 236
+      }
+    },
+    "leafy-bush": {
+      "frame": {
+        "x": 21,
+        "y": 417,
+        "w": 343,
+        "h": 215
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 343,
+        "h": 215
+      },
+      "sourceSize": {
+        "w": 343,
+        "h": 215
+      }
+    },
+    "mushrooms": {
+      "frame": {
+        "x": 435,
+        "y": 395,
+        "w": 273,
+        "h": 241
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 273,
+        "h": 241
+      },
+      "sourceSize": {
+        "w": 273,
+        "h": 241
+      }
+    },
+    "trail-sign": {
+      "frame": {
+        "x": 824,
+        "y": 378,
+        "w": 298,
+        "h": 267
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 298,
+        "h": 267
+      },
+      "sourceSize": {
+        "w": 298,
+        "h": 267
+      }
+    },
+    "lantern-post": {
+      "frame": {
+        "x": 1211,
+        "y": 368,
+        "w": 252,
+        "h": 283
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 252,
+        "h": 283
+      },
+      "sourceSize": {
+        "w": 252,
+        "h": 283
+      }
+    },
+    "waystone": {
+      "frame": {
+        "x": 59,
+        "y": 702,
+        "w": 263,
+        "h": 281
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 263,
+        "h": 281
+      },
+      "sourceSize": {
+        "w": 263,
+        "h": 281
+      }
+    },
+    "treasure-chest": {
+      "frame": {
+        "x": 429,
+        "y": 758,
+        "w": 288,
+        "h": 207
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 288,
+        "h": 207
+      },
+      "sourceSize": {
+        "w": 288,
+        "h": 207
+      }
+    },
+    "berry-bush": {
+      "frame": {
+        "x": 792,
+        "y": 757,
+        "w": 330,
+        "h": 209
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 330,
+        "h": 209
+      },
+      "sourceSize": {
+        "w": 330,
+        "h": 209
+      }
+    },
+    "stone-arch": {
+      "frame": {
+        "x": 1168,
+        "y": 746,
+        "w": 350,
+        "h": 217
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 350,
+        "h": 217
+      },
+      "sourceSize": {
+        "w": 350,
+        "h": 217
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "whispering-woods-props.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}
