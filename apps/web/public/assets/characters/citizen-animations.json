@@ -1,0 +1,44 @@
+{
+  "appearances": ["male", "female"],
+  "facing": "right (climb uses rear three-quarter view)",
+  "sourceWidth": 256,
+  "sourceHeight": 256,
+  "footBaseline": 224,
+  "animations": {
+    "idle": {
+      "frames": ["idle-0", "idle-1", "idle-2", "idle-3", "idle-4", "idle-5"],
+      "frameRate": 6,
+      "repeat": -1
+    },
+    "walk": {
+      "frames": ["walk-0", "walk-1", "walk-2", "walk-3", "walk-4", "walk-5"],
+      "frameRate": 10,
+      "repeat": -1
+    },
+    "jump": {
+      "frames": ["jump-0", "jump-1", "jump-2", "jump-3", "jump-4", "jump-5"],
+      "frameRate": 10,
+      "repeat": 0
+    },
+    "climb": {
+      "frames": ["climb-0", "climb-1", "climb-2", "climb-3", "climb-4", "climb-5"],
+      "frameRate": 8,
+      "repeat": -1
+    },
+    "attack": {
+      "frames": ["attack-0", "attack-1", "attack-2", "attack-3", "attack-4", "attack-5"],
+      "frameRate": 10,
+      "repeat": 0
+    },
+    "hurt": {
+      "frames": ["hurt-0", "hurt-1", "hurt-2", "hurt-3", "hurt-4", "hurt-5"],
+      "frameRate": 12,
+      "repeat": 0
+    },
+    "death": {
+      "frames": ["death-0", "death-1", "death-2", "death-3", "death-4", "death-5"],
+      "frameRate": 8,
+      "repeat": 0
+    }
+  }
+}
