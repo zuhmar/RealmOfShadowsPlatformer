@@ -1,0 +1,134 @@
+{
+  "frames": {
+    "idle-0": {
+      "frame": {
+        "x": 66,
+        "y": 26,
+        "w": 219,
+        "h": 668
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 274,
+        "y": 32,
+        "w": 219,
+        "h": 668
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "idle-1": {
+      "frame": {
+        "x": 431,
+        "y": 26,
+        "w": 248,
+        "h": 668
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 260,
+        "y": 32,
+        "w": 248,
+        "h": 668
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "idle-2": {
+      "frame": {
+        "x": 794,
+        "y": 28,
+        "w": 296,
+        "h": 666
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 236,
+        "y": 34,
+        "w": 296,
+        "h": 666
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "idle-3": {
+      "frame": {
+        "x": 1155,
+        "y": 28,
+        "w": 326,
+        "h": 666
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 221,
+        "y": 34,
+        "w": 326,
+        "h": 666
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "idle-4": {
+      "frame": {
+        "x": 1516,
+        "y": 30,
+        "w": 273,
+        "h": 664
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 247,
+        "y": 36,
+        "w": 273,
+        "h": 664
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "idle-5": {
+      "frame": {
+        "x": 1878,
+        "y": 30,
+        "w": 218,
+        "h": 664
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 275,
+        "y": 36,
+        "w": 218,
+        "h": 664
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "mira.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2172,
+      "h": 724
+    },
+    "scale": "1"
+  }
+}

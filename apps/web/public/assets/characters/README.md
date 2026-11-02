@@ -1,5 +1,7 @@
 # Citizen character artwork
 
+New painted weapon variants and Mira are documented in [armed/README.md](armed/README.md). That pack includes both appearances with sword, bow, staff, and dagger animations, plus texture atlases. It is not yet connected to the live renderer described below.
+
 Original matching male and female starter Citizens: chestnut hair, sage tunics, cream cuffs, brown belts/trousers/boots. Unarmed; the attack row is a punch. Each sheet has 42 poses: six each for idle, walk, jump, climb, attack, hurt, and non-graphic death. Most poses face right; climbing uses a rear three-quarter view.
 
 The PNG files preserve the generated originals byte-for-byte, including genuine RGBA transparency. The artwork does not follow perfectly uniform cell boundaries, so use the accompanying **Phaser JSON texture atlases**, not `load.spritesheet` with fixed cell dimensions. Atlas rectangles were measured from all 42 connected opaque silhouettes per sheet with four pixels of padding. Trim metadata places each pose in a 256×256 source frame with a foot baseline at y224. These are initial alignment values; body pivots and gait timing should be visually tuned during integration.

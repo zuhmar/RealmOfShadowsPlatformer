@@ -1,0 +1,94 @@
+{
+  "frames": {
+    "sword": {
+      "frame": {
+        "x": 232,
+        "y": 6,
+        "w": 196,
+        "h": 597
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 286,
+        "y": 103,
+        "w": 196,
+        "h": 597
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "bow": {
+      "frame": {
+        "x": 819,
+        "y": 5,
+        "w": 178,
+        "h": 613
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 295,
+        "y": 87,
+        "w": 178,
+        "h": 613
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "staff": {
+      "frame": {
+        "x": 258,
+        "y": 645,
+        "w": 145,
+        "h": 603
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 311,
+        "y": 97,
+        "w": 145,
+        "h": 603
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    },
+    "dagger": {
+      "frame": {
+        "x": 835,
+        "y": 753,
+        "w": 153,
+        "h": 386
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 307,
+        "y": 314,
+        "w": 153,
+        "h": 386
+      },
+      "sourceSize": {
+        "w": 768,
+        "h": 768
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "elderwood-weapons.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1"
+  }
+}
