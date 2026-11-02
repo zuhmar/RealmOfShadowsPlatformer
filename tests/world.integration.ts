@@ -127,21 +127,40 @@ test(
       await wait(250);
       assert.ok(Math.abs(me().x - before) < 1);
       assert.equal(me().gold, 0);
-      // Move into melee range, then send attacks; only server cooldowns may apply damage.
-      const movement = setInterval(
-        () => rooms[0].send('input', { ...idleInput(), right: true }),
-        50,
+      // A prior integration scenario may leave this shared map's wolves patrolling
+      // or respawning. Navigate to a live target instead of assuming fresh spawn coordinates.
+      await until(
+        () => !!refs[0].snapshot?.wolves.some((w) => w.hp > 0 && w.platform === 'ground'),
+        10000,
       );
-      await until(() => me().x > 650, 3000);
-      clearInterval(movement);
-      rooms[0].send('input', idleInput());
+      const targetId = refs[0]
+        .snapshot!.wolves.filter((w) => w.hp > 0 && w.platform === 'ground')
+        .sort((a, b) => Math.abs(a.x - me().x) - Math.abs(b.x - me().x))[0].id;
+      const target = () => refs[0].snapshot!.wolves.find((w) => w.id === targetId)!;
+      const movement = setInterval(() => {
+        const dx = target().x - me().x;
+        const move = Math.abs(dx) > 45 || (Math.abs(dx) > 12 && me().facing !== Math.sign(dx));
+        rooms[0].send('input', { ...idleInput(), left: move && dx < 0, right: move && dx > 0 });
+      }, 50);
+      try {
+        await until(
+          () => Math.abs(target().x - me().x) <= 50 && (target().x - me().x) * me().facing >= -12,
+          6000,
+        );
+      } finally {
+        clearInterval(movement);
+        rooms[0].send('input', idleInput());
+      }
       const attacks = setInterval(
         () => rooms[0].send('input', { ...idleInput(), attack: true }),
         50,
       );
-      await until(() => me().kills >= 1, 6000);
-      clearInterval(attacks);
-      rooms[0].send('input', idleInput());
+      try {
+        await until(() => me().kills >= 1, 6000);
+      } finally {
+        clearInterval(attacks);
+        rooms[0].send('input', idleInput());
+      }
       assert.ok(me().xp > 0);
       assert.ok(me().gold >= 5);
       assert.ok(me().inventory.fang >= 1);
@@ -174,7 +193,7 @@ test(
       await until(() => !!state.snapshot?.players.some((p) => p.id === chars[0].id));
       assert.ok(state.snapshot!.players.find((p) => p.id === chars[0].id)!.kills >= kills);
     } finally {
-      for (const r of rooms) await r.leave().catch(() => {});
+      for (const r of rooms) if (r.connection.isOpen) await r.leave(false).catch(() => {});
       await wait(300);
       for (const id of users) await db.user.delete({ where: { id } });
       await db.$disconnect();

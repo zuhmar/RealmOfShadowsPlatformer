@@ -44,15 +44,15 @@ The guest session token is stored in browser local storage and the database stor
 4. Collect gold and fangs near defeated wolves. Every fifth kill drops a Wayfarer Blade. Open **Bag**, select the blade, and equip it for +5 attack.
 5. Leave through the upper-right exit button. This waits for server save confirmation. On character selection, assign **offline training**; use **Claim rewards** or enter the world to settle them once, capped at eight hours.
 
-| Input                        | Action                                                |
-| ---------------------------- | ----------------------------------------------------- |
-| A / D or left / right arrows | Walk                                                  |
-| Space                        | Jump                                                  |
-| W / S or up / down arrows    | Climb a nearby ladder                                 |
-| Down + Space                 | Drop through an upper platform                        |
-| J                            | Basic melee attack                                    |
-| K                            | Cleave: 12 MP, 5-second cooldown, up to three targets |
-| E                            | Travel through a nearby portal                        |
+| Input                        | Action                                                             |
+| ---------------------------- | ------------------------------------------------------------------ |
+| A / D or left / right arrows | Walk                                                               |
+| Space                        | Jump                                                               |
+| W / S or up / down arrows    | Climb a nearby ladder                                              |
+| Down + Space                 | Drop through an upper platform                                     |
+| J                            | Basic melee attack                                                 |
+| K                            | Weapon skill: 12 MP, 5-second shared cooldown, up to three targets |
+| E                            | Travel through a nearby portal                                     |
 
 Mobile has held direction, climb, jump, and attack buttons, plus the same skill/AUTO hotbar. Item details support keyboard focus and touch. No audio or third-party game artwork is used.
 
@@ -83,11 +83,26 @@ Browser captures go into ignored `artifacts/`. Assertions and game-logic tests s
 
 The hero is the boy who alone survived the Shadow Dragon’s attack on his hometown. After years of training, he begins the journey to slay it. See [the story foundation](docs/story.md); `STORY` and `QUESTS` in game-data supply the opening and dialogue.
 
-In Elderwood Village, approach **Mira** on the village path and press **E**, click her, or use the **Interact** hotbar button. Accept **The first trial**, travel to Wolf Hollow, defeat five Wolves, return through the portal and speak with Mira again. Claim **75 gold and one Elderwood Blade (+8 attack)**, then equip it from the Bag. The journal and HUD show real quest progress; Mira’s marker changes from `!` to `?` when ready to turn in.
+In Elderwood Village, approach **Mira** on the village path and press **E**, click her, or use the **Interact** hotbar button. Accept **The first trial**, travel to Wolf Hollow, defeat five Wolves, return through the portal and speak with Mira again. Claim **75 gold and a four-weapon trial kit: Elderwood Blade (Knight), Bow (Archer), Staff (Mage), and Dagger (Rogue)**, then equip any weapon from the Bag. All four are usable by Citizens before class selection. The journal and HUD show real quest progress; Mira’s marker changes from `!` to `?` when ready to turn in.
 
 Only server-credited killing blows after acceptance count. Manual and AUTO combat both work; historical kills and offline training do not advance the quest. Acceptance and turn-in require being near Mira on the correct map/floor. Claiming is one-time and persistent per character. Existing characters begin with the quest unaccepted. No database migration or new environment variables are needed: the reserved quest tables from the foundation migration are used.
 
-`npm run test:browser:quest` exercises the complete live flow, including real portal travel in both directions, five AUTO kills, turn-in, equipping the blade, reconnecting, and mobile display. Integration tests also hold the database row during claim and drop the connection to verify that the reward survives without duplication.
+`npm run test:browser:quest` exercises the complete live flow, including real portal travel in both directions, five AUTO kills, turn-in, equipping all four weapons, reconnecting, and mobile display. Integration tests also hold the database row during claim and drop the connection to verify that the reward survives without duplication.
+
+### Trying the four class paths
+
+| Path   | Weapon                       | Basic range | Attack interval | Behavior                                  |
+| ------ | ---------------------------- | ----------- | --------------- | ----------------------------------------- |
+| Knight | Elderwood Blade (+8 attack)  | 78          | 650 ms          | Melee; Cleave skill                       |
+| Archer | Elderwood Bow (+6 attack)    | 280         | 850 ms          | Traveling arrows; Power Shot skill        |
+| Mage   | Elderwood Staff (+8 attack)  | 320         | 1000 ms         | Traveling magic bolts; Arcane Burst skill |
+| Rogue  | Elderwood Dagger (+4 attack) | 58          | 380 ms          | Fast melee; Flurry skill                  |
+
+All trial weapons work with manual and AUTO combat. Ranged damage is resolved on server projectile collision, with range and facing validated. The skill button costs 12 MP and shares a five-second cooldown across weapons; basic attacks, including staff bolts, cost no MP. Switching weapons does not bypass an attack already on cooldown. AUTO walks to owner-only loot after ranged kills. This introduces weapon trials, not the full class-unlock/proficiency/skill-tree systems; the saved class remains Citizen.
+
+Characters who claimed the earlier sword-only reward can speak to Mira and **Collect class weapons** once to receive the bow, staff and dagger. Gold and the sword are not repeated. A versioned internal `QuestProgress` reward ledger makes the upgrade persistent and idempotent without a schema migration. New turn-ins receive all four weapons and 75 gold together.
+
+`npm run test:browser:weapons` checks the four equipment visuals and arrow/orb rendering on desktop/mobile. Combat tests cover actual delayed hits, range/facing, cooldown switching, duplicate-hit prevention and AUTO loot with every weapon.
 
 ## Structure and authority
 
@@ -120,10 +135,10 @@ Configuration is prepared, not deployed:
 
 ## Scope and expansion
 
-**Implemented:** Mira’s first quest and one-time reward, guest/register/login + upgrade, three character slots and confirmed deletion, outfit/appearance preview, one playable Citizen, village and Wolf map, portal travel, platform movement/jump/drop/ladder/camera, melee and Cleave, Wolf state machine/respawns/player recovery, platform-aware AUTO and settings, XP/leveling, owner-only gold/loot, stacking inventory, weapon equip/unequip, responsive HUD/minimap, shared room chat/players/monsters, save/re-entry, offline monster training and atomic capped claims.
+**Implemented:** Mira’s first quest and one-time reward, guest/register/login + upgrade, three character slots and confirmed deletion, outfit/appearance preview, one playable Citizen, village and Wolf map, portal travel, platform movement/jump/drop/ladder/camera, four weapon trials with melee/ranged/magic basic attacks and weapon skills, Wolf state machine/respawns/player recovery, platform-aware AUTO and settings, XP/leveling, owner-only gold/loot, stacking inventory, weapon equip/unequip, responsive HUD/minimap, shared room chat/players/monsters, save/re-entry, offline monster training and atomic capped claims.
 
-**Definitions/foundations only:** other archetypes and proficiency skills, remaining island roster entries, Tiled object-layer import, normalized expansion database tables. The adapter imports platform/ladder layers; other map metadata stays in the base definition. It is not a general Tiled tilemap renderer.
+**Definitions/foundations only:** full class progression and proficiency skills, remaining island roster entries, Tiled object-layer import, normalized expansion database tables. The adapter imports platform/ladder layers; other map metadata stays in the base definition. It is not a general Tiled tilemap renderer.
 
-**Not implemented:** advanced class unlocks/ranged/magic combat, the other Whispering Woods monster maps, Crystal Caverns maps, bosses, gathering/crafting, banks/shops, additional quest chains, armor/accessory slots, cosmetic wardrobe/unlocks, parties, private boss instances, seamless reconnect, audio, or production scaling. Mira offers a reward-bearing first trial; other village NPCs remain scenery with roles clearly labeled, and shops are not implemented.
+**Not implemented:** advanced class unlocks and complete class skill trees, the other Whispering Woods monster maps, Crystal Caverns maps, bosses, gathering/crafting, banks/shops, additional quest chains, armor/accessory slots, cosmetic wardrobe/unlocks, parties, private boss instances, seamless reconnect, audio, or production scaling. Mira offers a reward-bearing first trial; other village NPCs remain scenery with roles clearly labeled, and shops are not implemented.
 
 Seven hunting islands are defined: Whispering Woods, Crystal Caverns, four unnamed reserved islands, and Shadow Fortress. Only the supplied rosters are recorded; the later islands have no invented permanent monster roster. Shadow Dragon remains the final encounter reservation. This is the **first playable milestone**, not the complete ten-phase MMORPG.

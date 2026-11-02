@@ -4,6 +4,7 @@ import {
   QUESTS,
   INTERACTION,
   weaponBonus,
+  weaponProfile,
   maxHp,
   xpNeeded,
   damage,
@@ -47,7 +48,7 @@ export type Actor = {
   platform: string;
   dropUntil: number;
 };
-export type QuestState = { progress: number; claimed: boolean };
+export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
   quests?: Record<string, QuestState>;
   id: string;
@@ -64,6 +65,7 @@ export type Player = Actor & {
   auto: boolean;
   settings: AutoSettings;
   lastAttack: number;
+  nextAttackAt?: number;
   lastSkill: number;
   lastHit: number;
   mapId: string;
@@ -92,7 +94,20 @@ export type Drop = {
   item: ItemId;
   expires: number;
 };
+export type Projectile = {
+  id: string;
+  owner: string;
+  kind: 'arrow' | 'orb';
+  x: number;
+  y: number;
+  startX: number;
+  vx: number;
+  range: number;
+  damage: number;
+  empowered: boolean;
+};
 export type Snapshot = {
+  projectiles?: Projectile[];
   players: Player[];
   wolves: Wolf[];
   drops: Drop[];
@@ -239,7 +254,13 @@ export function platformRoute(
   }
   return [];
 }
-export function autoInput(p: Player, wolves: Wolf[], map: GameMap, now: number): Input {
+export function autoInput(
+  p: Player,
+  wolves: Wolf[],
+  map: GameMap,
+  now: number,
+  drops: Drop[] = [],
+): Input {
   const i = idleInput();
   const alive = wolves.filter(
     (w) =>
@@ -252,8 +273,25 @@ export function autoInput(p: Player, wolves: Wolf[], map: GameMap, now: number):
         Math.abs(a.y - p.y) * 2 -
         (Math.abs(b.x - p.x) + Math.abs(b.y - p.y) * 2),
   );
-  const target = alive.find((w) => w.id === p.targetId) ?? alive[0];
-  p.targetId = target?.id ?? null;
+  const loot = p.settings.loot
+    ? drops
+        .filter((d) => d.owner === p.id && d.expires > now)
+        .map((d) => ({
+          ...d,
+          platform: map.platforms.find((f) => Math.abs(f.y - d.y) < 2)?.id ?? '',
+        }))
+        .filter(
+          (d) =>
+            d.platform &&
+            (d.platform === p.platform || platformRoute(map, p.platform, d.platform).length),
+        )
+        .sort(
+          (a, b) =>
+            Math.abs(a.x - p.x) + Math.abs(a.y - p.y) - Math.abs(b.x - p.x) - Math.abs(b.y - p.y),
+        )[0]
+    : undefined;
+  const target = loot ?? alive.find((w) => w.id === p.targetId) ?? alive[0];
+  p.targetId = loot ? null : (target?.id ?? null);
   if (!target) return i;
   const route = platformRoute(map, p.platform, target.platform);
   if (p.platform !== target.platform && route.length) {
@@ -269,17 +307,18 @@ export function autoInput(p: Player, wolves: Wolf[], map: GameMap, now: number):
     return i;
   }
   const dx = target.x - p.x;
-  if (Math.abs(dx) > RULES.attackRange - 14) {
+  if (Math.abs(dx) > (loot ? 80 : weaponProfile(p.weapon).range - 14)) {
     i.left = dx < 0;
     i.right = dx > 0;
   } else {
     p.facing = dx < 0 ? -1 : 1;
-    i.attack = true;
-    i.skill = p.settings.skills && now - p.lastSkill >= 5000;
+    i.attack = !loot;
+    i.skill = !loot && p.settings.skills && p.mp >= 12 && now - p.lastSkill >= 5000;
   }
   return i;
 }
 export class World {
+  projectiles: Projectile[] = [];
   players = new Map<string, Player>();
   wolves: Wolf[];
   drops: Drop[] = [];
@@ -305,7 +344,7 @@ export class World {
     for (const p of this.players.values()) {
       let i = inputs.get(p.id) ?? idleInput();
       if (Object.values(i).some(Boolean)) p.auto = false;
-      if (p.auto) i = autoInput(p, this.wolves, this.map, now);
+      if (p.auto) i = autoInput(p, this.wolves, this.map, now, this.drops);
       moveActor(p, i, this.map, dt, now);
       if (p.y > this.map.height + 100) {
         p.x = this.map.spawn.x;
@@ -388,55 +427,113 @@ export class World {
       }
       w.x = Math.max(platform.x + 25, Math.min(platform.x + platform.width - 25, w.x));
     }
+    this.stepProjectiles(dt, now);
     this.drops = this.drops.filter((d) => d.expires > now);
   }
   attack(p: Player, skill: boolean, now: number) {
-    if (now - p.lastAttack < RULES.attackCooldown) return;
+    const profile = weaponProfile(p.weapon);
+    if (now < (p.nextAttackAt ?? p.lastAttack + profile.cooldown)) return;
     const empowered = skill && p.mp >= 12 && now - p.lastSkill >= 5000;
     if (skill && !empowered) return;
     p.lastAttack = now;
+    p.nextAttackAt = now + profile.cooldown;
     if (empowered) {
       p.mp -= 12;
       p.lastSkill = now;
+    }
+    const hit = damage(p.level, weaponBonus(p.weapon)) * (empowered ? 2 : 1);
+    if (profile.projectile) {
+      this.projectiles.push({
+        id: `shot-${++this.serial}`,
+        owner: p.id,
+        kind: profile.projectile,
+        x: p.x + p.facing * 18,
+        y: p.y - 30,
+        startX: p.x,
+        vx: p.facing * profile.speed,
+        range: profile.range,
+        damage: hit,
+        empowered,
+      });
+      return;
     }
     const targets = this.wolves
       .filter(
         (w) =>
           w.hp > 0 &&
           Math.abs(w.y - p.y) < 55 &&
-          Math.abs(w.x - p.x) < (empowered ? 120 : RULES.attackRange) &&
+          Math.abs(w.x - p.x) < (empowered ? profile.range + 42 : profile.range) &&
           (w.x - p.x) * p.facing >= -12,
       )
       .sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x));
-    for (const w of targets.slice(0, empowered ? 3 : 1)) {
-      const hit = damage(p.level, weaponBonus(p.weapon)) * (empowered ? 2 : 1);
-      w.hp = Math.max(0, w.hp - hit);
-      this.events.push({ type: 'hit', x: w.x, y: w.y - 50, text: String(hit) });
-      if (!w.hp) {
-        w.state = 'dead';
-        w.deadUntil = now + RULES.respawnMs;
-        w.killer = p.id;
-        p.kills++;
-        advanceQuests(p, 'wolf', this.map.id);
-        const leveled = grantXp(p, RULES.wolfXp);
-        this.events.push({
-          type: leveled ? 'level' : 'kill',
-          x: p.x,
-          y: p.y - 80,
-          text: leveled ? `Level ${p.level}!` : `+${RULES.wolfXp} XP`,
-          playerId: p.id,
-        });
-        this.drops.push({
-          id: `drop-${++this.serial}`,
-          x: w.x,
-          y: w.y,
-          owner: p.id,
-          gold: RULES.wolfGold,
-          item: p.kills % 5 === 0 ? 'sword' : 'fang',
-          expires: now + 60000,
-        });
-      }
+    for (const w of targets.slice(0, empowered ? 3 : 1)) this.hitWolf(p, w, hit, now);
+  }
+  hitWolf(p: Player, w: Wolf, hit: number, now: number) {
+    if (w.hp <= 0) return;
+    w.hp = Math.max(0, w.hp - hit);
+    this.events.push({ type: 'hit', x: w.x, y: w.y - 50, text: String(hit) });
+    if (!w.hp) {
+      w.state = 'dead';
+      w.deadUntil = now + RULES.respawnMs;
+      w.killer = p.id;
+      p.kills++;
+      advanceQuests(p, 'wolf', this.map.id);
+      const leveled = grantXp(p, RULES.wolfXp);
+      this.events.push({
+        type: leveled ? 'level' : 'kill',
+        x: p.x,
+        y: p.y - 80,
+        text: leveled ? `Level ${p.level}!` : `+${RULES.wolfXp} XP`,
+        playerId: p.id,
+      });
+      this.drops.push({
+        id: `drop-${++this.serial}`,
+        x: w.x,
+        y: w.y,
+        owner: p.id,
+        gold: RULES.wolfGold,
+        item: p.kills % 5 === 0 ? 'sword' : 'fang',
+        expires: now + 60000,
+      });
     }
+  }
+  stepProjectiles(dt: number, now: number) {
+    this.projectiles = this.projectiles.filter((shot) => {
+      const owner = this.players.get(shot.owner);
+      if (!owner) return false;
+      const previous = shot.x;
+      const end = shot.startX + Math.sign(shot.vx) * shot.range;
+      shot.x =
+        shot.vx > 0 ? Math.min(end, shot.x + shot.vx * dt) : Math.max(end, shot.x + shot.vx * dt);
+      const targets = this.wolves
+        .filter(
+          (w) =>
+            w.hp > 0 &&
+            shot.y >= w.y - 60 &&
+            shot.y <= w.y &&
+            w.x + 23 >= Math.min(previous, shot.x) &&
+            w.x - 23 <= Math.max(previous, shot.x),
+        )
+        .sort((a, b) => Math.abs(a.x - previous) - Math.abs(b.x - previous));
+      const first = targets[0];
+      if (first) {
+        const affected = shot.empowered
+          ? [
+              first,
+              ...this.wolves.filter(
+                (w) =>
+                  w !== first &&
+                  w.hp > 0 &&
+                  Math.abs(w.x - first.x) < 110 &&
+                  Math.abs(w.y - first.y) < 55,
+              ),
+            ].slice(0, 3)
+          : [first];
+        for (const w of affected) this.hitWolf(owner, w, shot.damage, now);
+        return false;
+      }
+      return Math.abs(shot.x - shot.startX) < shot.range;
+    });
   }
   collect(p: Player, now: number) {
     for (const d of this.drops.filter(
@@ -459,6 +556,7 @@ export class World {
       players: [...this.players.values()],
       wolves: this.wolves,
       drops: this.drops,
+      projectiles: this.projectiles,
       time: now,
       mapId: this.map.id,
     };
@@ -503,4 +601,9 @@ export function nearNpc(p: Pick<Player, 'x' | 'y'>, map: GameMap, id: string) {
     Math.abs(p.x - npc.x) <= INTERACTION.horizontal &&
     Math.abs(p.y - npc.y) <= INTERACTION.vertical
   );
+}
+
+export function needsTrialWeapons(p: Pick<Player, 'quests'>) {
+  const quest = p.quests?.['mira-wolves'];
+  return !!quest?.claimed && !quest.trialKitClaimed;
 }

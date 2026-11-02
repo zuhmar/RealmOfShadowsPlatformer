@@ -85,12 +85,21 @@ try {
   await expect(page.locator('.wallet b')).toHaveText(String(gold + 75));
   await page.screenshot({ path: 'artifacts/mira-quest-complete.png', fullPage: true });
   await close();
-  await page.getByRole('button', { name: /Bag/ }).click();
-  const blade = page.locator('.inventory-cell').filter({ hasText: 'Elderwood Blade' });
-  await blade.click();
-  await blade.getByRole('button', { name: 'Equip', exact: true }).click();
-  await expect(page.locator('.inventory-summary')).toContainText('Elderwood Blade');
-  await close();
+  for (const [name, trial] of [
+    ['Elderwood Blade', 'Knight'],
+    ['Elderwood Bow', 'Archer'],
+    ['Elderwood Staff', 'Mage'],
+    ['Elderwood Dagger', 'Rogue'],
+    ['Elderwood Blade', 'Knight'],
+  ]) {
+    await page.getByRole('button', { name: /Bag/ }).click();
+    const cell = page.locator('.inventory-cell').filter({ hasText: name });
+    await cell.click();
+    await cell.getByRole('button', { name: 'Equip', exact: true }).click();
+    await expect(page.locator('.inventory-summary')).toContainText(name);
+    await close();
+    await expect(page.locator('.player-name span')).toHaveText(`${trial} trial`);
+  }
   await page.screenshot({ path: 'artifacts/mira-blade-equipped.png', fullPage: true });
   await page.getByRole('button', { name: 'Leave world' }).click();
   await expect(page.getByRole('heading', { name: /Your adventurers/ })).toBeVisible();
@@ -106,7 +115,7 @@ try {
   await page.getByRole('button', { name: 'Leave world' }).click();
   expect(errors).toEqual([]);
   console.log(
-    'PASS: storyline, live Mira dialogue/acceptance, real portal travel, five AUTO Wolf kills, return trip, single reward, blade equip, saved completion and mobile journal.',
+    'PASS: storyline, live Mira dialogue/acceptance, real portal travel, five AUTO Wolf kills, return trip, single reward, all four weapons equipped, saved completion and mobile journal.',
   );
 } catch (e) {
   await page.screenshot({ path: 'artifacts/quest-browser-failure.png', fullPage: true });

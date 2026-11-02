@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { Player } from '@ros/shared';
-import { itemDefinition, type GameMap } from '@ros/game-data';
+import { itemDefinition, weaponKind, type WeaponKind, type GameMap } from '@ros/game-data';
 import {
   APPEARANCES,
   OUTFITS,
@@ -67,6 +67,7 @@ export class CharacterVisual {
   weapon: Phaser.GameObjects.Graphics;
   previous?: CharacterState;
   key: string;
+  drawnWeapon?: WeaponKind;
   landedUntil = 0;
   launchUntil = 0;
   constructor(
@@ -79,13 +80,6 @@ export class CharacterVisual {
       .setOrigin(0.5, 224 / 256)
       .setScale(0.36);
     this.weapon = scene.add.graphics();
-    this.weapon.lineStyle(2, 0x344239);
-    this.weapon.fillStyle(0xcddbd7);
-    this.weapon.fillTriangle(-3, -5, 0, -30, 4, -5);
-    this.weapon.strokeTriangle(-3, -5, 0, -30, 4, -5);
-    this.weapon.lineStyle(3, 0x927447);
-    this.weapon.lineBetween(-6, -5, 7, -5);
-    this.weapon.lineBetween(0, -5, 0, 3);
     this.container.add([this.sprite, this.weapon]);
   }
   sync(p: Player, map: GameMap, now: number) {
@@ -121,6 +115,11 @@ export class CharacterVisual {
       } else this.sprite.play(`${key}-${motion}`, true);
     }
     // The supplied attack is unarmed. Add the equipped blade as a separate visual layer.
+    const kind = weaponKind(p.weapon);
+    if (kind !== this.drawnWeapon) {
+      this.drawWeapon(kind);
+      this.drawnWeapon = kind;
+    }
     const frame = String(this.sprite.frame.name);
     const attack = frame.startsWith('attack-');
     const index = Number(frame.split('-').at(-1));
@@ -128,7 +127,7 @@ export class CharacterVisual {
     this.weapon
       .setVisible(itemDefinition(p.weapon)?.type === 'weapon' && motion !== 'climb')
       .setPosition(reach, -27)
-      .setRotation(attack && index === 3 ? Math.PI / 2 : 0);
+      .setRotation(attack && index === 3 && kind !== 'bow' ? Math.PI / 2 : 0);
     this.container.scaleX = p.facing;
     this.container.x = Phaser.Math.Linear(this.container.x, p.x, 0.55);
     this.container.y = Phaser.Math.Linear(this.container.y, p.y, 0.55);
@@ -147,6 +146,39 @@ export class CharacterVisual {
       grounded: p.grounded,
     };
     this.player = { ...p };
+  }
+  drawWeapon(kind: WeaponKind) {
+    const g = this.weapon;
+    g.clear();
+    if (kind === 'unarmed') return;
+    if (kind === 'bow') {
+      g.lineStyle(3, 0x9c693d);
+      g.beginPath();
+      g.arc(0, -14, 17, -Math.PI / 2, Math.PI / 2, false);
+      g.strokePath();
+      g.lineStyle(1, 0xebdfb8);
+      g.lineBetween(0, -31, 0, 3);
+      g.lineStyle(1.5, 0xb4c6ba);
+      g.lineBetween(0, -14, 22, -14);
+      return;
+    }
+    if (kind === 'staff') {
+      g.lineStyle(4, 0x8a5f3f);
+      g.lineBetween(0, 3, 0, -37);
+      g.fillStyle(0x789fbf);
+      g.fillCircle(0, -40, 6);
+      g.fillStyle(0xbbeefa);
+      g.fillCircle(-2, -42, 2);
+      return;
+    }
+    const length = kind === 'dagger' ? 18 : 30;
+    g.lineStyle(2, 0x344239);
+    g.fillStyle(0xcddbd7);
+    g.fillTriangle(-3, -5, 0, -length, 4, -5);
+    g.strokeTriangle(-3, -5, 0, -length, 4, -5);
+    g.lineStyle(3, 0x927447);
+    g.lineBetween(-6, -5, 7, -5);
+    g.lineBetween(0, -5, 0, 3);
   }
   die(x = this.container.x, y = this.container.y) {
     const corpse = this.scene.add

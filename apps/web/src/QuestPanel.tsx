@@ -1,5 +1,5 @@
-import { QUESTS, ITEMS, STORY } from '@ros/game-data';
-import { questStatus, type Player } from '@ros/shared';
+import { QUESTS, ITEMS, STORY, weaponProfile } from '@ros/game-data';
+import { questStatus, needsTrialWeapons, type Player } from '@ros/shared';
 const quest = QUESTS['mira-wolves'];
 export function QuestPanel({
   player,
@@ -17,6 +17,7 @@ export function QuestPanel({
   onTalk: () => void;
 }) {
   const status = questStatus(player);
+  const kitPending = needsTrialWeapons(player);
   const progress = Math.min(quest.target.count, player.quests?.[quest.id]?.progress ?? 0);
   const lines = {
     available: quest.offer,
@@ -34,7 +35,13 @@ export function QuestPanel({
           <p>{STORY.prologue}</p>
         </div>
       )}
-      <p>{dialog ? lines[status] : quest.description}</p>
+      <p>
+        {dialog
+          ? kitPending
+            ? 'You already earned the sword. Take a bow, staff and dagger as well, and try the Archer, Mage and Rogue paths before choosing your class.'
+            : lines[status]
+          : quest.description}
+      </p>
       <div className="quest-status">
         {
           (
@@ -60,12 +67,23 @@ export function QuestPanel({
         </>
       )}
       <div className="quest-rewards">
-        <span>QUEST REWARD</span>
-        <b>◈ {quest.reward.gold} gold</b>
-        <b>
-          ⚔ {ITEMS['elderwood-blade'].name} <small>+8 attack</small>
-        </b>
+        <span>{kitPending ? 'CLASS WEAPON KIT' : 'QUEST REWARD'}</span>
+        <>{!kitPending && <b>◈ {quest.reward.gold} gold</b>}</>
+        {quest.reward.items
+          .filter((reward) => !kitPending || reward.itemId !== 'elderwood-blade')
+          .map((reward) => {
+            const item = ITEMS[reward.itemId];
+            return (
+              <b key={item.id}>
+                {item.icon} {item.name}{' '}
+                <small>
+                  {weaponProfile(item.id).className} · +{item.bonus} attack
+                </small>
+              </b>
+            );
+          })}
       </div>
+      <p>Equip these weapons from your Bag to try each path before choosing your class.</p>
       {dialog && status === 'available' && (
         <button
           className="primary"
@@ -75,31 +93,33 @@ export function QuestPanel({
           {pending ? 'Saving…' : 'Accept quest'}
         </button>
       )}
-      {dialog && status === 'ready' && (
+      {dialog && (status === 'ready' || kitPending) && (
         <button
           className="primary"
           disabled={pending || !nearMira}
           onClick={() => onAction('claim')}
         >
-          {pending ? 'Saving…' : 'Claim rewards'}
+          {pending ? 'Saving…' : kitPending ? 'Collect class weapons' : 'Claim rewards'}
         </button>
       )}
       {dialog && !nearMira && <p>Walk closer to Mira to continue.</p>}
-      {!dialog && status !== 'claimed' && (
+      {!dialog && (status !== 'claimed' || kitPending) && (
         <>
           <p>
-            {status === 'available'
-              ? 'Find Mira beside the village path to begin.'
-              : status === 'ready'
-                ? 'Return to Mira in Elderwood Village to claim your reward.'
-                : 'Manual and AUTO Wolf kills count. Offline training does not advance this quest.'}
+            {kitPending
+              ? 'Return to Mira to collect your bow, staff and dagger. Your gold and sword will not be granted again.'
+              : status === 'available'
+                ? 'Find Mira beside the village path to begin.'
+                : status === 'ready'
+                  ? 'Return to Mira in Elderwood Village to claim your reward.'
+                  : 'Manual and AUTO Wolf kills count. Offline training does not advance this quest.'}
           </p>
           <button className="secondary" disabled={!nearMira} onClick={onTalk}>
             Talk to Mira
           </button>
         </>
       )}
-      {status === 'claimed' && (
+      {status === 'claimed' && !kitPending && (
         <p className="quest-complete">
           ✓ Reward claimed. Your journey to the Shadow Dragon has begun.
         </p>

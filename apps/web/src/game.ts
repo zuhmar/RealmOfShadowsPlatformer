@@ -6,6 +6,7 @@ import { MAPS, RULES, type GameMap } from '@ros/game-data';
 import {
   idleInput,
   questStatus,
+  needsTrialWeapons,
   type Input,
   type Snapshot,
   type Event,
@@ -284,13 +285,15 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       if (local && this.miraMarker) {
         const status = questStatus(local);
         this.miraMarker.setText(
-          status === 'available'
-            ? '!'
-            : status === 'ready'
-              ? '?'
-              : status === 'claimed'
-                ? '✓'
-                : '…',
+          needsTrialWeapons(local)
+            ? '?'
+            : status === 'available'
+              ? '!'
+              : status === 'ready'
+                ? '?'
+                : status === 'claimed'
+                  ? '✓'
+                  : '…',
         );
       }
       for (const p of s.players) {
@@ -363,6 +366,32 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           .setVisible(w.hp > 0)
           .setText(`Wolf · ${w.hp}/${RULES.wolfHp}`)
           .setPosition(visual.container.x, w.y - 78);
+      }
+      for (const shot of s.projectiles ?? []) {
+        alive.add(shot.id);
+        let node = this.actors.get(shot.id);
+        if (!node) {
+          node = this.add.container(shot.x, shot.y).setDepth(12);
+          const g = this.add.graphics();
+          if (shot.kind === 'arrow') {
+            g.lineStyle(2, 0xebdab0);
+            g.lineBetween(-12, 0, 10, 0);
+            g.fillStyle(0xd4e7e3);
+            g.fillTriangle(7, -4, 16, 0, 7, 4);
+          } else {
+            g.fillStyle(0x63b4e3, 0.25);
+            g.fillCircle(0, 0, 11);
+            g.fillStyle(0x8bd9f2);
+            g.fillCircle(0, 0, 5);
+            g.fillStyle(0xe9ffff);
+            g.fillCircle(-1, -1, 2);
+          }
+          node.add(g);
+          this.actors.set(shot.id, node);
+        }
+        node.x = Phaser.Math.Linear(node.x, shot.x, 0.75);
+        node.y = shot.y;
+        node.scaleX = shot.vx < 0 ? -1 : 1;
       }
       for (const d of s.drops) {
         alive.add(d.id);

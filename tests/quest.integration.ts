@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Client, type Room } from 'colyseus.js';
+import { QUESTS, MIRA_WEAPON_KIT_LEDGER } from '@ros/game-data';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { type Player, type Snapshot, idleInput } from '@ros/shared';
@@ -172,6 +173,9 @@ test(
       room = client.room;
       assert.equal(client.me().gold, before + 75);
       assert.equal(client.me().inventory['elderwood-blade'], blades + 1);
+      for (const id of ['elderwood-bow', 'elderwood-staff', 'elderwood-dagger'])
+        assert.equal(client.me().inventory[id], 1);
+      assert.equal(client.me().quests!['mira-wolves'].trialKitClaimed, true);
       assert.equal(client.me().quests!['mira-wolves'].claimed, true);
       assert.equal((await quest(client, 'claim')).ok, false);
       room.send('equip', 'elderwood-blade');
@@ -190,6 +194,91 @@ test(
     } finally {
       release?.();
       await lock?.catch(() => {});
+      if (room?.connection.isOpen) await room.leave(false).catch(() => {});
+      await wait(350);
+      if (userId) await db.user.delete({ where: { id: userId } });
+      await db.$disconnect();
+    }
+  },
+);
+
+test(
+  'previously claimed quests grant the other three trial weapons once, without repeating sword or gold',
+  { timeout: 70000 },
+  async () => {
+    let room: Room | undefined,
+      userId = '';
+    try {
+      const guest = await api('/guest', undefined, {});
+      const c = await api('/characters', guest.token, { name: 'Legacy Trial' });
+      userId = c.userId;
+      const p = c.data as Player;
+      p.mapId = 'village';
+      p.x = 480;
+      p.y = 650;
+      p.gold = 100;
+      p.inventory = { 'elderwood-blade': 1 };
+      p.quests = { 'mira-wolves': { progress: 5, claimed: true } };
+      await db.quest.upsert({
+        where: { id: 'mira-wolves' },
+        create: {
+          id: 'mira-wolves',
+          definition: JSON.parse(JSON.stringify(QUESTS['mira-wolves'])),
+        },
+        update: {},
+      });
+      await db.character.update({
+        where: { id: c.id },
+        data: { data: JSON.parse(JSON.stringify(p)) },
+      });
+      await db.questProgress.create({
+        data: { characterId: c.id, questId: 'mira-wolves', progress: 5, claimed: true },
+      });
+      let client = await join(guest.token, c.id, 'village');
+      room = client.room;
+      assert.equal(client.me().quests!['mira-wolves'].trialKitClaimed, false);
+      assert.equal((await quest(client, 'claim')).ok, true);
+      await until(() => client.me().quests!['mira-wolves'].trialKitClaimed === true);
+      assert.equal(client.me().gold, 100);
+      for (const id of ['elderwood-blade', 'elderwood-bow', 'elderwood-staff', 'elderwood-dagger'])
+        assert.equal(client.me().inventory[id], 1);
+      assert.equal((await quest(client, 'claim')).ok, false);
+      assert.equal(
+        await db.questProgress.count({
+          where: { characterId: c.id, questId: MIRA_WEAPON_KIT_LEDGER, claimed: true },
+        }),
+        1,
+      );
+      await leave(room);
+      await position(c.id, 'woods', 600, 760);
+      client = await join(guest.token, c.id, 'woods');
+      room = client.room;
+      for (const id of [
+        'elderwood-blade',
+        'elderwood-bow',
+        'elderwood-staff',
+        'elderwood-dagger',
+      ]) {
+        room.send('equip', id);
+        await until(() => client.me().weapon === id);
+        const kills = client.me().kills;
+        room.send('auto', true);
+        if (id === 'elderwood-bow' || id === 'elderwood-staff')
+          await until(
+            () => !!client.state.snapshot?.projectiles?.some((s) => s.owner === c.id),
+            8000,
+          );
+        await until(() => client.me().kills > kills, 15000);
+        room.send('auto', false);
+        room.send('input', idleInput());
+        await wait(100);
+      }
+      await leave(room);
+      room = undefined;
+      const saved = await db.character.findUniqueOrThrow({ where: { id: c.id } });
+      assert.equal(saved.class, 'Citizen');
+      assert.equal((saved.data as unknown as Player).quests!['mira-wolves'].trialKitClaimed, true);
+    } finally {
       if (room?.connection.isOpen) await room.leave(false).catch(() => {});
       await wait(350);
       if (userId) await db.user.delete({ where: { id: userId } });

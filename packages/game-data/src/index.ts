@@ -133,6 +133,7 @@ export const STORY = {
   prologue:
     'The Shadow Dragon attacked a boy’s hometown and killed everyone but him. He trained for years. Now he is ready to begin the journey to slay the Shadow Dragon.',
 };
+export const MIRA_WEAPON_KIT_LEDGER = 'mira-wolves-weapon-kit-v1';
 export const QUESTS = {
   'mira-wolves': {
     id: 'mira-wolves',
@@ -149,10 +150,18 @@ export const QUESTS = {
     active:
       'Your training has brought you this far. Face five Wolves in Wolf Hollow, then return. The road to the Shadow Dragon begins with this first trial.',
     ready:
-      'Your training has served you well. Take this Elderwood Blade and supplies for the road. There are greater trials between you and the Shadow Dragon, but today your journey truly begins.',
+      'Your training has served you well. Take a sword for the Knight’s path, a bow for the Archer’s, a staff for the Mage’s, and a dagger for the Rogue’s. Try each before choosing your path. There are greater trials between you and the Shadow Dragon, but today your journey truly begins.',
     completed:
-      'Carry that blade well. Your hometown is gone, but its last survivor is still standing. The Shadow Dragon waits at the end of a long road.',
-    reward: { gold: 75, items: [{ itemId: 'elderwood-blade', quantity: 1 }] },
+      'Learn what each weapon can teach you. Your hometown is gone, but its last survivor is still standing. The Shadow Dragon waits at the end of a long road.',
+    reward: {
+      gold: 75,
+      items: [
+        { itemId: 'elderwood-blade', quantity: 1 },
+        { itemId: 'elderwood-bow', quantity: 1 },
+        { itemId: 'elderwood-staff', quantity: 1 },
+        { itemId: 'elderwood-dagger', quantity: 1 },
+      ],
+    },
   },
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
@@ -162,11 +171,48 @@ export const ITEMS = {
     name: 'Elderwood Blade',
     rarity: 'Uncommon',
     type: 'weapon',
-    description: 'Mira’s gift for completing your first trial. +8 attack.',
+    description: 'Knight trial weapon. A steady melee sword. +8 attack.',
+    weaponKind: 'sword',
     sellValue: 35,
     level: 1,
     bonus: 8,
     icon: '⚔',
+  },
+  'elderwood-bow': {
+    id: 'elderwood-bow',
+    name: 'Elderwood Bow',
+    rarity: 'Uncommon',
+    type: 'weapon',
+    weaponKind: 'bow',
+    description: 'Archer trial weapon. Fires arrows from a distance. +6 attack.',
+    sellValue: 35,
+    level: 1,
+    bonus: 6,
+    icon: '➶',
+  },
+  'elderwood-staff': {
+    id: 'elderwood-staff',
+    name: 'Elderwood Staff',
+    rarity: 'Uncommon',
+    type: 'weapon',
+    weaponKind: 'staff',
+    description: 'Mage trial weapon. Casts bolts; Arcane Burst hits nearby foes. +8 attack.',
+    sellValue: 35,
+    level: 1,
+    bonus: 8,
+    icon: '✧',
+  },
+  'elderwood-dagger': {
+    id: 'elderwood-dagger',
+    name: 'Elderwood Dagger',
+    rarity: 'Uncommon',
+    type: 'weapon',
+    weaponKind: 'dagger',
+    description: 'Rogue trial weapon. Fast attacks at close range. +4 attack.',
+    sellValue: 35,
+    level: 1,
+    bonus: 4,
+    icon: '†',
   },
   fang: {
     id: 'fang',
@@ -185,6 +231,7 @@ export const ITEMS = {
     rarity: 'Uncommon',
     type: 'weapon',
     description: 'A dependable blade. +5 attack.',
+    weaponKind: 'sword',
     sellValue: 20,
     level: 1,
     bonus: 5,
@@ -252,4 +299,65 @@ export function itemDefinition(id: string | null | undefined) {
 export function weaponBonus(id: string | null | undefined) {
   const item = itemDefinition(id);
   return item?.type === 'weapon' ? item.bonus : 0;
+}
+
+export type WeaponKind = 'unarmed' | 'sword' | 'bow' | 'staff' | 'dagger';
+export const WEAPON_PROFILES: Record<
+  WeaponKind,
+  {
+    className: string;
+    range: number;
+    cooldown: number;
+    projectile: 'arrow' | 'orb' | null;
+    speed: number;
+    skillName: string;
+  }
+> = {
+  unarmed: {
+    className: 'Citizen',
+    range: 78,
+    cooldown: 650,
+    projectile: null,
+    speed: 0,
+    skillName: 'Cleave',
+  },
+  sword: {
+    className: 'Knight',
+    range: 78,
+    cooldown: 650,
+    projectile: null,
+    speed: 0,
+    skillName: 'Cleave',
+  },
+  bow: {
+    className: 'Archer',
+    range: 280,
+    cooldown: 850,
+    projectile: 'arrow',
+    speed: 560,
+    skillName: 'Power Shot',
+  },
+  staff: {
+    className: 'Mage',
+    range: 320,
+    cooldown: 1000,
+    projectile: 'orb',
+    speed: 400,
+    skillName: 'Arcane Burst',
+  },
+  dagger: {
+    className: 'Rogue',
+    range: 58,
+    cooldown: 380,
+    projectile: null,
+    speed: 0,
+    skillName: 'Flurry',
+  },
+};
+export function weaponKind(id: string | null | undefined): WeaponKind {
+  const item = itemDefinition(id);
+  return item?.type === 'weapon' ? item.weaponKind : 'unarmed';
+}
+export function weaponProfile(id: string | null | undefined) {
+  return WEAPON_PROFILES[weaponKind(id)];
 }

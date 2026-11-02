@@ -1,5 +1,5 @@
 import { Room, type Client } from '@colyseus/core';
-import { MAPS, ITEMS, QUESTS, itemDefinition, maxHp } from '@ros/game-data';
+import { MAPS, ITEMS, QUESTS, MIRA_WEAPON_KIT_LEDGER, itemDefinition, maxHp } from '@ros/game-data';
 import {
   World,
   idleInput,
@@ -167,6 +167,7 @@ export class MapRoom extends Room {
     const task = this.saves
       .catch(() => {})
       .then(async () => {
+        const wasClaimed = p.quests?.['mira-wolves']?.claimed === true;
         const next = await changeQuest(structuredClone(p), 'mira-wolves', action);
         p.quests = next.quests;
         p.gold = next.gold;
@@ -175,7 +176,9 @@ export class MapRoom extends Room {
           true,
           action === 'accept'
             ? 'Quest accepted: defeat five Wolves in Wolf Hollow, then return to Mira.'
-            : 'Quest complete: +75 gold and an Elderwood Blade.',
+            : wasClaimed
+              ? 'Training kit collected: bow, staff and dagger.'
+              : 'Quest complete: +75 gold and four class trial weapons.',
         );
       });
     this.questTasks.set(p.id, task);
@@ -217,7 +220,16 @@ export class MapRoom extends Room {
         p.quests = Object.fromEntries(
           questRows
             .filter((q) => Object.hasOwn(QUESTS, q.questId))
-            .map((q) => [q.questId, { progress: q.progress, claimed: q.claimed }]),
+            .map((q) => [
+              q.questId,
+              {
+                progress: q.progress,
+                claimed: q.claimed,
+                trialKitClaimed: questRows.some(
+                  (ledger) => ledger.questId === MIRA_WEAPON_KIT_LEDGER && ledger.claimed,
+                ),
+              },
+            ]),
         );
         const activity = await tx.offlineActivity.findUnique({ where: { characterId: id } });
         if (activity) {
@@ -245,6 +257,7 @@ export class MapRoom extends Room {
     p.vx = 0;
     p.vy = 0;
     p.lastAttack = 0;
+    p.nextAttackAt = 0;
     p.lastSkill = 0;
     p.lastHit = Date.now();
     p.hp = Math.max(1, Math.min(p.hp, maxHp(p.level)));

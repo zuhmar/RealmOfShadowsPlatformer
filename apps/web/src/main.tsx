@@ -9,12 +9,14 @@ import {
   STORY,
   itemDefinition,
   weaponBonus,
+  weaponProfile,
   maxHp,
   xpNeeded,
   RULES,
 } from '@ros/game-data';
 import {
   questStatus,
+  needsTrialWeapons,
   nearNpc,
   type Player,
   type Snapshot,
@@ -543,7 +545,11 @@ function App() {
                   <div className="vitals">
                     <div className="player-name">
                       {p.name}
-                      <span>Citizen</span>
+                      <span>
+                        {weaponProfile(p.weapon).className === 'Citizen'
+                          ? 'Citizen'
+                          : `${weaponProfile(p.weapon).className} trial`}
+                      </span>
                     </div>
                     {statBar('HP', p.hp, maxHp(p.level), 'hp')}
                     {statBar('MP', p.mp, 50, 'mp')}
@@ -587,13 +593,15 @@ function App() {
                     <small>YOUR FIRST STEPS</small>
                     <b>{quest.title}</b>
                     <span>
-                      {trialStatus === 'available'
-                        ? 'Speak to Mira in Elderwood Village.'
-                        : trialStatus === 'ready'
-                          ? 'Return to Mira · reward ready'
-                          : trialStatus === 'claimed'
-                            ? 'First trial complete · onward'
-                            : `Wolves defeated · ${p.quests?.[quest.id]?.progress ?? 0} / ${quest.target.count}`}
+                      {needsTrialWeapons(p)
+                        ? 'Collect your class weapons from Mira'
+                        : trialStatus === 'available'
+                          ? 'Speak to Mira in Elderwood Village.'
+                          : trialStatus === 'ready'
+                            ? 'Return to Mira · reward ready'
+                            : trialStatus === 'claimed'
+                              ? 'First trial complete · onward'
+                              : `Wolves defeated · ${p.quests?.[quest.id]?.progress ?? 0} / ${quest.target.count}`}
                     </span>
                   </div>
                   <button aria-label="Open journal" onClick={() => setPanel('quests')}>
@@ -605,7 +613,7 @@ function App() {
                     ? closeToMira
                       ? 'E · Talk to Mira'
                       : 'E · Talk to Mira or use a portal'
-                    : 'W / ↑ to climb · J to attack · K for Cleave'}
+                    : 'W / ↑ to climb · J to attack · K for weapon skill'}
                 </div>
                 <div className="touch-controls">
                   <div>
@@ -653,14 +661,14 @@ function App() {
                 </div>
                 <div className="skillbar">
                   <button className="skill attack" {...hold('attack')}>
-                    <span>⚔</span>
+                    <span>{itemDefinition(p.weapon)?.icon ?? '⚔'}</span>
                     <small>J</small>
                     <b>Attack</b>
                   </button>
                   <button className="skill" {...hold('skill')}>
                     <span>✧</span>
                     <small>K</small>
-                    <b>Cleave · 12 MP</b>
+                    <b>{weaponProfile(p.weapon).skillName} · 12 MP</b>
                   </button>
                   <button className="skill" onClick={() => room?.send('interact', null)}>
                     <span>⌘</span>
@@ -964,6 +972,9 @@ function App() {
                     ['Wolves defeated', p.kills],
                     ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
                     ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
+                    ['Weapon trial', weaponProfile(p.weapon).className],
+                    ['Attack range', `${weaponProfile(p.weapon).range}`],
+                    ['Attack interval', `${weaponProfile(p.weapon).cooldown} ms`],
                   ].map(([k, v]) => (
                     <div key={k}>
                       <span>{k}</span>
@@ -1029,7 +1040,7 @@ function App() {
                 </p>
                 <div className="settings">
                   {[
-                    ['skills', 'Use Cleave automatically'],
+                    ['skills', 'Use weapon skill automatically'],
                     ['loot', 'Collect nearby loot'],
                   ].map(([k, label]) => (
                     <label key={k}>
