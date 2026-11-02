@@ -1,4 +1,15 @@
-import { RULES, MAPS, maxHp, xpNeeded, damage, type GameMap, type ItemId } from '@ros/game-data';
+import {
+  RULES,
+  MAPS,
+  QUESTS,
+  INTERACTION,
+  weaponBonus,
+  maxHp,
+  xpNeeded,
+  damage,
+  type GameMap,
+  type ItemId,
+} from '@ros/game-data';
 export type Input = {
   left: boolean;
   right: boolean;
@@ -36,7 +47,9 @@ export type Actor = {
   platform: string;
   dropUntil: number;
 };
+export type QuestState = { progress: number; claimed: boolean };
 export type Player = Actor & {
+  quests?: Record<string, QuestState>;
   id: string;
   name: string;
   appearance: string;
@@ -117,6 +130,7 @@ export function createPlayer(id: string, name: string, mapId = 'woods'): Player 
     gold: 0,
     inventory: {},
     weapon: null,
+    quests: {},
     auto: false,
     settings: { skills: true, loot: true, target: 'nearest', healBelow: 30 },
     lastAttack: 0,
@@ -395,7 +409,7 @@ export class World {
       )
       .sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x));
     for (const w of targets.slice(0, empowered ? 3 : 1)) {
-      const hit = damage(p.level, p.weapon === 'sword' ? 5 : 0) * (empowered ? 2 : 1);
+      const hit = damage(p.level, weaponBonus(p.weapon)) * (empowered ? 2 : 1);
       w.hp = Math.max(0, w.hp - hit);
       this.events.push({ type: 'hit', x: w.x, y: w.y - 50, text: String(hit) });
       if (!w.hp) {
@@ -403,6 +417,7 @@ export class World {
         w.deadUntil = now + RULES.respawnMs;
         w.killer = p.id;
         p.kills++;
+        advanceQuests(p, 'wolf', this.map.id);
         const leveled = grantXp(p, RULES.wolfXp);
         this.events.push({
           type: leveled ? 'level' : 'kill',
@@ -457,4 +472,35 @@ export function offlineReward(start: number, now: number) {
     xp: minutes * RULES.offlineXpPerMinute,
     gold: minutes * RULES.offlineGoldPerMinute,
   };
+}
+
+export function questStatus(
+  p: Pick<Player, 'quests'>,
+  id = 'mira-wolves',
+): 'available' | 'active' | 'ready' | 'claimed' {
+  const state = p.quests?.[id];
+  if (!state) return 'available';
+  if (state.claimed) return 'claimed';
+  const quest = QUESTS[id as keyof typeof QUESTS];
+  return quest && state.progress >= quest.target.count ? 'ready' : 'active';
+}
+export function advanceQuests(p: Player, monsterId: string, mapId: string) {
+  for (const [id, quest] of Object.entries(QUESTS)) {
+    const state = p.quests?.[id];
+    if (
+      state &&
+      !state.claimed &&
+      quest.target.monsterId === monsterId &&
+      quest.target.mapId === mapId
+    )
+      state.progress = Math.min(quest.target.count, state.progress + 1);
+  }
+}
+export function nearNpc(p: Pick<Player, 'x' | 'y'>, map: GameMap, id: string) {
+  const npc = map.npcs.find((n) => n.id === id);
+  return (
+    !!npc &&
+    Math.abs(p.x - npc.x) <= INTERACTION.horizontal &&
+    Math.abs(p.y - npc.y) <= INTERACTION.vertical
+  );
 }

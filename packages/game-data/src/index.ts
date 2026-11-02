@@ -12,7 +12,7 @@ export type GameMap = {
   ladders: Ladder[];
   portals: { x: number; y: number; target: string; label: string }[];
   spawns: { x: number; y: number; platform: string }[];
-  npcs: { x: number; y: number; name: string; role: string }[];
+  npcs: { id?: string; x: number; y: number; name: string; role: string }[];
 };
 export const RULES = {
   tick: 30,
@@ -56,7 +56,7 @@ export const MAPS: Record<string, GameMap> = {
     portals: [{ x: 1560, y: 650, target: 'woods', label: 'Whispering Woods' }],
     spawns: [],
     npcs: [
-      { x: 500, y: 650, name: 'Mira', role: 'Village guide' },
+      { id: 'mira', x: 500, y: 650, name: 'Mira', role: 'Village guide' },
       { x: 900, y: 650, name: 'Bram', role: 'Blacksmith · coming later' },
     ],
   },
@@ -128,7 +128,46 @@ export const ISLANDS = [
     available: false,
   },
 ];
+export const STORY = {
+  title: 'The last survivor',
+  prologue:
+    'The Shadow Dragon attacked a boy’s hometown and killed everyone but him. He trained for years. Now he is ready to begin the journey to slay the Shadow Dragon.',
+};
+export const QUESTS = {
+  'mira-wolves': {
+    id: 'mira-wolves',
+    title: 'The first trial',
+    chapter: 'CHAPTER I · THE LAST SURVIVOR',
+    npcId: 'mira',
+    npcName: 'Mira',
+    mapId: 'village',
+    target: { monsterId: 'wolf', mapId: 'woods', count: 5 },
+    description:
+      'Speak with Mira, defeat five Wolves in Wolf Hollow, then return to her. Only Wolves defeated after accepting this quest count.',
+    offer:
+      'The Shadow Dragon took your hometown and everyone in it. You alone survived. You have trained for years for this journey. Before you follow its shadow, show me what that training has made of you: defeat five Wolves in Wolf Hollow, then return to me.',
+    active:
+      'Your training has brought you this far. Face five Wolves in Wolf Hollow, then return. The road to the Shadow Dragon begins with this first trial.',
+    ready:
+      'Your training has served you well. Take this Elderwood Blade and supplies for the road. There are greater trials between you and the Shadow Dragon, but today your journey truly begins.',
+    completed:
+      'Carry that blade well. Your hometown is gone, but its last survivor is still standing. The Shadow Dragon waits at the end of a long road.',
+    reward: { gold: 75, items: [{ itemId: 'elderwood-blade', quantity: 1 }] },
+  },
+} as const;
+export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  'elderwood-blade': {
+    id: 'elderwood-blade',
+    name: 'Elderwood Blade',
+    rarity: 'Uncommon',
+    type: 'weapon',
+    description: 'Mira’s gift for completing your first trial. +8 attack.',
+    sellValue: 35,
+    level: 1,
+    bonus: 8,
+    icon: '⚔',
+  },
   fang: {
     id: 'fang',
     name: 'Wolf Fang',
@@ -205,4 +244,12 @@ export function fromTiled(
       to: String(o.properties?.find((p) => p.name === 'to')?.value ?? 'ground'),
     })),
   };
+}
+
+export function itemDefinition(id: string | null | undefined) {
+  return id && Object.prototype.hasOwnProperty.call(ITEMS, id) ? ITEMS[id as ItemId] : null;
+}
+export function weaponBonus(id: string | null | undefined) {
+  const item = itemDefinition(id);
+  return item?.type === 'weapon' ? item.bonus : 0;
 }

@@ -1817,3 +1817,59 @@ footer i {
     serif;
   pointer-events: none;
 }
+.story-prologue {
+  border-left: 2px solid #b9ab73;
+  padding: 4px 0 4px 14px;
+  margin: 18px 0;
+}
+.story-prologue > b {
+  font:
+    19px Georgia,
+    serif;
+  color: #e0d5ad;
+}
+.quest-status {
+  display: inline-block;
+  padding: 5px 9px;
+  border: 1px solid #7f8b56;
+  border-radius: 4px;
+  color: #d8dda9;
+  font-size: 10px;
+  margin: 4px 0 14px;
+}
+.quest-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  border-top: 1px solid #52623e;
+  border-bottom: 1px solid #52623e;
+  padding: 16px 0;
+  margin: 18px 0;
+}
+.quest-rewards > span {
+  width: 100%;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #aeb993;
+}
+.quest-rewards > b {
+  font-size: 12px;
+  color: #e4d49a;
+  font-weight: 500;
+}
+.quest-rewards small {
+  color: #aebe92;
+  margin-left: 6px;
+}
+.quest-complete {
+  color: #d2dca6 !important;
+}
+.npc-dialog > p {
+  font:
+    16px/1.8 Georgia,
+    serif;
+}
+.npc-dialog > .primary {
+  width: 100%;
+  margin-top: 6px;
+}

@@ -1,6 +1,15 @@
 import { Room, type Client } from '@colyseus/core';
-import { MAPS, ITEMS, maxHp } from '@ros/game-data';
-import { World, idleInput, offlineReward, grantXp, type Input, type Player } from '@ros/shared';
+import { MAPS, ITEMS, QUESTS, itemDefinition, maxHp } from '@ros/game-data';
+import {
+  World,
+  idleInput,
+  nearNpc,
+  offlineReward,
+  grantXp,
+  type Input,
+  type Player,
+} from '@ros/shared';
+import { changeQuest } from './quests.js';
 import { activeCharacters, authenticate, db, save, json } from './db.js';
 export class MapRoom extends Room {
   maxClients = 24;
@@ -10,6 +19,7 @@ export class MapRoom extends Room {
   rates = new Map<string, { at: number; count: number }>();
   saves: Promise<unknown> = Promise.resolve();
   ticks = 0;
+  questTasks = new Map<string, Promise<void>>();
   inputTimes = new Map<string, number>();
   onCreate(options: { mapId?: string }) {
     const map = MAPS[options.mapId ?? 'woods'];
@@ -49,8 +59,15 @@ export class MapRoom extends Room {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
       if (item === null) p.weapon = null;
-      else if (item === 'sword' && (p.inventory.sword ?? 0) > 0 && p.level >= ITEMS.sword.level)
-        p.weapon = 'sword';
+      else if (typeof item === 'string') {
+        const definition = itemDefinition(item);
+        if (
+          definition?.type === 'weapon' &&
+          (p.inventory[item] ?? 0) > 0 &&
+          p.level >= definition.level
+        )
+          p.weapon = item;
+      }
     });
     this.onMessage('chat', (c, msg) => {
       if (typeof msg !== 'string' || !this.rate(c, 100)) return;
@@ -80,33 +97,97 @@ export class MapRoom extends Room {
         c.send('notice', 'Could not save. Please reconnect.');
       }
     });
-    this.onMessage('travel', async (c) => {
+    this.onMessage('travel', (c) => this.travel(c));
+    this.onMessage('interact', (c, payload) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
-      const portal = this.world.map.portals.find(
-        (q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65,
-      );
-      if (!portal) {
-        c.send('notice', 'Walk close to a portal first.');
-        return;
-      }
-      p.auto = false;
-      this.inputs.set(p.id, idleInput());
-      p.mapId = portal.target;
-      const m = MAPS[portal.target];
-      p.x = m.spawn.x;
-      p.y = m.spawn.y;
-      p.vy = 0;
-      p.platform = 'ground';
-      this.world.players.delete(p.id);
-      try {
-        await this.enqueueSave(p);
-        c.send('travel', portal.target);
-      } catch {
-        c.send('notice', 'Travel save failed. Please reconnect.');
-        c.leave();
-      }
+      if (nearNpc(p, this.world.map, 'mira')) {
+        p.auto = false;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: 'mira' });
+      } else if (payload?.npcId === 'mira')
+        c.send('notice', 'Walk closer to Mira to speak with her.');
+      else void this.travel(c);
     });
+    this.onMessage('quest', (c, payload) => this.quest(c, payload));
+  }
+  async travel(c: Client) {
+    const p = this.player(c);
+    if (!p || !this.rate(c, 100)) return;
+    const portal = this.world.map.portals.find(
+      (q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65,
+    );
+    if (!portal) {
+      c.send('notice', 'Walk close to a portal first.');
+      return;
+    }
+    p.auto = false;
+    this.inputs.set(p.id, idleInput());
+    p.mapId = portal.target;
+    const m = MAPS[portal.target];
+    p.x = m.spawn.x;
+    p.y = m.spawn.y;
+    p.vy = 0;
+    p.platform = 'ground';
+    this.world.players.delete(p.id);
+    try {
+      await this.enqueueSave(p);
+      c.send('travel', portal.target);
+    } catch {
+      c.send('notice', 'Travel save failed. Please reconnect.');
+      c.leave();
+    }
+  }
+
+  quest(c: Client, payload: unknown) {
+    const result = (ok: boolean, message: string) => {
+      if (this.clients.includes(c)) c.send('questResult', { ok, message });
+    };
+    const p = this.player(c);
+    if (!p) {
+      result(false, 'Please wait for the current action to finish.');
+      return;
+    }
+    if (!this.rate(c, 100)) return;
+    const value = payload as { questId?: unknown; action?: unknown } | null;
+    if (
+      value?.questId !== 'mira-wolves' ||
+      (value.action !== 'accept' && value.action !== 'claim')
+    ) {
+      result(false, 'Unknown quest action.');
+      return;
+    }
+    if (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'mira')) {
+      result(false, 'Return to Mira in Elderwood Village to do that.');
+      return;
+    }
+    const action = value.action;
+    p.auto = false;
+    this.inputs.set(p.id, idleInput());
+    const task = this.saves
+      .catch(() => {})
+      .then(async () => {
+        const next = await changeQuest(structuredClone(p), 'mira-wolves', action);
+        p.quests = next.quests;
+        p.gold = next.gold;
+        p.inventory = next.inventory;
+        result(
+          true,
+          action === 'accept'
+            ? 'Quest accepted: defeat five Wolves in Wolf Hollow, then return to Mira.'
+            : 'Quest complete: +75 gold and an Elderwood Blade.',
+        );
+      });
+    this.questTasks.set(p.id, task);
+    this.saves = task.catch(() => {});
+    void task
+      .catch((error) =>
+        result(
+          false,
+          error instanceof Error ? error.message : 'Could not save the quest. Try again.',
+        ),
+      )
+      .finally(() => this.questTasks.delete(p.id));
   }
   rate(c: Client, limit: number) {
     const now = Date.now();
@@ -132,6 +213,12 @@ export class MapRoom extends Room {
         const character = await tx.character.findUniqueOrThrow({ where: { id } });
         const p = character.data as unknown as Player;
         if (p.mapId !== this.world.map.id) throw new Error('Invalid map. Refresh your characters.');
+        const questRows = await tx.questProgress.findMany({ where: { characterId: id } });
+        p.quests = Object.fromEntries(
+          questRows
+            .filter((q) => Object.hasOwn(QUESTS, q.questId))
+            .map((q) => [q.questId, { progress: q.progress, claimed: q.claimed }]),
+        );
         const activity = await tx.offlineActivity.findUnique({ where: { characterId: id } });
         if (activity) {
           const reward = offlineReward(activity.startedAt.getTime(), Date.now());
@@ -168,7 +255,8 @@ export class MapRoom extends Room {
     c.send('snapshot', this.world.snapshot(Date.now()));
   }
   player(c: Client) {
-    return this.world.players.get(this.characters.get(c.sessionId) ?? '');
+    const id = this.characters.get(c.sessionId) ?? '';
+    return this.questTasks.has(id) ? undefined : this.world.players.get(id);
   }
   enqueueSave(p: Player) {
     const copy = structuredClone(p);
@@ -189,11 +277,13 @@ export class MapRoom extends Room {
     if (this.world.events.length) this.broadcast('events', this.world.events);
     if (this.ticks % 150 === 0)
       for (const p of this.world.players.values())
-        void this.enqueueSave(p).catch((e) => console.error('Save failed', e.message));
+        if (!this.questTasks.has(p.id))
+          void this.enqueueSave(p).catch((e) => console.error('Save failed', e.message));
   }
   async onLeave(c: Client) {
     const id = this.characters.get(c.sessionId);
     if (!id) return;
+    await this.questTasks.get(id)?.catch(() => {});
     const p = this.world.players.get(id);
     this.world.players.delete(id);
     this.inputs.delete(id);

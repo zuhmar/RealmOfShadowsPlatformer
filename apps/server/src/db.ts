@@ -2,6 +2,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { type Player } from '@ros/shared';
+import { QUESTS } from '@ros/game-data';
 export const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
@@ -31,7 +32,23 @@ export function passwordMatches(password: string, stored: string) {
   return timingSafeEqual(scryptSync(password, salt, 64), Buffer.from(key, 'hex'));
 }
 export const json = (p: Player) => JSON.parse(JSON.stringify(p)) as Prisma.InputJsonValue;
-// The snapshot is the milestone's authoritative persistence source. Normalized expansion tables are reserved.
+// Combat and inventory live in the character snapshot. QuestProgress is the durable
+// acceptance/progress/claim ledger; room serialization keeps these writes ordered.
 export async function save(p: Player) {
-  await db.character.update({ where: { id: p.id }, data: { data: json(p) } });
+  await db.$transaction(async (tx) => {
+    await tx.character.update({ where: { id: p.id }, data: { data: json(p) } });
+    for (const [id, state] of Object.entries(p.quests ?? {})) {
+      const quest = QUESTS[id as keyof typeof QUESTS];
+      if (!quest) continue;
+      await tx.questProgress.updateMany({
+        where: {
+          characterId: p.id,
+          questId: id,
+          claimed: false,
+          progress: { lt: Math.min(state.progress, quest.target.count) },
+        },
+        data: { progress: Math.min(state.progress, quest.target.count) },
+      });
+    }
+  });
 }

@@ -3,11 +3,19 @@ import { WoodsScenery, preloadWoods } from './woods';
 import { CharacterVisual, preloadCharacters, registerCharacters } from './character';
 import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
 import { MAPS, RULES, type GameMap } from '@ros/game-data';
-import { idleInput, type Input, type Snapshot, type Event, type Player } from '@ros/shared';
+import {
+  idleInput,
+  questStatus,
+  type Input,
+  type Snapshot,
+  type Event,
+  type Player,
+} from '@ros/shared';
 export type Bridge = {
   snapshot: Snapshot | null;
   id: string;
   held: Partial<Input>;
+  blocked?: boolean;
   send: (type: string, data: unknown) => void;
   onReady?: () => void;
 };
@@ -25,6 +33,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     wolves = new Map<string, WolfVisual>();
     characters = new Map<string, CharacterVisual>();
     woods?: WoodsScenery;
+    miraMarker?: Phaser.GameObjects.Text;
     constructor() {
       super('realm');
     }
@@ -197,6 +206,22 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           })
           .setOrigin(0.5);
         c.setDepth(8);
+        if (npc.id === 'mira') {
+          this.miraMarker = this.add
+            .text(npc.x, npc.y - 126, '!', {
+              fontFamily: 'Georgia',
+              fontSize: '26px',
+              color: '#f5d884',
+              stroke: '#253e2c',
+              strokeThickness: 4,
+            })
+            .setOrigin(0.5)
+            .setDepth(11);
+          this.add
+            .zone(npc.x, npc.y - 40, 80, 100)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => bridge.send('interact', { npcId: 'mira' }));
+        }
       }
       // Tiny fireflies move softly without obscuring the playable silhouettes.
       for (let n = 0; n < 22; n++) {
@@ -255,6 +280,19 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     sync(s: Snapshot) {
       const alive = new Set<string>();
+      const local = s.players.find((p) => p.id === bridge.id);
+      if (local && this.miraMarker) {
+        const status = questStatus(local);
+        this.miraMarker.setText(
+          status === 'available'
+            ? '!'
+            : status === 'ready'
+              ? '?'
+              : status === 'claimed'
+                ? '✓'
+                : '…',
+        );
+      }
       for (const p of s.players) {
         const key = p.id;
         alive.add(key);
@@ -350,7 +388,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const focus = document.activeElement?.tagName;
       const typing = focus === 'INPUT' || focus === 'TEXTAREA' || focus === 'SELECT';
       const i = idleInput();
-      if (!typing) {
+      if (!typing && !bridge.blocked) {
         i.left = this.keys.A.isDown || this.keys.LEFT.isDown;
         i.right = this.keys.D.isDown || this.keys.RIGHT.isDown;
         i.up = this.keys.W.isDown || this.keys.UP.isDown;
@@ -360,11 +398,12 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         i.skill = this.keys.K.isDown;
         i.interact = this.keys.E.isDown;
       }
-      Object.assign(i, bridge.held);
+      if (!bridge.blocked) Object.assign(i, bridge.held);
       const encoded = JSON.stringify(i);
       if (time - this.lastSend > 50 || encoded !== this.lastInput) {
         bridge.send('input', i);
-        if (i.interact && !JSON.parse(this.lastInput || '{}').interact) bridge.send('travel', null);
+        if (i.interact && !JSON.parse(this.lastInput || '{}').interact)
+          bridge.send('interact', null);
         this.lastSend = time;
         this.lastInput = encoded;
       }

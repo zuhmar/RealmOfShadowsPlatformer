@@ -1,11 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Client, type Room } from 'colyseus.js';
-import { MAPS, ITEMS, ISLANDS, maxHp, xpNeeded, RULES } from '@ros/game-data';
-import { type Player, type Snapshot, type Event, type Input, type AutoSettings } from '@ros/shared';
+import {
+  MAPS,
+  ITEMS,
+  ISLANDS,
+  QUESTS,
+  STORY,
+  itemDefinition,
+  weaponBonus,
+  maxHp,
+  xpNeeded,
+  RULES,
+} from '@ros/game-data';
+import {
+  questStatus,
+  nearNpc,
+  type Player,
+  type Snapshot,
+  type Event,
+  type Input,
+  type AutoSettings,
+} from '@ros/shared';
 import type { Bridge } from './game';
 import './style.css';
 import { Avatar } from './Avatar';
+import { QuestPanel } from './QuestPanel';
 const SERVER = import.meta.env.VITE_SERVER_URL ?? `${location.protocol}//${location.hostname}:2567`;
 type Character = {
   id: string;
@@ -30,6 +50,7 @@ function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [playerId, setPlayerId] = useState('');
   const [panel, setPanel] = useState<string | null>(null);
+  const [questPending, setQuestPending] = useState(false);
   const [chat, setChat] = useState<{ name: string; text: string }[]>([
     { name: 'Elderwood', text: 'Welcome, traveler. Your story starts here.' },
   ]);
@@ -52,6 +73,9 @@ function App() {
   const snapshotRef = useRef<Snapshot | null>(null);
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
+  const trialStatus = p ? questStatus(p) : 'available';
+  const closeToMira = !!p && nearNpc(p, map, 'mira');
+  const quest = QUESTS['mira-wolves'];
   async function api(path: string, method = 'GET', body?: unknown, override?: string) {
     const response = await fetch(`${SERVER}/api${path}`, {
       method,
@@ -144,6 +168,14 @@ function App() {
       setChat((old) => [...old.slice(-39), m]),
     );
     next.onMessage('notice', (m: string) => setNotice(m));
+    next.onMessage('npc', (npc: { id: string }) => {
+      if (npc.id === 'mira') setPanel('mira');
+    });
+    next.onMessage('questResult', (result: { ok: boolean; message: string }) => {
+      setQuestPending(false);
+      if (result.ok) setNotice(result.message);
+      else setError(result.message);
+    });
     next.onMessage('travel', (target: string) => {
       void run(async () => {
         await next.leave();
@@ -154,11 +186,16 @@ function App() {
         await join(c, target);
       });
     });
-    next.onError((_code, text) => setError(text ?? 'Connection error'));
+    next.onError((_code, text) => {
+      setQuestPending(false);
+      setError(text ?? 'Connection error');
+    });
     next.onLeave((code) => {
       if (roomRef.current === next) {
         roomRef.current = null;
         setRoom(null);
+        setQuestPending(false);
+        setPanel(null);
         setPage('characters');
         setNotice(
           code > 1000
@@ -248,6 +285,10 @@ function App() {
     const t = setTimeout(() => setNotice(''), 5500);
     return () => clearTimeout(t);
   }, [notice]);
+  useEffect(() => {
+    bridge.current.blocked = panel === 'mira';
+    if (panel === 'mira') bridge.current.held = {};
+  }, [panel]);
   function hold(key: keyof Input) {
     return {
       onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -321,15 +362,12 @@ function App() {
             <div className="ground-art" />
           </div>
           <section className="hero">
-            <div className="eyebrow">YOUR NEXT CHAPTER STARTS HERE</div>
+            <div className="eyebrow">THE LAST SURVIVOR · YOUR JOURNEY BEGINS</div>
             <h1>
               A little light.
               <br />A world of <em>shadows.</em>
             </h1>
-            <p>
-              Beyond the Elderwood, something stirs. Find your path through a living forest, face
-              its wild inhabitants, and grow stronger with every adventure.
-            </p>
+            <p>{STORY.prologue}</p>
             <div className="hero-actions">
               <button className="primary large" disabled={busy} onClick={enterGuest}>
                 {busy ? 'Opening the gates…' : token ? 'Continue adventure →' : 'Play as guest →'}
@@ -547,13 +585,15 @@ function App() {
                   <span className="quest-symbol">!</span>
                   <div>
                     <small>YOUR FIRST STEPS</small>
-                    <b>
-                      {map.id === 'village' ? 'Into the whispering woods' : 'A howl in the hollow'}
-                    </b>
+                    <b>{quest.title}</b>
                     <span>
-                      {map.id === 'village'
-                        ? 'Head right to the forest portal.'
-                        : `Hunt the wolves · ${Math.min(p.kills, 5)} / 5`}
+                      {trialStatus === 'available'
+                        ? 'Speak to Mira in Elderwood Village.'
+                        : trialStatus === 'ready'
+                          ? 'Return to Mira · reward ready'
+                          : trialStatus === 'claimed'
+                            ? 'First trial complete · onward'
+                            : `Wolves defeated · ${p.quests?.[quest.id]?.progress ?? 0} / ${quest.target.count}`}
                     </span>
                   </div>
                   <button aria-label="Open journal" onClick={() => setPanel('quests')}>
@@ -562,7 +602,9 @@ function App() {
                 </div>
                 <div className="world-hint">
                   {map.id === 'village'
-                    ? 'Walk to the glowing portal · E to travel'
+                    ? closeToMira
+                      ? 'E · Talk to Mira'
+                      : 'E · Talk to Mira or use a portal'
                     : 'W / ↑ to climb · J to attack · K for Cleave'}
                 </div>
                 <div className="touch-controls">
@@ -620,10 +662,10 @@ function App() {
                     <small>K</small>
                     <b>Cleave · 12 MP</b>
                   </button>
-                  <button className="skill" onClick={() => room?.send('travel', null)}>
+                  <button className="skill" onClick={() => room?.send('interact', null)}>
                     <span>⌘</span>
                     <small>E</small>
-                    <b>Portal</b>
+                    <b>Interact</b>
                   </button>
                 </div>
                 <div className="auto-group">
@@ -850,6 +892,7 @@ function App() {
                     inventory: 'Your satchel.',
                     character: 'The road so far.',
                     quests: 'Adventure journal.',
+                    mira: 'Mira · Village guide',
                     map: 'Beyond the Elderwood.',
                     settings: 'Hunt your way.',
                   } as Record<string, string>
@@ -859,7 +902,7 @@ function App() {
             {panel === 'inventory' && (
               <>
                 <div className="inventory-summary">
-                  ◈ {p.gold} gold <span>Weapon: {p.weapon ? ITEMS.sword.name : 'Unarmed'}</span>
+                  ◈ {p.gold} gold <span>Weapon: {itemDefinition(p.weapon)?.name ?? 'Unarmed'}</span>
                 </div>
                 <div className="inventory-grid">
                   {Array.from({ length: 24 }, (_, i) => {
@@ -917,10 +960,10 @@ function App() {
                   {[
                     ['Health', `${Math.floor(p.hp)} / ${maxHp(p.level)}`],
                     ['Mana', `${Math.floor(p.mp)} / 50`],
-                    ['Attack', `${RULES.baseDamage + (p.level - 1) * 3 + (p.weapon ? 5 : 0)}`],
+                    ['Attack', `${RULES.baseDamage + (p.level - 1) * 3 + weaponBonus(p.weapon)}`],
                     ['Wolves defeated', p.kills],
                     ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
-                    ['Weapon', p.weapon ? 'Wayfarer Blade' : 'Unarmed'],
+                    ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
                   ].map(([k, v]) => (
                     <div key={k}>
                       <span>{k}</span>
@@ -934,22 +977,19 @@ function App() {
                 </p>
               </>
             )}
-            {panel === 'quests' && (
-              <>
-                <article className="quest-card">
-                  <span>CHAPTER I · FIELD NOTES</span>
-                  <h3>A howl in the hollow</h3>
-                  <p>Explore Wolf Hollow and defeat five wolves.</p>
-                  <progress value={p.kills} max={5} />
-                  <b>
-                    {Math.min(p.kills, 5)} / 5 {p.kills >= 5 ? '· Completed' : ''}
-                  </b>
-                  <p>
-                    This introductory objective tracks your journey. Formal quest rewards and NPC
-                    quest chains are planned.
-                  </p>
-                </article>
-              </>
+            {(panel === 'quests' || panel === 'mira') && (
+              <QuestPanel
+                player={p}
+                dialog={panel === 'mira'}
+                pending={questPending}
+                nearMira={closeToMira}
+                onTalk={() => room?.send('interact', { npcId: 'mira' })}
+                onAction={(action) => {
+                  if (questPending) return;
+                  setQuestPending(true);
+                  room?.send('quest', { questId: quest.id, action });
+                }}
+              />
             )}
             {panel === 'map' && (
               <>

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { Player } from '@ros/shared';
-import type { GameMap } from '@ros/game-data';
+import { itemDefinition, type GameMap } from '@ros/game-data';
 import {
   APPEARANCES,
   OUTFITS,
@@ -126,7 +126,7 @@ export class CharacterVisual {
     const index = Number(frame.split('-').at(-1));
     const reach = attack ? ([12, 9, 11, 24, 15, 12][index] ?? 12) : 12;
     this.weapon
-      .setVisible(p.weapon === 'sword' && motion !== 'climb')
+      .setVisible(itemDefinition(p.weapon)?.type === 'weapon' && motion !== 'climb')
       .setPosition(reach, -27)
       .setRotation(attack && index === 3 ? Math.PI / 2 : 0);
     this.container.scaleX = p.facing;
