@@ -17,7 +17,8 @@
     "db:migrate": "npm run db:migrate -w @ros/server",
     "test:integration": "node --env-file-if-exists=apps/server/.env --import tsx --test tests/*.integration.ts",
     "test:browser": "node --env-file-if-exists=apps/server/.env scripts/browser-check.mjs && node --env-file-if-exists=apps/server/.env scripts/browser-game.mjs",
-    "format": "prettier --write apps packages tests scripts README.md *.json *.yaml"
+    "format": "prettier --write apps packages tests scripts README.md *.json *.yaml",
+    "test:browser:wolf": "node scripts/browser-wolf.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

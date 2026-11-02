@@ -67,6 +67,8 @@ npm run test:integration
 # Start both server and web first; requires Chromium:
 node scripts/browser-check.mjs
 node scripts/browser-game.mjs
+# Wolf animation lifecycle (web server only; no database required):
+npm run test:browser:wolf
 ```
 
 The integration tests create and remove their own test users. They require the matching schema and should target an isolated development database. They exercise real HTTP requests, two Colyseus clients, authentication failures, forged input, shared combat, manual override, chat, saves/re-entry, offline double-claim prevention, and guest upgrade. The browser journey creates and removes its own guest, walks through the actual portal, hunts, opens inventory, sends chat, tests mobile manual override, and leaves/rejoins.
@@ -75,7 +77,7 @@ Browser captures go into ignored `artifacts/`. Assertions and game-logic tests s
 
 ## Structure and authority
 
-- `apps/web`: React + Vite + Tailwind HUD and Phaser 3 rendering/Arcade bodies. Phaser is lazy loaded when entering the world. Placeholder actors and environments are original vector/code drawings; future artwork loads from `public/assets`.
+- `apps/web`: React + Vite + Tailwind HUD and Phaser 3 rendering/Arcade bodies. Phaser is lazy loaded when entering the world. Characters and environments use original vector/code drawings; wolves load their original transparent animation sheet from `public/assets/monsters`. Idle/walk loops and attack/hurt/death clips follow authoritative snapshots; animation timing does not change combat.
 - `apps/server`: Colyseus map rooms, HTTP guest/account/character APIs, Prisma persistence, schema, and initial SQL migration.
 - `packages/shared`: pure deterministic movement/collision, ladder graph routing, combat, loot ownership, XP, and offline reward calculations. Tests run the same code the server uses.
 - `packages/game-data`: rules, items, maps, progression formulas, island reservations, class/skill definitions, and a Tiled object-layer adapter.

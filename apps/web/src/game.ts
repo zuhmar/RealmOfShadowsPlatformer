@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
 import { MAPS, RULES, type GameMap } from '@ros/game-data';
 import { idleInput, type Input, type Snapshot, type Event, type Player } from '@ros/shared';
 export type Bridge = {
@@ -18,11 +19,19 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     lastInput = '';
     floor!: Phaser.Physics.Arcade.StaticGroup;
     playerBody?: Phaser.Physics.Arcade.Sprite;
-    clouds: Phaser.GameObjects.Arc[] = [];
+    wolves = new Map<string, WolfVisual>();
     constructor() {
       super('realm');
     }
+    preload() {
+      this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
+      this.load.spritesheet(WOLF_TEXTURE, '/assets/monsters/wolf-spritesheet.png', {
+        frameWidth: WOLF_FRAME_SIZE,
+        frameHeight: WOLF_FRAME_SIZE,
+      });
+    }
     create() {
+      registerWolfAnimations(this);
       const id = bridge.snapshot?.mapId ?? 'village';
       this.map = MAPS[id];
       this.cameras.main.setBackgroundColor(id === 'woods' ? '#b6c9b2' : '#c1d6c5');
@@ -224,34 +233,6 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       c.add(g);
       return c;
     }
-    wolf(x: number, y: number) {
-      const c = this.add.container(x, y);
-      const g = this.add.graphics();
-      g.lineStyle(2.5, 0x31433e);
-      g.fillStyle(0x223d34, 0.2);
-      g.fillEllipse(0, 0, 64, 12);
-      g.fillStyle(0x748880);
-      g.fillTriangle(-20, -20, -45, -45, -35, -12);
-      g.fillRoundedRect(-28, -34, 52, 27, 11);
-      g.strokeRoundedRect(-28, -34, 52, 27, 11);
-      g.fillRoundedRect(5, -49, 31, 31, 9);
-      g.strokeRoundedRect(5, -49, 31, 31, 9);
-      g.fillTriangle(8, -44, 9, -62, 21, -46);
-      g.strokeTriangle(8, -44, 9, -62, 21, -46);
-      g.fillTriangle(24, -44, 32, -60, 35, -37);
-      g.fillStyle(0xb1bfb0);
-      g.fillRoundedRect(20, -30, 24, 14, 5);
-      g.fillRoundedRect(-20, -11, 10, 13, 3);
-      g.fillRoundedRect(13, -12, 10, 14, 3);
-      g.fillStyle(0xd7d8be, 0.7);
-      g.fillEllipse(-4, -31, 30, 8);
-      g.fillStyle(0xe7ce7a);
-      g.fillCircle(26, -37, 3);
-      g.fillStyle(0x263c35);
-      g.fillCircle(41, -26, 3);
-      c.add(g);
-      return c;
-    }
     sync(s: Snapshot) {
       const alive = new Set<string>();
       for (const p of s.players) {
@@ -286,16 +267,22 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.labels.get(key)!.setPosition(c.x, c.y - 94);
         if (key === bridge.id && this.playerBody) this.playerBody.setPosition(c.x, c.y - 90);
       }
+      const wolfIds = new Set(s.wolves.map((w) => w.id));
+      for (const [id, visual] of this.wolves)
+        if (!wolfIds.has(id)) {
+          visual.destroy();
+          this.wolves.delete(id);
+          this.labels.get(id)?.destroy();
+          this.labels.delete(id);
+        }
       for (const w of s.wolves) {
-        const key = w.id;
-        if (!w.hp) continue;
-        alive.add(key);
-        let c = this.actors.get(key);
-        if (!c) {
-          c = this.wolf(w.x, w.y);
-          this.actors.set(key, c);
+        alive.add(w.id);
+        let visual = this.wolves.get(w.id);
+        if (!visual) {
+          visual = new WolfVisual(this, w);
+          this.wolves.set(w.id, visual);
           this.labels.set(
-            key,
+            w.id,
             this.add
               .text(0, 0, '', {
                 fontFamily: 'Georgia',
@@ -307,14 +294,12 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
               .setOrigin(0.5),
           );
         }
-        c.x = Phaser.Math.Linear(c.x, w.x, 0.5);
-        c.y = w.y;
-        c.scaleX = w.x > w.homeX ? 1 : -1;
-        c.setDepth(9);
+        visual.sync(w, s.players, this.time.now);
         this.labels
-          .get(key)!
+          .get(w.id)!
+          .setVisible(w.hp > 0)
           .setText(`Wolf · ${w.hp}/${RULES.wolfHp}`)
-          .setPosition(c.x, c.y - 73);
+          .setPosition(visual.container.x, w.y - 78);
       }
       for (const d of s.drops) {
         alive.add(d.id);

@@ -4,4 +4,4 @@ Original flat glossy cartoon wolf artwork generated for Realm of Shadows. Transp
 
 Rows: idle, walk, bite attack, hurt, death (six frames each). `wolf-spritesheet.json` records suggested Phaser frame ranges and playback rates.
 
-This commit adds the source sheet and playback metadata. The live scene still draws its original code-based wolf; animation loading and replacement have not been wired in. The generated poses need visual alignment and loop tuning during integration.
+The Phaser scene preloads the sheet and metadata. Server snapshots select idle/walk loops and trigger attack/hurt/death clips on state changes. Dead wolves finish the fall, fade out, and reappear at server respawn. Facing follows actual movement or the nearby attack target. Per-frame foot baselines measured from the opaque artwork keep the paws aligned without modifying the source PNG. Timing is cosmetic; combat and rewards remain server-authoritative.
