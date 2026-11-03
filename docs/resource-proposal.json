@@ -374,7 +374,7 @@
       "name": "Shadow Fortress",
       "proposedIslandLevels": {
         "min": 61,
-        "max": 70
+        "max": 100
       },
       "resources": [
         {
@@ -431,6 +431,6 @@
   "notes": [
     "Not a finalized roster or implemented gathering system.",
     "Non-fishing skill requirements and rarities are unspecified; null means not yet designed.",
-    "Island order and level bands approved: Ember41\u201350, Celestial51\u201360, Shadow Fortress61\u201370. Resource roster remains proposed."
+    "Island order and level bands approved: Ember 41\u201350, Celestial 51\u201360, Shadow Fortress 61\u2013100. Proposed Shadow Fortress fishing tiers remain at 61, 65, and 70. Resource roster remains proposed."
   ]
 }

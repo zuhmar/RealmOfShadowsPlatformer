@@ -27,14 +27,16 @@ Fish entries show Common / Uncommon / Rare, with their Fishing skill levels.
 | Frostfall Tundra | 31–40 | Frost Ore | Frostpine | Frostleaf | Icefin (Lv. 31) / Frost Salmon (Lv. 35) / Glacier Pike (Lv. 40) |
 | Ember Peaks | 41–50 | Ember Ore | Emberwood | Fireblossom | Lavafin (Lv. 41) / Ember Snapper (Lv. 45) / Inferno Eel (Lv. 50) |
 | Celestial Realm | 51–60 | Celestial Ore | Starwood | Moonbloom | Starfish (Lv. 51) / Moonfin (Lv. 55) / Celestial Koi (Lv. 60) |
-| Shadow Fortress | 61–70 | Shadow Ore | Shadowwood | Nightshade | Shadow Eel (Lv. 61) / Nightfin (Lv. 65) / Abyssal Leviathan (Lv. 70) |
+| Shadow Fortress | 61–100 | Shadow Ore | Shadowwood | Nightshade | Shadow Eel (Lv. 61) / Nightfin (Lv. 65) / Abyssal Leviathan (Lv. 70) |
 
 ## Approved island progression
 
-The user approved this proposal's island order and level bands: Ember Peaks at 41–50, Celestial Realm at 51–60, and Shadow Fortress at 61–70. `ISLANDS`, the world map, and `docs/story.md` now follow those bands. The monster and boss roster is retained, including the Shadow Dragon as the final encounter.
+The user approved this proposal's island order and level bands: Ember Peaks at 41–50, Celestial Realm at 51–60, and Shadow Fortress at 61–100. `ISLANDS`, the world map, and `docs/story.md` now follow those bands. The monster and boss roster is retained, including the Shadow Dragon as the final encounter.
 
 The machine-readable draft is `docs/resource-proposal.json`. Non-fishing requirement/rarity fields use null for unspecified values. Resource names and requirements remain adjustable.
 
 ## Implementation planning
 
 Build one end-to-end gathering/crafting loop in Whispering Woods before adding all islands: resource nodes, separate skill XP, inventory stacking, a crafting station, and a useful recipe. Mining → Blacksmithing is a natural first loop for Bram and weapon upgrades. Recipe costs, tools, harvesting timing, XP curves, and fish rarity probabilities still need design; they are not inferred from this roster.
+
+Shadow Fortress spans combat levels 61–100. Its currently proposed fishing tiers remain at Fishing levels 61, 65, and 70; additional resource tiers above 70 are not defined.

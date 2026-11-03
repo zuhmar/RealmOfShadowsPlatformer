@@ -149,7 +149,7 @@ export const ISLANDS = [
     id: 'fortress',
     name: 'Shadow Fortress',
     minLevel: 61,
-    maxLevel: 70,
+    maxLevel: 100,
     monsters: ['Shadow Knight', 'Shadow Lich', 'Void Stalker'],
     boss: 'Shadow Dragon',
     available: false,

@@ -20,8 +20,8 @@ The confirmed island roster and level ranges are:
 | Frostfall Tundra | 31–40 | Frost Wolf, Ice Troll, Frozen Wraith | Frost Giant |
 | Ember Peaks | 41–50 | Fire Imp, Magma Golem, Ember Salamander | Infernal Drake |
 | Celestial Realm | 51–60 | Fallen Sprite, Celestial Sentinel, Astral Wisp | Fallen Seraph |
-| Shadow Fortress | 61–70 | Shadow Knight, Shadow Lich, Void Stalker | Shadow Dragon |
+| Shadow Fortress | 61–100 | Shadow Knight, Shadow Lich, Void Stalker | Shadow Dragon |
 
 This roster is stored in `ISLANDS` and shown in the world map. It is a content plan, not a declaration that all areas, enemies, or bosses are implemented. Elderwood Village and Wolf Hollow remain the playable maps. Build the rest of Whispering Woods next: Thorn Spider, Wild Boar, then Forest Bear and the quest progression leading to it. Bram's quest should support that roster rather than introducing a different first boss.
 
-The island ordering and bands follow the approved resource-proposal revision: Ember Peaks precedes Celestial Realm and the final island spans 61–70. The resource roster itself remains proposed; see `docs/resources.md`.
+The island ordering and bands follow the approved resource-proposal revision: Ember Peaks precedes Celestial Realm and the final island spans 61–100. The resource roster itself remains proposed; see `docs/resources.md`.
