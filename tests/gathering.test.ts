@@ -78,3 +78,11 @@ test('gathering skill levels advance separately from combat and persist in playe
   assert.equal(p.inventory['iron-ore'], 2);
   assert.equal(JSON.parse(JSON.stringify(p)).gatheringSkills.Mining.level, 2);
 });
+
+test('wooden starter tools are selected by the server for every gathering skill', () => {
+  for (const node of WOODS_RESOURCE_NODES) {
+    const { w, p } = setup(node.id);
+    w.startGathering(p, node.id, 10000);
+    assert.ok(p.gathering?.toolId?.startsWith('wood-'));
+  }
+});

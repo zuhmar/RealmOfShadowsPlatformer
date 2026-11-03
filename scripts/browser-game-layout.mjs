@@ -86,6 +86,39 @@ try {
     }
     await expect(page.locator('.world-actions svg image')).toHaveCount(4);
     await expect(page.locator('.profile-menu svg image')).toHaveCount(3);
+    expect(
+      await page
+        .locator('.profile-menu button')
+        .first()
+        .evaluate(
+          (button) =>
+            !button.dispatchEvent(
+              new MouseEvent('contextmenu', { bubbles: true, cancelable: true }),
+            ),
+        ),
+    ).toBe(true);
+    expect(
+      await page
+        .locator('.profile-menu button')
+        .first()
+        .evaluate(
+          (button) =>
+            !button.dispatchEvent(new Event('dragstart', { bubbles: true, cancelable: true })),
+        ),
+    ).toBe(true);
+    expect(
+      await page
+        .locator('.profile-menu svg image')
+        .first()
+        .evaluate((image) => getComputedStyle(image).pointerEvents),
+    ).toBe('none');
+    expect(
+      await page
+        .locator('.profile-menu button')
+        .first()
+        .evaluate((button) => getComputedStyle(button).userSelect),
+    ).toBe('none');
+
     const actions = await page.locator('.floating-actions').boundingBox();
     expect(actions.x + actions.width / 2).toBeCloseTo(width / 2, 0);
     const top = await page
@@ -112,6 +145,20 @@ try {
     await page.screenshot({ path: `artifacts/full-page-game-${label}.png` });
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  const heldButton = page.getByRole('button', { name: 'Move right', exact: true });
+  await heldButton.hover();
+  await page.mouse.down();
+  await page.waitForTimeout(800);
+  expect(await heldButton.evaluate((button) => button.hasPointerCapture(1))).toBe(true);
+  expect(
+    await heldButton.evaluate(
+      (button) =>
+        !button.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })),
+    ),
+  ).toBe(true);
+  await page.mouse.up();
+  expect(await heldButton.evaluate((button) => button.hasPointerCapture(1))).toBe(false);
+
   if (!(await page.getByLabel('World chat', { exact: true }).isVisible()))
     await page.getByRole('button', { name: 'Chat', exact: true }).click();
   await page.getByLabel('World chat', { exact: true }).fill('HUD test message');
@@ -143,6 +190,11 @@ try {
   for (const label of ['Character', 'Journal']) {
     await page.getByRole('button', { name: label, exact: true }).click();
     await expect(page.locator('.modal-backdrop')).toBeVisible();
+    if (label === 'Character') {
+      await expect(page.locator('.starter-tools .tool-icon')).toHaveCount(4);
+      await page.getByText('View tool tiers', { exact: true }).click();
+      await expect(page.locator('.tool-tiers .tool-icon')).toHaveCount(32);
+    }
     await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   }
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();

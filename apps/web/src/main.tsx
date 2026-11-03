@@ -1,3 +1,4 @@
+import { ToolIcon } from './ToolIcon';
 import { ControlIcon } from './ControlIcon';
 import { ActionIcon } from './ActionIcon';
 import { MenuIcon } from './MenuIcon';
@@ -19,6 +20,9 @@ import {
   SKILL_DESCRIPTIONS,
   GATHERING_SKILLS,
   gatheringXpNeeded,
+  starterTool,
+  TOOL_MATERIALS,
+  GATHERING_TOOLS,
   maxHp,
   xpNeeded,
   RULES,
@@ -317,6 +321,10 @@ function App() {
     bridge.current.blocked = panel === 'mira';
     if (panel === 'mira') bridge.current.held = {};
   }, [panel]);
+  function isolateControlInput(e: React.SyntheticEvent) {
+    if (page === 'game' && (e.target as Element).closest('button,input,textarea,select,.modal'))
+      e.stopPropagation();
+  }
   function hold(key: keyof Input) {
     return {
       onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -347,7 +355,23 @@ function App() {
     </div>
   );
   return (
-    <div className={`app ${page === 'game' ? 'playing' : ''}`}>
+    <div
+      className={`app ${page === 'game' ? 'playing' : ''}`}
+      onPointerDown={isolateControlInput}
+      onPointerUp={isolateControlInput}
+      onMouseDown={isolateControlInput}
+      onMouseUp={isolateControlInput}
+      onTouchStart={isolateControlInput}
+      onTouchEnd={isolateControlInput}
+      onContextMenuCapture={(e) => {
+        if (page === 'game' && (e.target as Element).closest('button, .phaser-host'))
+          e.preventDefault();
+      }}
+      onDragStartCapture={(e) => {
+        if (page === 'game' && (e.target as Element).closest('button, .phaser-host'))
+          e.preventDefault();
+      }}
+    >
       <header className="site-header">
         <a className="brand" href="#" onClick={(e) => e.preventDefault()}>
           <img
@@ -1015,6 +1039,29 @@ function App() {
                     </div>
                   ))}
                 </div>
+                <h3>Wooden starter tools</h3>
+                <div className="starter-tools">
+                  {GATHERING_SKILLS.map((skill) => (
+                    <div key={skill}>
+                      <ToolIcon id={starterTool(skill).id} />
+                      <span>{skill}</span>
+                    </div>
+                  ))}
+                </div>
+                <details className="tool-tiers">
+                  <summary>View tool tiers</summary>
+                  <p>Ore tools are future crafting upgrades.</p>
+                  {TOOL_MATERIALS.map((material) => (
+                    <div className="tool-tier" key={material.id}>
+                      <span>{material.name}</span>
+                      {GATHERING_TOOLS.filter((tool) => tool.material === material.id).map(
+                        (tool) => (
+                          <ToolIcon key={tool.id} id={tool.id} />
+                        ),
+                      )}
+                    </div>
+                  ))}
+                </details>
                 <h3>Gathering skills</h3>
                 <div className="stat-grid">
                   {GATHERING_SKILLS.map((name) => {

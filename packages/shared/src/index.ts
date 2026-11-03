@@ -12,6 +12,7 @@ import {
   type ResourceNode,
   fishingCatch,
   gatheringXpNeeded,
+  starterTool,
   maxHp,
   xpNeeded,
   damage,
@@ -59,7 +60,7 @@ export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?:
 export type Player = Actor & {
   quests?: Record<string, QuestState>;
   gatheringSkills?: Partial<Record<GatheringSkill, { level: number; xp: number }>>;
-  gathering?: { nodeId: string; startedAt: number; finishAt: number };
+  gathering?: { nodeId: string; startedAt: number; finishAt: number; toolId?: string };
   id: string;
   name: string;
   appearance: string;
@@ -378,7 +379,12 @@ export class World {
     if (!node || !this.nearResource(p, node)) return false;
     if (p.gathering) return true;
     p.auto = false;
-    p.gathering = { nodeId, startedAt: now, finishAt: now + node.duration };
+    p.gathering = {
+      nodeId,
+      startedAt: now,
+      finishAt: now + node.duration,
+      toolId: starterTool(node.skill).id,
+    };
     return true;
   }
   stepGathering(p: Player, input: Input, now: number) {

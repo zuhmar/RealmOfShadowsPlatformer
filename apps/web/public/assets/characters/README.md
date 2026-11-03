@@ -27,3 +27,5 @@ The game preloads these atlases for both male and female players. Idle, walk and
 Sage artwork is used unchanged. Ember and Tide variants recolor the olive cloth at runtime while preserving skin, hair, cuffs, dark outlines and transparency. Character creation, selection, HUD and stats portraits crop the same idle atlas frames. `npm run test:browser:characters` checks both appearances and all 72 active pose frames, the three outfit variants, jump selection, climb pause/resume, attacks continuing through damage, sword visibility, defeat/fade and mobile rendering. Original PNG files remain unchanged.
 
 The unused hurt poses remain in the original artwork and metadata but are not registered or played by the player renderer. Wolf hurt animations are unchanged.
+
+Gathering uses dedicated24-pose atlases in `gathering/`, with actual wooden tools in the hands. See `docs/gathering-tools.md` for loops, tool tiers and alignment metadata.

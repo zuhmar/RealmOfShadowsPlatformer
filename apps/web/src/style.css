@@ -2769,3 +2769,63 @@ footer {
 .skill[data-ready='false'] .control-icon {
   opacity: 0.45;
 }
+
+/* Touch controls are game inputs, never draggable images or callout targets. */
+.app.playing button,
+.app.playing button *,
+.phaser-host canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.app.playing button svg,
+.app.playing button svg * {
+  pointer-events: none;
+}
+.app.playing .touch-controls button,
+.app.playing .skill,
+.phaser-host canvas {
+  touch-action: none;
+}
+
+.starter-tools {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 15px 0;
+}
+.starter-tools > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  color: #ddc6ef;
+  font-size: 10px;
+}
+.tool-tiers {
+  margin: 16px 0;
+  color: #ddc6ef;
+}
+.tool-tiers summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.tool-tiers p {
+  font-size: 11px;
+  margin: 8px 0;
+}
+.tool-tier {
+  display: grid;
+  grid-template-columns: minmax(60px, 1fr) repeat(4, minmax(24px, 40px));
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #684a7e66;
+  font-size: 11px;
+}
+
+.tool-tier .tool-icon {
+  width: 100%;
+  max-width: 40px;
+}

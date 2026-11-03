@@ -11,3 +11,5 @@ Fishing always awards Brook Trout below Fishing5. From Fishing5, rolls below33% 
 Original generated PNG files are copied unchanged, with genuine alpha transparency. Inventory and world-node JSON atlases use measured silhouette rectangles. The pond atlas includes measured walking-surface geometry so the dock art aligns with authoritative collision. The new platform has a separate collision body; water is decorative, not a swimming or drowning mechanic.
 
 Validation includes gathering timing, range/map/platform gates, cancellation, duplicate reward prevention, XP progression, fish rarity gates, all existing combat tests, forest alignment/navigation, and a live browser fishing-to-inventory-to-save flow.
+
+Gathering now uses held wooden tools and dedicated character animation loops. The starter sets and all ore-tier tool artwork are documented in `docs/gathering-tools.md`.

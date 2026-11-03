@@ -1,7 +1,14 @@
 import Phaser from 'phaser';
 import type { Player } from '@ros/shared';
 import { weaponKind, type WeaponKind, type GameMap } from '@ros/game-data';
-import { APPEARANCES, OUTFITS, characterKey, recolorOutfit, type Atlas } from './character-art';
+import {
+  APPEARANCES,
+  OUTFITS,
+  characterKey,
+  appearanceOf,
+  recolorOutfit,
+  type Atlas,
+} from './character-art';
 import {
   characterMotion,
   characterAction,
@@ -9,6 +16,8 @@ import {
   type CharacterState,
 } from './character-animation';
 
+const gatheringKey = (appearance: string, outfit: string) =>
+  `${characterKey(appearance, outfit)}-gathering`;
 const WEAPONS = ['sword', 'bow', 'staff', 'dagger'] as const;
 const armedKey = (appearance: string, outfit: string, weapon: string) =>
   `${characterKey(appearance, outfit)}-${weapon}`;
@@ -30,6 +39,11 @@ export function preloadCharacters(scene: Phaser.Scene) {
       scene.load.atlas(armedKey(a, 'sage', w), `${path}.png`, `${path}.json`);
       scene.load.json(`armed-atlas-${a}-${w}`, `${path}.json`);
     }
+  for (const a of APPEARANCES) {
+    const path = `/assets/characters/gathering/citizen-${a}`;
+    scene.load.atlas(gatheringKey(a, 'sage'), `${path}.png`, `${path}.json`);
+    scene.load.json(`gathering-atlas-${a}`, `${path}.json`);
+  }
   scene.load.json('citizen-clips', '/assets/characters/citizen-animations.json');
   for (const a of APPEARANCES)
     scene.load.atlas(
@@ -103,6 +117,30 @@ export function registerCharacters(scene: Phaser.Scene) {
         }
       }
     }
+  for (const a of APPEARANCES) {
+    const atlas = scene.cache.json.get(`gathering-atlas-${a}`) as Atlas;
+    const original = scene.textures
+      .get(gatheringKey(a, 'sage'))
+      .getSourceImage() as HTMLImageElement;
+    for (const outfit of OUTFITS) {
+      const key = gatheringKey(a, outfit);
+      if (outfit !== 'sage') {
+        const texture = scene.textures.addCanvas(
+          key,
+          recolorOutfit(original, atlas.meta.size.w, atlas.meta.size.h, outfit),
+        );
+        if (!texture) throw new Error('Cannot prepare gathering outfit');
+        scene.textures.addAtlas(key, texture, atlas);
+      }
+      for (const name of ['mining', 'woodcutting', 'fishing', 'herbalism'])
+        scene.anims.create({
+          key: `${key}-${name}`,
+          frames: Array.from({ length: 6 }, (_, i) => ({ key, frame: `${name}-${i}` })),
+          frameRate: name === 'fishing' ? 4 : 7,
+          repeat: -1,
+        });
+    }
+  }
 }
 
 export class CharacterVisual {
@@ -128,18 +166,26 @@ export class CharacterVisual {
   }
   sync(p: Player, map: GameMap, now: number) {
     const motion = characterMotion(p, map);
+    const gathering =
+      p.gathering && motion !== 'climb' && p.grounded
+        ? map.resources?.find((n) => n.id === p.gathering?.nodeId)
+        : undefined;
     const kind = weaponKind(p.weapon);
     const armed = kind !== 'unarmed' && motion !== 'climb' && !p.gathering;
-    const key = armed
-      ? armedKey(p.appearance, p.outfit, kind)
-      : characterKey(p.appearance, p.outfit);
+    const key = gathering
+      ? gatheringKey(p.appearance, p.outfit)
+      : armed
+        ? armedKey(p.appearance, p.outfit, kind)
+        : characterKey(p.appearance, p.outfit);
     this.drawnWeapon = armed ? kind : 'unarmed';
     if (key !== this.key) {
       this.key = key;
-      this.sprite.stop().setTexture(key, 'idle-0');
+      this.sprite
+        .stop()
+        .setTexture(key, gathering ? `${gathering.skill.toLowerCase()}-0` : 'idle-0');
     }
     const action = characterAction(p, this.previous);
-    this.sprite.setOrigin(0.5, 0.875).setScale(armed ? 0.4 : 0.36);
+    this.sprite.setOrigin(0.5, 0.875).setScale(gathering ? 0.32 : armed ? 0.4 : 0.36);
     if (this.previous?.grounded && !p.grounded && p.vy < 0 && !p.climbing)
       this.launchUntil = now + 70;
     if (this.previous && !this.previous.grounded && p.grounded && Math.abs(this.previous.vy) > 160)
@@ -147,7 +193,8 @@ export class CharacterVisual {
     const playing = this.sprite.anims.isPlaying;
     const clip = this.sprite.anims.currentAnim?.key ?? '';
     const oneShot = playing && clip.endsWith('-attack') && motion !== 'climb';
-    if (action && motion !== 'climb') this.sprite.play(`${key}-${action}`);
+    if (gathering) this.sprite.play(`${key}-${gathering.skill.toLowerCase()}`, true);
+    else if (action && motion !== 'climb') this.sprite.play(`${key}-${action}`);
     else if (!oneShot) {
       if (motion === 'air' || (motion !== 'climb' && now < this.landedUntil)) {
         this.sprite
@@ -164,15 +211,18 @@ export class CharacterVisual {
       } else this.sprite.play(`${key}-${motion}`, true);
     }
     this.gatheringVisual.clear();
-    const gathering = p.gathering && map.resources?.find((n) => n.id === p.gathering?.nodeId);
     if (gathering?.skill === 'Fishing') {
       const g = this.gatheringVisual,
         x = (gathering.x + 22 - p.x) * p.facing,
         y = 30 + Math.sin(now / 180) * 2;
-      g.lineStyle(3, 0x966642);
-      g.lineBetween(10, -28, 28, -60);
-      g.lineStyle(1, 0xf3e1ff);
-      g.lineBetween(28, -60, x, y);
+      const atlas = this.scene.cache.json.get(
+        `gathering-atlas-${appearanceOf(p.appearance)}`,
+      ) as Atlas & { meta: { rodTips: Record<string, { x: number; y: number }> } };
+      const tip = atlas.meta.rodTips[String(this.sprite.frame.name)];
+      if (tip) {
+        g.lineStyle(1, 0xf3e1ff);
+        g.lineBetween((tip.x - 192) * this.sprite.scaleX, (tip.y - 336) * this.sprite.scaleY, x, y);
+      }
       g.fillStyle(0xd7a4ff);
       g.fillCircle(x, y, 3);
     }
