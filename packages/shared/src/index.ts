@@ -3,6 +3,7 @@ export * from './forging';
 import {
   RULES,
   WOODS_MONSTERS,
+  BOSS_ATTACK,
   FOREST_BEAR_KEY,
   FOREST_BEAR_KEY_CHANCE,
   type WoodsMonster,
@@ -110,6 +111,8 @@ export function activeGatheringTool(
 }
 export type Wolf = {
   monster?: WoodsMonster;
+  nextSpecialAt?: number;
+  special?: { x: number; y: number; radius: number; startedAt: number; impactAt: number };
   id: string;
   x: number;
   y: number;
@@ -153,7 +156,8 @@ export type Snapshot = {
   mapId: string;
 };
 export type Event = {
-  type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn' | 'skill';
+  type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn' | 'skill' | 'bossAttack';
+  radius?: number;
   skill?: WeaponKind;
   facing?: number;
   phase?: 'cast' | 'impact';
@@ -348,7 +352,11 @@ export function autoInput(
     return i;
   }
   const dx = target.x - p.x;
-  if (Math.abs(dx) > (loot ? 80 : weaponProfile(p.weapon).range - 14)) {
+  const bossReach =
+    !loot && 'monster' in target && WOODS_MONSTERS[target.monster ?? 'wolf'].boss
+      ? BOSS_ATTACK.bodyRadius
+      : 0;
+  if (Math.abs(dx) > (loot ? 80 : weaponProfile(p.weapon).range - 14 + bossReach)) {
     i.left = dx < 0;
     i.right = dx > 0;
   } else {
@@ -488,6 +496,8 @@ export class World {
     }
     for (const w of this.wolves) {
       if (w.hp <= 0) {
+        delete w.special;
+        delete w.nextSpecialAt;
         if (now >= w.deadUntil) {
           w.hp = WOODS_MONSTERS[w.monster ?? 'wolf'].hp;
           w.x = w.homeX;
@@ -496,50 +506,45 @@ export class World {
         }
         continue;
       }
+      const stats = WOODS_MONSTERS[w.monster ?? 'wolf'];
+      if (w.special) {
+        w.state = 'attacking';
+        if (now >= w.special.impactAt) this.resolveBossSpecial(w, now);
+        continue;
+      }
       const platform = this.map.platforms.find((f) => f.id === w.platform)!;
       const nearest = [...this.players.values()]
-        .filter((p) => Math.abs(p.y - w.y) < 55)
+        .filter((p) => Math.abs(p.y - w.y) < (stats.boss ? 300 : 55))
         .sort((a, b) => Math.abs(a.x - w.x) - Math.abs(b.x - w.x))[0];
-      if (nearest && Math.abs(nearest.x - w.x) < 260) {
+      if (nearest && Math.abs(nearest.x - w.x) < (stats.boss ? BOSS_ATTACK.aggroRange : 260)) {
+        if (stats.boss) {
+          w.nextSpecialAt ??= now + BOSS_ATTACK.firstSpecialDelay;
+          if (now >= w.nextSpecialAt) {
+            const floor = this.map.platforms.find((p) => p.id === nearest.platform);
+            const x = Math.max(
+              BOSS_ATTACK.radius,
+              Math.min(this.map.width - BOSS_ATTACK.radius, nearest.x),
+            );
+            w.special = {
+              x,
+              y: floor?.y ?? w.y,
+              radius: BOSS_ATTACK.radius,
+              startedAt: now,
+              impactAt: now + BOSS_ATTACK.windup,
+            };
+            w.state = 'attacking';
+            w.lastAttack = now;
+            continue;
+          }
+        }
         const dx = nearest.x - w.x;
-        w.state = Math.abs(dx) < 44 ? 'attacking' : 'chasing';
+        w.state =
+          Math.abs(dx) < (stats.boss ? BOSS_ATTACK.basicRange : 44) ? 'attacking' : 'chasing';
         if (w.state === 'chasing')
           w.x += Math.sign(dx) * WOODS_MONSTERS[w.monster ?? 'wolf'].speed * dt;
-        else if (now - w.lastAttack > WOODS_MONSTERS[w.monster ?? 'wolf'].cooldown) {
+        else if (Math.abs(nearest.y - w.y) < 100 && now - w.lastAttack > stats.cooldown) {
           w.lastAttack = now;
-          nearest.hp -= WOODS_MONSTERS[w.monster ?? 'wolf'].damage;
-          nearest.lastHit = now;
-          this.events.push({
-            type: 'hit',
-            x: nearest.x,
-            y: nearest.y - 55,
-            text: `−${WOODS_MONSTERS[w.monster ?? 'wolf'].damage}`,
-            playerId: nearest.id,
-          });
-          if (nearest.hp <= 0) {
-            const deathX = nearest.x,
-              deathY = nearest.y;
-            delete nearest.gathering;
-            this.flurry = this.flurry.filter((strike) => strike.owner !== nearest.id);
-            nearest.hp = maxHp(nearest.level);
-            nearest.x = this.map.spawn.x;
-            nearest.y = this.map.spawn.y;
-            nearest.platform = 'ground';
-            nearest.auto = false;
-            nearest.vy = 0;
-            nearest.vx = 0;
-            nearest.climbing = false;
-            nearest.grounded = true;
-            this.events.push({
-              type: 'respawn',
-              x: nearest.x,
-              y: nearest.y,
-              text: 'Returned to safety',
-              deathX,
-              deathY,
-              playerId: nearest.id,
-            });
-          }
+          this.hitPlayer(nearest, WOODS_MONSTERS[w.monster ?? 'wolf'].damage, now);
         }
       } else {
         w.state = Math.abs(w.x - w.homeX) > 100 ? 'returning' : 'wandering';
@@ -555,6 +560,62 @@ export class World {
     this.stepFlurry(now);
     this.stepProjectiles(dt, now);
     this.drops = this.drops.filter((d) => d.expires > now);
+  }
+  hitPlayer(p: Player, amount: number, now: number) {
+    p.hp -= amount;
+    p.lastHit = now;
+    delete p.gathering;
+    this.events.push({ type: 'hit', x: p.x, y: p.y - 55, text: `−${amount}`, playerId: p.id });
+    if (p.hp > 0) return;
+    const deathX = p.x,
+      deathY = p.y;
+    this.flurry = this.flurry.filter((strike) => strike.owner !== p.id);
+    p.hp = maxHp(p.level);
+    p.x = this.map.spawn.x;
+    p.y = this.map.spawn.y;
+    p.platform = 'ground';
+    p.auto = false;
+    p.vy = 0;
+    p.vx = 0;
+    p.climbing = false;
+    p.grounded = true;
+    this.events.push({
+      type: 'respawn',
+      x: p.x,
+      y: p.y,
+      text: 'Returned to safety',
+      deathX,
+      deathY,
+      playerId: p.id,
+    });
+  }
+  resolveBossSpecial(w: Wolf, now: number) {
+    const zone = w.special;
+    if (!zone || now < zone.impactAt) return;
+    delete w.special;
+    w.nextSpecialAt = now + BOSS_ATTACK.specialCooldown;
+    w.lastAttack = now;
+    if (w.hp <= 0) return;
+    this.events.push({
+      type: 'bossAttack',
+      phase: 'impact',
+      x: zone.x,
+      y: zone.y,
+      radius: zone.radius,
+      text: 'GROUND SLAM!',
+    });
+    for (const p of this.players.values()) {
+      if (
+        Math.abs(p.x - zone.x) <= zone.radius &&
+        p.y > zone.y - BOSS_ATTACK.height &&
+        p.y <= zone.y + 30
+      )
+        this.hitPlayer(
+          p,
+          WOODS_MONSTERS[w.monster ?? 'wolf'].damage * BOSS_ATTACK.specialDamageMultiplier,
+          now,
+        );
+    }
   }
   attack(p: Player, skill: boolean, now: number) {
     const profile = weaponProfile(p.weapon);
@@ -599,7 +660,9 @@ export class World {
         (w) =>
           w.hp > 0 &&
           Math.abs(w.y - p.y) < 55 &&
-          Math.abs(w.x - p.x) < (empowered ? profile.range + 42 : profile.range) &&
+          Math.abs(w.x - p.x) <
+            (empowered ? profile.range + 42 : profile.range) +
+              (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 0) &&
           (w.x - p.x) * p.facing >= -12,
       )
       .sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x));
@@ -626,7 +689,10 @@ export class World {
       if (!owner || owner.weapon !== strike.weapon || !target || target.hp <= 0) return false;
       if (now < strike.at) return true;
       if (
-        Math.abs(target.x - owner.x) < weaponProfile(owner.weapon).range + 42 &&
+        Math.abs(target.x - owner.x) <
+          weaponProfile(owner.weapon).range +
+            42 +
+            (WOODS_MONSTERS[target.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 0) &&
         Math.abs(target.y - owner.y) < 55 &&
         (target.x - owner.x) * owner.facing >= -12
       ) {
@@ -650,6 +716,8 @@ export class World {
     this.events.push({ type: 'hit', x: w.x, y: w.y - 50, text: String(hit) });
     if (!w.hp) {
       w.state = 'dead';
+      delete w.special;
+      delete w.nextSpecialAt;
       const stats = WOODS_MONSTERS[w.monster ?? 'wolf'];
       w.deadUntil = now + stats.respawn;
       w.killer = p.id;
@@ -701,10 +769,13 @@ export class World {
           (w) =>
             w.hp > 0 &&
             !shot.hitIds?.includes(w.id) &&
-            shot.y >= w.y - 60 &&
+            shot.y >=
+              w.y - (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyHeight : 60) &&
             shot.y <= w.y &&
-            w.x + 23 >= Math.min(previous, shot.x) &&
-            w.x - 23 <= Math.max(previous, shot.x),
+            w.x + (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 23) >=
+              Math.min(previous, shot.x) &&
+            w.x - (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 23) <=
+              Math.max(previous, shot.x),
         )
         .sort((a, b) => Math.abs(a.x - previous) - Math.abs(b.x - previous));
       if (shot.empowered && shot.kind === 'arrow') {

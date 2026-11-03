@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { type WoodsMonster } from '@ros/game-data';
+import { WOODS_MONSTERS, BOSS_ATTACK, type WoodsMonster } from '@ros/game-data';
 import type { Wolf, Player } from '@ros/shared';
 import { wolfAnimation, wolfFacing, type WolfVisualState } from './wolf-animation';
 type Clips = {
@@ -37,7 +37,7 @@ export class WoodsMonsterVisual {
     const clips = scene.cache.json.get(`${this.monster}-clips`) as Clips;
     this.container = scene.add.container(wolf.x, wolf.y).setDepth(9);
     this.sprite = new Phaser.GameObjects.Sprite(scene, 0, 0, this.monster, 'idle-0').setScale(
-      clips.scale,
+      clips.scale * (WOODS_MONSTERS[this.monster].boss ? BOSS_ATTACK.scale : 1),
     );
     this.container.add(this.sprite);
     const anchor = () => {
@@ -70,6 +70,8 @@ export class WoodsMonsterVisual {
       });
     }
     if (animation) this.sprite.play(`${this.monster}-${animation}`, true);
+    if (wolf.special && wolf.hp > 0) this.sprite.setTint(0xffad75);
+    else if (!this.sprite.anims.currentAnim?.key.endsWith('-hurt')) this.sprite.clearTint();
     if (wolf.hp > 0) {
       const flip = wolfFacing(wolf, this.previous?.x ?? wolf.x, players);
       if (flip !== null) this.sprite.setFlipX(flip);

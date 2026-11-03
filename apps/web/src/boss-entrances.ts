@@ -21,8 +21,15 @@ export function addBossProp(scene: Phaser.Scene, theme: PortalTheme, x: number, 
     .setName('boss-entrance-prop')
     .setData({ theme, label: BOSS_ENTRANCE_PROPS[theme].name });
 }
-export function addBossEntrance(scene: Phaser.Scene, map: GameMap) {
+export function addBossEntrance(scene: Phaser.Scene, map: GameMap, onEnter?: () => void) {
   if (!map.bossEntrance) return;
-  const { theme, x, y, platform } = map.bossEntrance;
-  return addBossProp(scene, theme, x, y).setData('platformId', platform);
+  const { theme, platform } = map.bossEntrance;
+  const portal = map.portals.find((p) => p.key);
+  if (!portal) return;
+  const entrance = addBossProp(scene, theme, portal.x, portal.y)
+    .setDepth(6)
+    .setData({ platformId: platform, target: portal.target, requiresKey: portal.key })
+    .setInteractive({ useHandCursor: true });
+  if (onEnter) entrance.on('pointerdown', onEnter);
+  return entrance;
 }

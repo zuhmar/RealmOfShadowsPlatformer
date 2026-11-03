@@ -1,3 +1,4 @@
+import { BossWarnings, bossImpact } from './boss-attacks';
 import { preloadBossEntrance, addBossEntrance } from './boss-entrances';
 import { WoodsMonsterVisual, preloadWoodsMonster, registerWoodsMonster } from './woods-monsters';
 import { preloadPortals, registerPortals, addPortal } from './portals';
@@ -41,6 +42,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     woods?: WoodsScenery;
     village?: VillageScenery;
     miraMarker?: Phaser.GameObjects.Text;
+    bossWarnings!: BossWarnings;
     constructor() {
       super('realm');
     }
@@ -73,11 +75,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.cameras.main.setBounds(0, 0, this.map.width, this.map.height);
       this.physics.world.setBounds(0, 0, this.map.width, this.map.height);
       this.drawWorld();
+      this.bossWarnings = new BossWarnings(this);
       this.keys = this.input.keyboard!.addKeys(
         'A,D,W,S,SPACE,J,K,E,LEFT,RIGHT,UP,DOWN',
         false,
       ) as typeof this.keys;
       this.events.on('float', (e: Event) => {
+        if (e.type === 'bossAttack') {
+          bossImpact(this, e);
+          return;
+        }
         if (e.type === 'skill') {
           skillEffect(this, e);
           if (!e.text) return;
@@ -116,9 +123,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.physics.add.existing(body, true);
         this.floor.add(body);
       }
-      addBossEntrance(this, m);
+      addBossEntrance(this, m, () => bridge.send('travel', null));
       for (const p of m.portals) {
-        addPortal(this, m.id, p);
+        if (!p.key || !m.bossEntrance) addPortal(this, m.id, p);
         if (p.key)
           this.add
             .image(p.x, p.y - 205, 'forest-bear-key')
@@ -241,6 +248,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       return c;
     }
     sync(s: Snapshot) {
+      this.bossWarnings.sync(s.wolves, s.time);
       const alive = new Set<string>();
       const local = s.players.find((p) => p.id === bridge.id);
       if (local && this.miraMarker) {
@@ -331,7 +339,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           .setText(
             `${WOODS_MONSTERS[w.monster ?? 'wolf'].name} · ${w.hp}/${WOODS_MONSTERS[w.monster ?? 'wolf'].hp}`,
           )
-          .setPosition(visual.container.x, w.y - (w.monster === 'forest-bear' ? 155 : 78));
+          .setPosition(
+            visual.container.x,
+            w.y - (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? 285 : 78),
+          );
       }
       for (const shot of s.projectiles ?? []) {
         alive.add(shot.id);
@@ -395,6 +406,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     update(time: number) {
       const s = bridge.snapshot;
       if (s) this.sync(s);
+      if (this.map.monster && WOODS_MONSTERS[this.map.monster].boss) {
+        const zoom = this.scale.width < 700 ? 0.62 : 0.95;
+        if (this.cameras.main.zoom !== zoom) this.cameras.main.setZoom(zoom);
+      }
       this.woods?.refresh();
       this.village?.refresh();
       if (!this.keys) return;

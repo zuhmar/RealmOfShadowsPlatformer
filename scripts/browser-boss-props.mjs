@@ -16,12 +16,14 @@ try {
     const host = document.createElement('div');
     Object.assign(host.style, { position: 'fixed', inset: 0, zIndex: 999 });
     document.body.appendChild(host);
+    const sent = [];
     window.propTest = {
       host,
+      sent,
       game: mountGame(host, {
         id: 'test',
         held: {},
-        send: () => {},
+        send: (type, data) => sent.push({ type, data }),
         snapshot: {
           mapId: 'woods-3',
           players: [],
@@ -34,6 +36,18 @@ try {
     };
   });
   await page.waitForFunction(() => window.propTest.host.getAttribute('aria-busy') === 'false');
+  expect(
+    await page.evaluate(() => {
+      const s = window.propTest.game.scene.getScene('realm'),
+        p = s.children.getByName('boss-entrance-prop');
+      return {
+        target: p.getData('target'),
+        vortex: s.children.list.some(
+          (c) => c.name === 'travel-portal' && c.getData('target') === 'woods-boss',
+        ),
+      };
+    }),
+  ).toEqual({ target: 'woods-boss', vortex: false });
   for (const [label, width, height] of [
     ['desktop', 1100, 750],
     ['mobile', 390, 844],
@@ -67,6 +81,16 @@ try {
     expect(info.right).toBeLessThanOrEqual(info.vr);
     expect(info.top).toBeGreaterThanOrEqual(info.vt);
     expect(info.bottom).toBeLessThanOrEqual(info.vb);
+    const point = await page.evaluate(() => {
+      const s = window.propTest.game.scene.getScene('realm'),
+        p = s.children.getByName('boss-entrance-prop'),
+        c = s.cameras.main;
+      return { x: (p.x - c.worldView.x) * c.zoom, y: (p.y - 60 - c.worldView.y) * c.zoom };
+    });
+    await page.mouse.click(point.x, point.y);
+    await expect
+      .poll(() => page.evaluate(() => window.propTest.sent.some((e) => e.type === 'travel')))
+      .toBe(true);
     await page.screenshot({ path: `artifacts/boss-perch-${label}.png` });
   }
   await page.setViewportSize({ width: 1100, height: 650 });

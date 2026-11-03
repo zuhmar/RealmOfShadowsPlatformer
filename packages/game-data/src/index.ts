@@ -205,7 +205,7 @@ for (const [stage, name, monster, background] of [
     resources: [],
     ...WOODS_HUNTING_LAYOUTS[id],
     ...(stage === 3
-      ? { bossEntrance: { theme: 'woods' as const, x: 2050, y: 285, platform: 'boss-perch' } }
+      ? { bossEntrance: { theme: 'woods' as const, x: 2240, y: 285, platform: 'boss-perch' } }
       : {}),
     portals: [
       {

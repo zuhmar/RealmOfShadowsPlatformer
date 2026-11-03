@@ -1,6 +1,7 @@
 export const WOODS_MONSTERS = {
   wolf: {
     name: 'Wolf',
+    boss: false,
     hp: 48,
     damage: 7,
     xp: 24,
@@ -11,6 +12,7 @@ export const WOODS_MONSTERS = {
   },
   'thorn-spider': {
     name: 'Thorn Spider',
+    boss: false,
     hp: 75,
     damage: 9,
     xp: 36,
@@ -21,6 +23,7 @@ export const WOODS_MONSTERS = {
   },
   'wild-boar': {
     name: 'Wild Boar',
+    boss: false,
     hp: 110,
     damage: 14,
     xp: 50,
@@ -31,6 +34,7 @@ export const WOODS_MONSTERS = {
   },
   'forest-bear': {
     name: 'Forest Bear',
+    boss: true,
     hp: 450,
     damage: 22,
     xp: 180,
@@ -43,3 +47,16 @@ export const WOODS_MONSTERS = {
 export type WoodsMonster = keyof typeof WOODS_MONSTERS;
 export const FOREST_BEAR_KEY = 'forest-bear-key';
 export const FOREST_BEAR_KEY_CHANCE = 0.2;
+export const BOSS_ATTACK = {
+  scale: 2,
+  bodyRadius: 90,
+  bodyHeight: 240,
+  basicRange: 150,
+  aggroRange: 650,
+  firstSpecialDelay: 3500,
+  specialCooldown: 8000,
+  windup: 1800,
+  radius: 150,
+  height: 100,
+  specialDamageMultiplier: 4,
+} as const;

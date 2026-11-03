@@ -105,6 +105,7 @@ function App() {
         Math.abs(p.x - n.x) <= 72 &&
         Math.abs(p.y - n.y) < 40,
     );
+  const bossWarning = snapshot?.wolves.find((w) => w.special)?.special;
   const nearbyPortal =
     p && map.portals.find((q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65);
   const gatheringNode = p?.gathering && map.resources?.find((n) => n.id === p.gathering?.nodeId);
@@ -696,19 +697,21 @@ function App() {
                   </button>
                 </div>
                 <div className="world-hint">
-                  {gatheringNode
-                    ? `${gatheringNode.skill}… ${Math.max(0, Math.ceil(((p.gathering?.finishAt ?? 0) - (snapshot?.time ?? 0)) / 1000))}s • Repeats · Move to stop`
-                    : nearbyResource
-                      ? `E • ${nearbyResource.skill} • Lv. ${p.gatheringSkills?.[nearbyResource.skill]?.level ?? 1}`
-                      : nearbyPortal
-                        ? `E • ${nearbyPortal.label}${nearbyPortal.key ? ` • ${p.inventory[nearbyPortal.key] ?? 0} key(s) · 1 consumed` : ''}`
-                        : map.id === 'village'
-                          ? closeToMira
-                            ? 'E · Talk to Mira'
-                            : closeToBram
-                              ? 'E · Talk to Bram'
-                              : 'E · Talk to Mira, Bram or use a portal'
-                          : 'W / ↑ to climb · J to attack · K for weapon skill'}
+                  {bossWarning
+                    ? 'GROUND SLAM — move out of the red zone!'
+                    : gatheringNode
+                      ? `${gatheringNode.skill}… ${Math.max(0, Math.ceil(((p.gathering?.finishAt ?? 0) - (snapshot?.time ?? 0)) / 1000))}s • Repeats · Move to stop`
+                      : nearbyResource
+                        ? `E • ${nearbyResource.skill} • Lv. ${p.gatheringSkills?.[nearbyResource.skill]?.level ?? 1}`
+                        : nearbyPortal
+                          ? `E • ${nearbyPortal.label}${nearbyPortal.key ? ` • ${p.inventory[nearbyPortal.key] ?? 0} key(s) · 1 consumed` : ''}`
+                          : map.id === 'village'
+                            ? closeToMira
+                              ? 'E · Talk to Mira'
+                              : closeToBram
+                                ? 'E · Talk to Bram'
+                                : 'E · Talk to Mira, Bram or use a portal'
+                            : 'W / ↑ to climb · J to attack · K for weapon skill'}
                 </div>
                 <div className="touch-controls">
                   <div className="movement-buttons">

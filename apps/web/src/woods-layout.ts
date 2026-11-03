@@ -72,7 +72,7 @@ export const WOODS_AREA_PROPS: Record<
     { frame: 'moss-boulder', platform: 'root-bank', offset: 360, height: 56 },
     { frame: 'mushrooms', platform: 'mud-rim', offset: 90, height: 30 },
     { frame: 'berry-bush', platform: 'boar-rise', offset: 285, height: 42 },
-    { frame: 'lantern-post', platform: 'boss-perch', offset: 370, height: 100 },
+    { frame: 'fern', platform: 'boss-perch', offset: 400, height: 30 },
   ],
   'woods-boss': [
     { frame: 'moss-boulder', platform: 'ground', offset: 700, height: 95 },

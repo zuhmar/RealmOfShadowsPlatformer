@@ -46,6 +46,7 @@ test('bear entrance and guardian prop sit on the highest platform; ground cannot
   assert.equal(platform.y, Math.min(...map.platforms.map((p) => p.y)));
   assert.equal(gate.y, platform.y);
   assert.equal(prop.y, platform.y);
+  assert.equal(prop.x, gate.x);
   assert.ok(gate.x >= platform.x && gate.x <= platform.x + platform.width);
   assert.ok(prop.x >= platform.x && prop.x <= platform.x + platform.width);
   assert.ok(platformRoute(map, 'ground', platform.id).length);
