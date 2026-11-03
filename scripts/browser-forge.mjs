@@ -32,7 +32,7 @@ try {
   characterId = c.id;
   await db.character.update({
     where: { id: c.id },
-    data: { data: { ...c.data, x: 900, y: 650, inventory: { 'iron-ore': 600, 'oak-logs': 20 } } },
+    data: { data: { ...c.data, x: 900, y: 650, inventory: { 'iron-ore': 100, 'oak-logs': 20 } } },
   });
   await page.reload();
   await page.getByRole('button', { name: /Continue adventure/ }).click();
@@ -42,9 +42,9 @@ try {
   await expect(page.getByRole('heading', { name: 'Bram’s Forge' })).toBeVisible();
   await page.getByRole('button', { name: 'Accept Bram’s quest', exact: true }).click();
   await expect(page.getByText('Forge recipes', { exact: true })).toBeVisible();
-  for (let i = 1; i <= 30; i++) {
+  for (let i = 1; i <= 5; i++) {
     await page.getByRole('button', { name: 'Smelt', exact: true }).click();
-    await expect(page.locator('.forge-panel')).toContainText(`Iron Bars smelted: ${i}/30`);
+    await expect(page.locator('.forge-panel')).toContainText(`Iron Bars smelted: ${i}/5`);
   }
   const pickaxe = page.locator('.forge-recipes section').filter({ hasText: 'Iron Pickaxe' });
   await pickaxe.getByRole('button', { name: 'Forge', exact: true }).click();
@@ -100,11 +100,12 @@ try {
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   await expect(page.locator('.site-header')).toBeVisible();
   saved = await db.character.findUnique({ where: { id: characterId } });
-  expect(saved.data.inventory['iron-ore']).toBe(1);
+  expect(saved.data.inventory['iron-ore']).toBeGreaterThanOrEqual(1);
+  expect(saved.data.inventory['iron-ore']).toBeLessThanOrEqual(3);
   expect(saved.data.forgeQuest.claimed).toBe(true);
   expect(errors).toEqual([]);
   console.log(
-    'PASS: Bram quest,30 smelts at20ore each,30bar/20log tool cost,manual equip, durable quest/tool state and upgraded mining.',
+    'PASS: Bram quest,5 smelts at20ore each,5bar/20log tool cost,manual equip, durable quest/tool state and upgraded mining.',
   );
 } finally {
   await browser.close();

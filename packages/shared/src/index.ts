@@ -431,7 +431,8 @@ export class World {
     p.gatheringSkills ??= {};
     const skill = (p.gatheringSkills[node.skill] ??= { level: 1, xp: 0 });
     const item = node.item ?? fishingCatch(skill.level, Math.random());
-    p.inventory[item] = (p.inventory[item] ?? 0) + 1;
+    const quantity = node.skill === 'Fishing' ? 1 : 1 + Math.floor(Math.random() * 3);
+    p.inventory[item] = (p.inventory[item] ?? 0) + quantity;
     skill.xp += 10;
     while (skill.xp >= gatheringXpNeeded(skill.level)) {
       skill.xp -= gatheringXpNeeded(skill.level);
@@ -447,7 +448,7 @@ export class World {
       type: 'loot',
       x: p.x,
       y: p.y - 60,
-      text: `+1 ${item.replaceAll('-', ' ')} · ${node.skill} +10 XP`,
+      text: `+${quantity} ${item.replaceAll('-', ' ')} · ${node.skill} +10 XP`,
       playerId: p.id,
     });
   }

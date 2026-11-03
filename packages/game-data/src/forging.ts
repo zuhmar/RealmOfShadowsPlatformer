@@ -3,7 +3,7 @@ export const BRAM_QUEST = {
   title: 'A proper set of tools',
   npcId: 'bram',
   offer:
-    'You survived the Shadow Dragon and trained for years. Good tools will carry you further. Gather 600 Iron Ore and 20 Oak Logs, smelt 30 Iron Bars here, then forge your first Iron tool.',
+    'You survived the Shadow Dragon and trained for years. Good tools will carry you further. Gather 100 Iron Ore and 20 Oak Logs, smelt 5 Iron Bars here, then forge your first Iron tool.',
   rewardGold: 25,
   rewardXp: 20,
 } as const;
@@ -13,7 +13,7 @@ export const FORGE_RECIPES = [
     id: `iron-${type}`,
     name: `Iron ${type === 'rod' ? 'Fishing Rod' : type[0].toUpperCase() + type.slice(1)}`,
     kind: 'tool',
-    cost: { 'iron-bar': 30, 'oak-logs': 20 },
+    cost: { 'iron-bar': 5, 'oak-logs': 20 },
     xp: 15,
   })),
 ] as const;

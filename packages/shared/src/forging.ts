@@ -4,7 +4,7 @@ export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', rec
   if (action === 'accept') {
     if (p.forgeQuest?.accepted) throw new Error('You already accepted Bram’s quest.');
     p.forgeQuest = { accepted: true, claimed: false, barsSmelted: 0, toolsCrafted: 0 };
-    return 'Bram’s quest accepted. Gather 600 Iron Ore and 20 Oak Logs.';
+    return 'Bram’s quest accepted. Gather 100 Iron Ore and 20 Oak Logs.';
   }
   const quest = p.forgeQuest;
   if (!quest?.accepted) throw new Error('Accept Bram’s quest first.');
@@ -18,8 +18,8 @@ export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', rec
   };
   if (action === 'claim') {
     if (quest.claimed) throw new Error('You already claimed Bram’s reward.');
-    if (quest.barsSmelted < 30 || quest.toolsCrafted < 1)
-      throw new Error('Smelt 30 Iron Bars and craft an Iron tool first.');
+    if (quest.barsSmelted < 5 || quest.toolsCrafted < 1)
+      throw new Error('Smelt 5 Iron Bars and craft an Iron tool first.');
     quest.claimed = true;
     p.gold += BRAM_QUEST.rewardGold;
     xp(BRAM_QUEST.rewardXp);

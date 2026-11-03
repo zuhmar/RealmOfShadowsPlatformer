@@ -21,7 +21,7 @@ test('forge transactions reject stale parallel crafts and cannot repeat claimed 
     assert.ok(character?.id, JSON.stringify(result));
     userId = character.userId;
     let p = character.data as Player;
-    p.inventory = { 'iron-ore': 600, 'oak-logs': 20 };
+    p.inventory = { 'iron-ore': 100, 'oak-logs': 20 };
     p.x = 900;
     p.y = 650;
     await db.character.update({
@@ -36,9 +36,9 @@ test('forge transactions reject stale parallel crafts and cannot repeat claimed 
     assert.equal(attempts.filter((a) => a.status === 'fulfilled').length, 1);
     const saved = await db.character.findUniqueOrThrow({ where: { id: p.id } });
     p = saved.data as unknown as Player;
-    assert.equal(p.inventory['iron-ore'], 580);
+    assert.equal(p.inventory['iron-ore'], 80);
     assert.equal(p.inventory['iron-bar'], 1);
-    for (let i = 1; i < 30; i++) p = (await changeForge(p, 'craft', 'iron-bar')).next;
+    for (let i = 1; i < 5; i++) p = (await changeForge(p, 'craft', 'iron-bar')).next;
     p = (await changeForge(p, 'craft', 'iron-pickaxe')).next;
     assert.equal(p.equippedTools?.Mining, undefined);
     p = (await changeForge(p, 'claim')).next;

@@ -16,7 +16,7 @@ export function ForgePanel({
   onTalk: () => void;
 }) {
   const q = p.forgeQuest,
-    ready = !!q && !q.claimed && q.barsSmelted >= 30 && q.toolsCrafted >= 1;
+    ready = !!q && !q.claimed && q.barsSmelted >= 5 && q.toolsCrafted >= 1;
   return (
     <article className="forge-panel">
       <span className="eyebrow">BRAM · BLACKSMITHING</span>
@@ -34,7 +34,7 @@ export function ForgePanel({
       ) : (
         <>
           <p>
-            Iron Bars smelted: {Math.min(30, q.barsSmelted)}/30 · Iron tools forged:{' '}
+            Iron Bars smelted: {Math.min(5, q.barsSmelted)}/5 · Iron tools forged:{' '}
             {Math.min(1, q.toolsCrafted)}/1
           </p>
           <p>

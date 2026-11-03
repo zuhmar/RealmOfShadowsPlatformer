@@ -19,7 +19,8 @@ test('fishing has a reachable dock and fish rarity requires its separate skill l
   assert.equal(fishingCatch(10, 0), 'golden-carp');
   assert.equal(fishingCatch(10, 0.7), 'brook-trout');
 });
-test('gathering repeats timed cycles without duplicate or catch-up rewards', () => {
+test('gathering repeats timed cycles without duplicate or catch-up rewards', (t) => {
+  t.mock.method(Math, 'random', () => 0);
   for (const node of WOODS_RESOURCE_NODES) {
     const { w, p } = setup(node.id);
     assert.ok(w.startGathering(p, node.id, 10000));
@@ -74,7 +75,8 @@ test('movement, attacks and incoming damage cancel gathering with no reward', ()
     assert.deepEqual(p.inventory, {});
   }
 });
-test('gathering skill levels advance separately from combat and persist in player data', () => {
+test('gathering skill levels advance separately from combat and persist in player data', (t) => {
+  t.mock.method(Math, 'random', () => 0);
   const { w, p } = setup('woods-iron');
   w.startGathering(p, 'woods-iron', 10000);
   w.stepGathering(p, idleInput(), 13000);
@@ -110,5 +112,28 @@ test('each node owns a reachable, separate platform with no monster spawns', () 
     p.y = 760;
     p.platform = 'ground';
     assert.equal(w.startGathering(p, node.id, 10000), false);
+  }
+});
+
+test('land gathering rolls one to three resources while fishing always awards one', (t) => {
+  for (const [roll, quantity] of [
+    [0, 1],
+    [0.34, 2],
+    [0.999999, 3],
+  ]) {
+    const random = t.mock.method(Math, 'random', () => roll);
+    for (const node of WOODS_RESOURCE_NODES) {
+      const { w, p } = setup(node.id);
+      w.startGathering(p, node.id, 10000);
+      w.stepGathering(p, idleInput(), 10000 + node.duration);
+      const expected = node.skill === 'Fishing' ? 1 : quantity;
+      assert.equal(
+        Object.values(p.inventory).reduce((a, b) => a + b, 0),
+        expected,
+      );
+      assert.equal(p.gatheringSkills?.[node.skill]?.xp, 10);
+      assert.ok(w.events.at(-1)?.text.startsWith(`+${expected} `));
+    }
+    random.mock.restore();
   }
 });

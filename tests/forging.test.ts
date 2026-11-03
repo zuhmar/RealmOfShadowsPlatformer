@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { BRAM_QUEST, FORGE_RECIPES, MAPS, WOODS_RESOURCE_NODES } from '@ros/game-data';
 import { createPlayer, forgeAction, activeGatheringTool, World } from '@ros/shared';
-test('forge recipes use tenfold material costs and never grant an automatic upgrade', () => {
+test('forge recipes use starter Iron material costs and never grant an automatic upgrade', () => {
   assert.deepEqual(FORGE_RECIPES[0].cost, { 'iron-ore': 20 });
   for (const recipe of FORGE_RECIPES.slice(1))
-    assert.deepEqual(recipe.cost, { 'iron-bar': 30, 'oak-logs': 20 });
+    assert.deepEqual(recipe.cost, { 'iron-bar': 5, 'oak-logs': 20 });
   for (const recipe of FORGE_RECIPES.slice(1)) {
     const p = createPlayer('p', 'Smith', 'village');
     forgeAction(p, 'accept');
-    p.inventory = { 'iron-bar': 30, 'oak-logs': 20 };
+    p.inventory = { 'iron-bar': 5, 'oak-logs': 20 };
     forgeAction(p, 'craft', recipe.id);
     assert.deepEqual(p.ownedTools, [recipe.id]);
     assert.equal(p.equippedTools, undefined);
@@ -27,20 +27,20 @@ test('shortages, forged recipe ids and duplicate tools cannot consume materials 
   assert.equal(JSON.stringify(p), before);
   assert.throws(() => forgeAction(p, 'craft', 'shadow-pickaxe'));
   assert.equal(JSON.stringify(p), before);
-  p.inventory = { 'iron-bar': 30, 'oak-logs': 20 };
+  p.inventory = { 'iron-bar': 5, 'oak-logs': 20 };
   forgeAction(p, 'craft', 'iron-pickaxe');
-  p.inventory = { 'iron-bar': 30, 'oak-logs': 20 };
+  p.inventory = { 'iron-bar': 5, 'oak-logs': 20 };
   const owned = JSON.stringify(p);
   assert.throws(() => forgeAction(p, 'craft', 'iron-pickaxe'));
   assert.equal(JSON.stringify(p), owned);
 });
-test('Bram requires thirty smelts and a forged tool, then rewards exactly once', () => {
+test('Bram requires five smelts and a forged tool, then rewards exactly once', () => {
   const p = createPlayer('p', 'Smith', 'village');
   forgeAction(p, 'accept');
-  p.inventory = { 'iron-ore': 600, 'oak-logs': 20 };
+  p.inventory = { 'iron-ore': 100, 'oak-logs': 20 };
   assert.throws(() => forgeAction(p, 'claim'));
-  for (let i = 0; i < 30; i++) forgeAction(p, 'craft', 'iron-bar');
-  assert.equal(p.inventory['iron-bar'], 30);
+  for (let i = 0; i < 5; i++) forgeAction(p, 'craft', 'iron-bar');
+  assert.equal(p.inventory['iron-bar'], 5);
   assert.throws(() => forgeAction(p, 'claim'));
   forgeAction(p, 'craft', 'iron-pickaxe');
   forgeAction(p, 'claim');
