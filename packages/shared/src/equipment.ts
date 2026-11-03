@@ -1,7 +1,14 @@
-import { itemDefinition, weaponKind } from '@ros/game-data';
+import {
+  itemDefinition,
+  weaponKind,
+  equipmentDefinition,
+  EQUIPMENT_TIERS,
+  ISLAND_EQUIPMENT,
+  type EquipmentSlot,
+} from '@ros/game-data';
 import type { Player } from './index';
 export const GEAR_RARITIES = ['Uncommon', 'Rare', 'Epic', 'Legendary'] as const;
-export type GearRarity = (typeof GEAR_RARITIES)[number];
+export type GearRarity = (typeof GEAR_RARITIES)[number] | 'Common';
 export const GEAR_ATTRIBUTES = {
   critChance: 'Crit chance',
   critDamage: 'Crit damage',
@@ -17,7 +24,8 @@ export type GearAttribute = keyof typeof GEAR_ATTRIBUTES;
 export type Gear = {
   id: string;
   base: string;
-  slot: 'weapon' | 'armor';
+  slot: EquipmentSlot;
+  source?: 'monster' | 'crafted';
   name: string;
   level: number;
   rarity: GearRarity;
@@ -25,16 +33,23 @@ export type Gear = {
   attributes?: Partial<Record<GearAttribute, number>>;
 };
 export const identifyCost = (g: Gear) =>
-  [25, 75, 200, 500][GEAR_RARITIES.indexOf(g.rarity)] * Math.max(1, Math.ceil(g.level / 10));
+  g.source === 'crafted' || g.rarity === 'Common'
+    ? 0
+    : [25, 75, 200, 500][GEAR_RARITIES.indexOf(g.rarity as (typeof GEAR_RARITIES)[number])] *
+      Math.max(1, Math.ceil(g.level / 10));
 export function createGear(base: string, level: number, random = Math.random): Gear {
   const roll = random(),
     rarity = roll < 0.65 ? 'Uncommon' : roll < 0.9 ? 'Rare' : roll < 0.985 ? 'Epic' : 'Legendary';
-  const armor = base === 'woods-armor';
+  const armor = base === 'woods-armor',
+    definition = equipmentDefinition(base);
   return {
     id: crypto.randomUUID(),
     base,
-    slot: armor ? 'armor' : 'weapon',
-    name: armor ? 'Elderwood Armor' : (itemDefinition(base)?.name ?? 'Woodland Weapon'),
+    slot: definition?.slot ?? (armor ? 'armor' : 'weapon'),
+    source: 'monster',
+    name:
+      definition?.name ??
+      (armor ? 'Elderwood Armor' : (itemDefinition(base)?.name ?? 'Woodland Weapon')),
     level,
     rarity,
     identified: false,
@@ -43,10 +58,12 @@ export function createGear(base: string, level: number, random = Math.random): G
 export function identifyGear(p: Player, id: string, random = Math.random) {
   const gear = p.gear?.find((g) => g.id === id);
   if (!gear) throw new Error('You do not own that equipment.');
+  if (gear.source === 'crafted' || gear.rarity === 'Common')
+    throw new Error('Only monster-dropped equipment can be identified.');
   if (gear.identified) throw new Error('That equipment is already identified.');
   const cost = identifyCost(gear);
   if (p.gold < cost) throw new Error(`Identification costs ${cost} gold.`);
-  const tier = GEAR_RARITIES.indexOf(gear.rarity) + 1;
+  const tier = GEAR_RARITIES.indexOf(gear.rarity as (typeof GEAR_RARITIES)[number]) + 1;
   const pool = Object.keys(GEAR_ATTRIBUTES) as GearAttribute[];
   const attributes: Partial<Record<GearAttribute, number>> = {};
   for (let i = 0; i < tier; i++) {
@@ -77,7 +94,7 @@ export function equippedGear(p: Player) {
       p.level >= g.level &&
       (g.slot === 'weapon'
         ? g.id === p.equippedGear?.weapon && p.weapon === g.base
-        : g.id === p.equippedGear?.armor),
+        : g.id === p.equippedGear?.[g.slot]),
   );
 }
 export function gearAttributes(p: Player) {
@@ -112,4 +129,31 @@ export function equipGear(p: Player, id: string) {
 }
 export function formatGearAttribute(key: GearAttribute, value: number) {
   return `${GEAR_ATTRIBUTES[key]} +${key.endsWith('Chance') || key === 'critDamage' ? `${(value * 100).toFixed(1)}%` : value.toFixed(1)}`;
+}
+
+export function createCraftedGear(base: string): Gear {
+  const definition = equipmentDefinition(base);
+  if (!definition) throw new Error('Unknown equipment recipe.');
+  const tier = EQUIPMENT_TIERS.findIndex((t) => t.id === definition.tier) + 1;
+  const attributes: Gear['attributes'] =
+    definition.slot === 'weapon'
+      ? { critChance: tier * 0.005, critDamage: tier * 0.02 }
+      : {
+          armor: tier * (definition.slot === 'armor' ? 1 : 0.5),
+          health: tier * (definition.slot === 'armor' ? 8 : 4),
+        };
+  return {
+    ...createGear(base, definition.level, () => 0),
+    source: 'crafted',
+    rarity: 'Common',
+    identified: true,
+    attributes,
+  };
+}
+export function islandGearDrop(island: string, level: number, random = Math.random): Gear {
+  const tier = EQUIPMENT_TIERS.find((t) => t.island === island || t.islandName === island);
+  if (!tier) throw new Error('Unknown equipment island.');
+  const pool = ISLAND_EQUIPMENT.filter((g) => g.tier === tier.id);
+  const base = pool[Math.floor(random() * pool.length)];
+  return createGear(base.id, Math.max(tier.level, level), random);
 }

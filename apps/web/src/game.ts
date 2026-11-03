@@ -8,7 +8,14 @@ import { VillageScenery, preloadVillage } from './village';
 import { WoodsScenery, preloadWoods } from './woods';
 import { CharacterVisual, preloadCharacters, registerCharacters } from './character';
 import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
-import { MAPS, WOODS_MONSTERS, WOODS_QUESTS, weaponKind, type GameMap } from '@ros/game-data';
+import {
+  MAPS,
+  equipmentDefinition,
+  WOODS_MONSTERS,
+  WOODS_QUESTS,
+  weaponKind,
+  type GameMap,
+} from '@ros/game-data';
 import {
   idleInput,
   questStatus,
@@ -391,7 +398,12 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         if (!this.actors.has(d.id)) {
           const c = this.add.container(d.x, d.y - 12);
           const kind = weaponKind(d.item);
-          if (kind !== 'unarmed') {
+          const gear = equipmentDefinition(d.gear?.base);
+          if (gear?.tier === 'woods') {
+            const icon = this.add.image(0, 0, 'woods-equipment', gear.part);
+            icon.setScale(36 / Math.max(icon.width, icon.height));
+            c.add(icon);
+          } else if (kind !== 'unarmed') {
             const icon = this.add.image(0, 0, 'elderwood-weapons', kind);
             icon.setScale(26 / Math.max(icon.width, icon.height));
             c.add(icon);

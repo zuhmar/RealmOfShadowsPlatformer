@@ -1,5 +1,5 @@
 export * from './equipment';
-import { createGear, type Gear } from './equipment';
+import { islandGearDrop, type Gear } from './equipment';
 export * from './combat-skills';
 import { weaponTrainingSkill, trainCombat, playerAttributes, attackPower } from './combat-skills';
 export * from './woods-progression';
@@ -75,7 +75,7 @@ export type Actor = {
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
   gear?: Gear[];
-  equippedGear?: Partial<Record<'weapon' | 'armor', string>>;
+  equippedGear?: Partial<Record<import('@ros/game-data').EquipmentSlot, string>>;
   equipmentRevision?: number;
   combatSkills?: Partial<Record<CombatSkill, { level: number; xp: number }>>;
   lastMovedAt?: number;
@@ -856,14 +856,8 @@ export class World {
         owner: p.id,
         gear:
           monster === 'forest-bear' || Math.random() < 0.1
-            ? createGear(
-                [
-                  'elderwood-blade',
-                  'elderwood-bow',
-                  'elderwood-staff',
-                  'elderwood-dagger',
-                  'woods-armor',
-                ][Math.floor(Math.random() * 5)],
+            ? islandGearDrop(
+                this.map.island,
                 { wolf: 1, 'thorn-spider': 4, 'wild-boar': 7, 'forest-bear': 10 }[monster],
               )
             : undefined,

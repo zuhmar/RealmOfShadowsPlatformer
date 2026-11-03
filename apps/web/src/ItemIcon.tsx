@@ -1,10 +1,34 @@
+import islandAtlas from '../public/assets/equipment/islands/manifest.json';
+import { equipmentDefinition } from '@ros/game-data';
 import loot from '../public/assets/ui/woods-loot.json';
 import resources from '../public/assets/ui/woods-resources.json';
 import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
-  const item = itemDefinition(id);
+  const item = itemDefinition(id),
+    gear = equipmentDefinition(id);
+  if (gear) {
+    const sheet = islandAtlas.sheets[gear.tier as keyof typeof islandAtlas.sheets];
+    const w = sheet.width / 4,
+      h = sheet.height / 2;
+    return (
+      <svg
+        width="40"
+        height="40"
+        viewBox={`${(gear.frame % 4) * w} ${Math.floor(gear.frame / 4) * h} ${w} ${h}`}
+        role="img"
+        aria-label={gear.name}
+        style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+      >
+        <image
+          href={`/assets/equipment/islands/${gear.tier}.png`}
+          width={sheet.width}
+          height={sheet.height}
+        />
+      </svg>
+    );
+  }
   if (id && Object.hasOwn(loot.frames, id)) {
     const { x, y, w, h } = loot.frames[id as keyof typeof loot.frames].frame;
     return (

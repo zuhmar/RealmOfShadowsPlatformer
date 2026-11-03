@@ -34,7 +34,8 @@
     "test:browser:boss-props": "node scripts/browser-boss-props.mjs",
     "test:browser:boss-combat": "node scripts/browser-boss-combat.mjs",
     "test:browser:woods-progression": "node --env-file-if-exists=apps/server/.env scripts/browser-woods-progression.mjs",
-    "test:browser:equipment": "node --env-file-if-exists=apps/server/.env scripts/browser-equipment.mjs"
+    "test:browser:equipment": "node --env-file-if-exists=apps/server/.env scripts/browser-equipment.mjs",
+    "test:browser:island-equipment": "node --env-file-if-exists=apps/server/.env scripts/browser-island-equipment.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

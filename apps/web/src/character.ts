@@ -26,6 +26,11 @@ type Clips = {
   animations: Record<string, { frames: string[]; frameRate: number; repeat: number }>;
 };
 export function preloadCharacters(scene: Phaser.Scene) {
+  scene.load.atlas(
+    'woods-equipment',
+    '/assets/equipment/islands/woods.png',
+    '/assets/equipment/islands/woods.json',
+  );
   scene.load.atlas('mira', '/assets/characters/mira.png', '/assets/characters/mira.json');
   scene.load.atlas(
     'elderwood-weapons',

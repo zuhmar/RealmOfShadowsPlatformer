@@ -1,3 +1,4 @@
+import { createCraftedGear } from './equipment';
 import { BRAM_QUEST, FORGE_RECIPES, gatheringXpNeeded } from '@ros/game-data';
 import type { Player } from './index';
 export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', recipeId?: string) {
@@ -27,6 +28,8 @@ export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', rec
   }
   const recipe = FORGE_RECIPES.find((r) => r.id === recipeId);
   if (!recipe) throw new Error('Unknown forge recipe.');
+  if (p.level < (recipe.level ?? 1) || (p.blacksmithing?.level ?? 1) < (recipe.level ?? 1))
+    throw new Error(`Requires character and Blacksmithing level ${recipe.level}.`);
   if (recipe.kind === 'tool' && p.ownedTools?.includes(recipe.id))
     throw new Error('You already own this tool.');
   for (const [id, qty] of Object.entries(recipe.cost))
@@ -37,12 +40,14 @@ export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', rec
   }
   if (recipe.kind === 'material') {
     p.inventory[recipe.id] = (p.inventory[recipe.id] ?? 0) + 1;
-    quest.barsSmelted++;
+    if (recipe.id === 'iron-bar') quest.barsSmelted++;
+  } else if (recipe.kind === 'equipment') {
+    (p.gear ??= []).push(createCraftedGear(recipe.id));
   } else {
     p.ownedTools ??= [];
     p.ownedTools.push(recipe.id);
     quest.toolsCrafted++;
   }
   xp(recipe.xp);
-  return `${recipe.name} ${recipe.kind === 'tool' ? 'forged — equip it in Character' : 'smelted'}! +${recipe.xp} Blacksmithing XP.`;
+  return `${recipe.name} ${recipe.kind === 'material' ? 'smelted' : recipe.kind === 'equipment' ? 'forged — equip it in Bag' : 'forged — equip it in Character'}! +${recipe.xp} Blacksmithing XP.`;
 }

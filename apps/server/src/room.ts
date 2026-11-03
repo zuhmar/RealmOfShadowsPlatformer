@@ -293,6 +293,7 @@ export class MapRoom extends Room {
         if (!nearNpc(p, this.world.map, 'bram')) throw new Error('Stand near Bram’s forge.');
         const { next, message } = await changeForge(structuredClone(p), action, recipeId);
         p.inventory = next.inventory;
+        p.gear = next.gear;
         p.gold = next.gold;
         p.forgeQuest = next.forgeQuest;
         p.forgeRevision = next.forgeRevision;

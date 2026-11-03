@@ -1,3 +1,5 @@
+export * from './island-equipment';
+import { EQUIPMENT_ITEMS, TIER_MINING_ITEMS } from './island-equipment';
 export * from './combat-skills';
 export * from './woods-progression';
 import { WOODS_ITEMS, WOODS_QUESTS } from './woods-progression';
@@ -271,6 +273,8 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  ...EQUIPMENT_ITEMS,
+  ...TIER_MINING_ITEMS,
   ...WOODS_ITEMS,
   'forest-bear-key': {
     id: 'forest-bear-key',

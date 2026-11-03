@@ -1,6 +1,6 @@
 import { identifyCost, formatGearAttribute, type GearAttribute, type Player } from '@ros/shared';
 import { nearNpc } from '@ros/shared';
-import { MAPS } from '@ros/game-data';
+import { MAPS, equipmentDefinition } from '@ros/game-data';
 import { ItemIcon } from './ItemIcon';
 export function EquipmentPanel({
   player: p,
@@ -15,7 +15,8 @@ export function EquipmentPanel({
       <h3>Equipment & identification</h3>
       <p>
         Uncommon, Rare, Epic and Legendary gear reveal 1, 2, 3 or 4 attributes. Bring gear to Bram
-        to identify it once. Only identified, equipped gear grants attributes.
+        to identify monster drops once. Crafted equipment has fixed stats and is ready to equip
+        without identification.
       </p>
       {!p.gear?.length && (
         <p>
@@ -27,11 +28,22 @@ export function EquipmentPanel({
         {p.gear?.map((g) => (
           <article className="training-card gear-card" data-rarity={g.rarity} key={g.id}>
             <h4>
-              {g.slot === 'weapon' ? <ItemIcon id={g.base} /> : <span aria-label="Armor">🛡</span>}{' '}
+              <span aria-hidden="true">
+                {equipmentDefinition(g.base) || g.slot === 'weapon' ? (
+                  <ItemIcon id={g.base} />
+                ) : (
+                  <span>🛡</span>
+                )}
+              </span>{' '}
               {g.name}
             </h4>
             <p>
-              {g.rarity} · {g.slot} · Lv. {g.level} · {g.identified ? 'Identified' : 'Unidentified'}
+              {g.rarity} · {g.slot} · Lv. {g.level} ·{' '}
+              {g.source === 'crafted'
+                ? 'Crafted · Fixed stats'
+                : g.identified
+                  ? 'Identified monster drop'
+                  : 'Unidentified monster drop'}
             </p>
             {g.identified ? (
               <>

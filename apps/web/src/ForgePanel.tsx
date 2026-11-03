@@ -1,4 +1,5 @@
-import { BRAM_QUEST, FORGE_RECIPES, itemDefinition } from '@ros/game-data';
+import { useState } from 'react';
+import { BRAM_QUEST, FORGE_RECIPES, itemDefinition, EQUIPMENT_TIERS } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { ItemIcon } from './ItemIcon';
 import { ToolIcon } from './ToolIcon';
@@ -15,6 +16,7 @@ export function ForgePanel({
   onAction: (action: 'accept' | 'craft' | 'claim', recipeId?: string) => void;
   onTalk: () => void;
 }) {
+  const [tier, setTier] = useState('woods');
   const q = p.forgeQuest,
     ready = !!q && !q.claimed && q.barsSmelted >= 5 && q.toolsCrafted >= 1;
   return (
@@ -56,8 +58,30 @@ export function ForgePanel({
             Blacksmithing Lv. {p.blacksmithing?.level ?? 1} · {p.blacksmithing?.xp ?? 0} XP · Iron
             tools gather in 20% less time.
           </p>
+          <label>
+            Equipment island
+            <select
+              aria-label="Equipment island"
+              value={tier}
+              onChange={(e) => setTier(e.target.value)}
+            >
+              {EQUIPMENT_TIERS.map((t) => (
+                <option value={t.id} key={t.id}>
+                  {t.islandName} · Lv. {t.level}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p>
+            20 ore makes 1 bar. Crafted equipment has fixed stats and cannot be identified. Each
+            tier requires its character and Blacksmithing level. Later island ores become gatherable
+            when those islands open.
+          </p>
           <div className="forge-recipes">
-            {FORGE_RECIPES.map((recipe) => {
+            {FORGE_RECIPES.filter((r) => (r.tier ?? 'woods') === tier).map((recipe) => {
+              const locked =
+                p.level < (recipe.level ?? 1) ||
+                (p.blacksmithing?.level ?? 1) < (recipe.level ?? 1);
               const owned = recipe.kind === 'tool' && p.ownedTools?.includes(recipe.id),
                 enough = Object.entries(recipe.cost).every(
                   ([id, qty]) => (p.inventory[id] ?? 0) >= qty,
@@ -71,6 +95,7 @@ export function ForgePanel({
                   )}
                   <div>
                     <b>{recipe.name}</b>
+                    {recipe.level && <p>Character & Blacksmithing Lv. {recipe.level}</p>}
                     <p>
                       {Object.entries(recipe.cost)
                         .map(
@@ -82,10 +107,16 @@ export function ForgePanel({
                   </div>
                   <button
                     className="secondary"
-                    disabled={!near || pending || !enough || !!owned}
+                    disabled={!near || pending || !enough || !!owned || locked}
                     onClick={() => onAction('craft', recipe.id)}
                   >
-                    {owned ? 'Owned' : recipe.kind === 'material' ? 'Smelt' : 'Forge'}
+                    {locked
+                      ? `Requires Lv. ${recipe.level}`
+                      : owned
+                        ? 'Owned'
+                        : recipe.kind === 'material'
+                          ? 'Smelt'
+                          : 'Forge'}
                   </button>
                 </section>
               );

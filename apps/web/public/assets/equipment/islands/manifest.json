@@ -1,0 +1,39 @@
+{
+  "sheets": {
+    "woods": {
+      "width": 1774,
+      "height": 887,
+      "source": "exec-8bd35a2e-4ae9-4f9a-8c91-7668eaec0f66.png"
+    },
+    "crystal": {
+      "width": 1774,
+      "height": 887,
+      "source": "exec-fe395b16-ead1-4998-b4da-2b2c6edc4701.png"
+    },
+    "swamp": {
+      "width": 1774,
+      "height": 887,
+      "source": "exec-06d3259c-14b9-4184-a2db-0397f87dd897.png"
+    },
+    "frost": {
+      "width": 1774,
+      "height": 887,
+      "source": "exec-45f533a7-1389-4aa4-8d6e-887a092328a0.png"
+    },
+    "ember": {
+      "width": 1774,
+      "height": 887,
+      "source": "exec-704e17e5-2313-4ba9-b68f-cff1f6a6e7d5.png"
+    },
+    "celestial": {
+      "width": 1774,
+      "height": 887,
+      "source": "exec-be6163a3-cd7b-4e04-8d40-49f04c77c7f6.png"
+    },
+    "shadow": {
+      "width": 1774,
+      "height": 887,
+      "source": "exec-7a62701e-1045-4294-9182-1da3524a7164.png"
+    }
+  }
+}
