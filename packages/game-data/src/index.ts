@@ -1,3 +1,4 @@
+export * from './combat-skills';
 export * from './woods-progression';
 import { WOODS_ITEMS, WOODS_QUESTS } from './woods-progression';
 import { WOODS_HUNTING_LAYOUTS } from './hunting-layouts';
@@ -449,7 +450,7 @@ export const WEAPON_PROFILES: Record<
   }
 > = {
   unarmed: {
-    className: 'Citizen',
+    className: 'Civilian',
     range: 78,
     cooldown: 650,
     projectile: null,

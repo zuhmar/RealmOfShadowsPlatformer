@@ -98,7 +98,7 @@ Only server-credited killing blows after acceptance count. Manual and AUTO comba
 | Mage   | Elderwood Staff (+8 attack)  | 320         | 1000 ms         | Traveling magic bolts; Arcane Burst skill |
 | Rogue  | Elderwood Dagger (+4 attack) | 58          | 380 ms          | Fast melee; Flurry skill                  |
 
-All trial weapons work with manual and AUTO combat. Ranged damage is resolved on server projectile collision, with range and facing validated. The skill button costs 12 MP and shares a five-second cooldown across weapons; basic attacks, including staff bolts, cost no MP. Switching weapons does not bypass an attack already on cooldown. AUTO walks to owner-only loot after ranged kills. This introduces weapon trials, not the full class-unlock/proficiency/skill-tree systems; the saved class remains Citizen.
+All trial weapons work with manual and AUTO combat. Ranged damage is resolved on server projectile collision, with range and facing validated. The skill button costs 12 MP and shares a five-second cooldown across weapons; basic attacks, including staff bolts, cost no MP. Switching weapons does not bypass an attack already on cooldown. AUTO walks to owner-only loot after ranged kills. This introduces weapon trials, not the full permanent class-unlock/skill-tree systems; the saved class remains Citizen.
 
 Characters who claimed the earlier sword-only reward can speak to Mira and **Collect class weapons** once to receive the bow, staff and dagger. Gold and the sword are not repeated. A versioned internal `QuestProgress` reward ledger makes the upgrade persistent and idempotent without a schema migration. New turn-ins receive all four weapons and 75 gold together.
 
@@ -137,8 +137,16 @@ Configuration is prepared, not deployed:
 
 **Implemented:** Mira’s first quest and one-time reward, guest/register/login + upgrade, three character slots and confirmed deletion, outfit/appearance preview, one playable Citizen, village and Wolf map, portal travel, platform movement/jump/drop/ladder/camera, four weapon trials with melee/ranged/magic basic attacks and weapon skills, Wolf state machine/respawns/player recovery, platform-aware AUTO and settings, XP/leveling, owner-only gold/loot, stacking inventory, weapon equip/unequip, responsive HUD/minimap, shared room chat/players/monsters, save/re-entry, offline monster training and atomic capped claims.
 
-**Definitions/foundations only:** full class progression and proficiency skills, remaining island roster entries, Tiled object-layer import, normalized expansion database tables. The adapter imports platform/ladder layers; other map metadata stays in the base definition. It is not a general Tiled tilemap renderer.
+**Definitions/foundations only:** permanent class progression and skill trees, remaining island roster entries, Tiled object-layer import, normalized expansion database tables. The adapter imports platform/ladder layers; other map metadata stays in the base definition. It is not a general Tiled tilemap renderer.
 
 **Not implemented:** advanced class unlocks and complete class skill trees, the other Whispering Woods monster maps, Crystal Caverns maps, bosses, gathering/crafting, banks/shops, additional quest chains, armor/accessory slots, cosmetic wardrobe/unlocks, parties, private boss instances, seamless reconnect, audio, or production scaling. Mira offers a reward-bearing first trial; other village NPCs remain scenery with roles clearly labeled, and shops are not implemented.
 
 Seven hunting islands are defined: Whispering Woods, Crystal Caverns, four unnamed reserved islands, and Shadow Fortress. Only the supplied rosters are recorded; the later islands have no invented permanent monster roster. Shadow Dragon remains the final encounter reservation. This is the **first playable milestone**, not the complete ten-phase MMORPG.
+
+### Trainable combat skills and attributes
+
+The Skills button under the profile opens saved combat training, gathering/crafting levels, and live attributes. Weapon trials determine active training: Knight swords and Rogue daggers train Melee, Mage staffs train Magic, and Archer bows train Distance. Civilians have no active combat skill and do not gain combat training. Changing weapons preserves each skill’s XP.
+
+Successful hits award 3 weapon XP; landed specials also award 2 Focus XP. Basic attacks received award 2 Defense XP, damage received awards 2 Vitality XP, and movement under attack/dodges train Evasion. Moving clear of a nearby boss slam awards 5 Evasion XP. Skills start at level 1, require level × 30 XP, and cap at 100. Training is server-authoritative and saved in the existing character JSON; no migration is required.
+
+Weapon levels increase damage and critical chance. Defense raises armor and block, Evasion raises dodge, Vitality raises maximum health and health regeneration, and Focus raises critical chance/damage, maximum mana and mana regeneration. The panel displays the exact current values. Passive dodge/block/armor apply to basic attacks; boss slam damage still requires physically moving clear. Permanent class selection remains future work.

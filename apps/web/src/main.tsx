@@ -1,3 +1,4 @@
+import { SkillsPanel } from './SkillsPanel';
 import { WoodsQuests } from './WoodsQuests';
 import { ForgePanel } from './ForgePanel';
 import { GatheringTools } from './GatheringTools';
@@ -26,13 +27,13 @@ import {
   starterTool,
   TOOL_MATERIALS,
   GATHERING_TOOLS,
-  maxHp,
   xpNeeded,
   RULES,
 } from '@ros/game-data';
 import {
   questStatus,
-  attackBonus,
+  attackPower,
+  playerAttributes,
   needsTrialWeapons,
   nearNpc,
   type Player,
@@ -651,12 +652,12 @@ function App() {
                       {p.name}
                       <span>
                         {weaponProfile(p.weapon).className === 'Citizen'
-                          ? 'Citizen'
+                          ? 'Civilian'
                           : `${weaponProfile(p.weapon).className} trial`}
                       </span>
                     </div>
-                    {statBar('HP', p.hp, maxHp(p.level), 'hp')}
-                    {statBar('MP', p.mp, 50, 'mp')}
+                    {statBar('HP', p.hp, playerAttributes(p).maxHealth, 'hp')}
+                    {statBar('MP', p.mp, playerAttributes(p).maxMana, 'mp')}
                     <div className="profile-gold">◈ {p.gold.toLocaleString()} gold</div>
                   </div>
                 </div>
@@ -666,6 +667,7 @@ function App() {
                       ['inventory', 'bag', 'Bag'],
                       ['character', 'character', 'Character'],
                       ['quests', 'journal', 'Journal'],
+                      ['skills', 'skills', 'Skills'],
                     ] as const
                   ).map(([id, icon, label]) => (
                     <button key={id} onClick={() => setPanel(id)} aria-label={label}>
@@ -1005,6 +1007,7 @@ function App() {
                   {
                     inventory: 'Your satchel.',
                     character: 'The road so far.',
+                    skills: 'Skills & attributes.',
                     quests: 'Adventure journal.',
                     mira: 'Mira · Village guide',
                     bram: 'Bram’s Forge',
@@ -1063,6 +1066,7 @@ function App() {
                 </p>
               </>
             )}
+            {panel === 'skills' && <SkillsPanel player={p} />}
             {panel === 'character' && (
               <>
                 <div className={`portrait-big ${p.outfit}`}>
@@ -1070,13 +1074,13 @@ function App() {
                   <span>✦</span>
                 </div>
                 <h3>
-                  {p.name} · Level {p.level} Citizen
+                  {p.name} · Level {p.level} {weaponProfile(p.weapon).className}
                 </h3>
                 <div className="stat-grid">
                   {[
-                    ['Health', `${Math.floor(p.hp)} / ${maxHp(p.level)}`],
-                    ['Mana', `${Math.floor(p.mp)} / 50`],
-                    ['Attack', `${RULES.baseDamage + (p.level - 1) * 3 + attackBonus(p)}`],
+                    ['Health', `${Math.floor(p.hp)} / ${playerAttributes(p).maxHealth}`],
+                    ['Mana', `${Math.floor(p.mp)} / ${playerAttributes(p).maxMana}`],
+                    ['Attack', `${attackPower(p)}`],
                     ['Enemies defeated', p.kills],
                     ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
                     ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
@@ -1139,8 +1143,8 @@ function App() {
                   })}
                 </div>
                 <p>
-                  Knight, Archer, Mage, Rogue and proficiency progression are planned for the
-                  expansion milestone.
+                  Weapon trials train Melee, Magic or Distance. Open Skills to view your training
+                  and combat attributes. Permanent class selection is planned.
                 </p>
               </>
             )}

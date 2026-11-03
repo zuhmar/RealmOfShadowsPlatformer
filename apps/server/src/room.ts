@@ -7,7 +7,6 @@ import {
   QUESTS,
   MIRA_WEAPON_KIT_LEDGER,
   itemDefinition,
-  maxHp,
   GATHERING_TOOLS,
   BRAM_QUEST,
 } from '@ros/game-data';
@@ -17,6 +16,7 @@ import {
   nearNpc,
   offlineReward,
   grantXp,
+  playerAttributes,
   type Input,
   type Player,
 } from '@ros/shared';
@@ -370,7 +370,8 @@ export class MapRoom extends Room {
     p.nextAttackAt = 0;
     p.lastSkill = 0;
     p.lastHit = Date.now();
-    p.hp = Math.max(1, Math.min(p.hp, maxHp(p.level)));
+    p.hp = Math.max(1, Math.min(p.hp, playerAttributes(p).maxHealth));
+    p.mp = Math.max(0, Math.min(p.mp, playerAttributes(p).maxMana));
     this.world.players.set(p.id, p);
     this.characters.set(c.sessionId, p.id);
     this.inputs.set(p.id, idleInput());

@@ -95,7 +95,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           .text(e.x, e.y, e.text, {
             fontFamily: 'Georgia',
             fontSize: e.type === 'level' ? '25px' : '18px',
-            color: e.type === 'hit' ? '#fff4d5' : '#ffe69b',
+            color: e.critical ? '#ffc85f' : e.type === 'hit' ? '#fff4d5' : '#ffe69b',
             stroke: '#243b32',
             strokeThickness: 4,
           })

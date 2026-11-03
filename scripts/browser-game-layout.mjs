@@ -13,7 +13,7 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
-let userId;
+let userId, characterId;
 try {
   await page.goto('http://localhost:5173');
   await page.getByRole('button', { name: 'Play as guest' }).click();
@@ -28,6 +28,16 @@ try {
     headers: { Authorization: `Bearer ${token}` },
   }).then((r) => r.json());
   userId = data.characters[0].userId;
+  characterId = data.characters[0].id;
+  await db.character.update({
+    where: { id: characterId },
+    data: {
+      data: {
+        ...data.characters[0].data,
+        combatSkills: { Vitality: { level: 11, xp: 7 }, Focus: { level: 6, xp: 9 } },
+      },
+    },
+  });
   let releaseAssets;
   const assetGate = new Promise((resolve) => {
     releaseAssets = resolve;
@@ -111,7 +121,21 @@ try {
       expect(profile.y).toBeLessThanOrEqual(8);
     }
     await expect(page.locator('.world-actions svg image')).toHaveCount(4);
-    await expect(page.locator('.profile-menu svg image')).toHaveCount(3);
+    await expect(page.locator('.profile-menu svg image')).toHaveCount(4);
+    await page.getByRole('button', { name: 'Skills', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Skills & attributes.' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Civilian · No class combat skill' }),
+    ).toBeVisible();
+    await expect(page.locator('.skills-panel progress')).toHaveCount(12);
+    await expect(page.getByLabel('Combat attributes')).toContainText('Crit chance');
+    await expect(page.getByLabel('Combat attributes')).toContainText('Block chance');
+    const skillsBounds = await page.locator('.skills-panel').boundingBox();
+    expect(skillsBounds.x).toBeGreaterThanOrEqual(0);
+    expect(skillsBounds.x + skillsBounds.width).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: `artifacts/skills-${label}.png` });
+    await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+
     expect(
       await page
         .locator('.profile-menu button')
@@ -226,6 +250,9 @@ try {
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   await expect(page.locator('.site-header')).toBeVisible();
   await expect(page.locator('.game-stage')).toHaveCount(0);
+  const saved = await db.character.findUnique({ where: { id: characterId } });
+  expect(saved.data.combatSkills.Vitality).toEqual({ level: 11, xp: 7 });
+  expect(saved.data.combatSkills.Focus).toEqual({ level: 6, xp: 9 });
   expect(errors).toEqual([]);
   console.log(
     'PASS: real game fills desktop/mobile/landscape viewport, controls remain in bounds, chat sends/toggles and inventory opens.',

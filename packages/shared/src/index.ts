@@ -1,5 +1,7 @@
+export * from './combat-skills';
+import { weaponTrainingSkill, trainCombat, playerAttributes, attackPower } from './combat-skills';
 export * from './woods-progression';
-import { applyWoodsMilestones, attackBonus } from './woods-progression';
+import { applyWoodsMilestones } from './woods-progression';
 export * from './travel';
 export * from './forging';
 import {
@@ -10,6 +12,8 @@ import {
   FOREST_BEAR_KEY_CHANCE,
   FOREST_BEAR_RING_CHANCE,
   type WoodsMonster,
+  type CombatSkill,
+  type OffensiveSkill,
   MAPS,
   QUESTS,
   INTERACTION,
@@ -25,9 +29,7 @@ import {
   starterTool,
   GATHERING_TOOLS,
   IRON_TOOL_DURATION,
-  maxHp,
   xpNeeded,
-  damage,
   type GameMap,
   type ItemId,
 } from '@ros/game-data';
@@ -70,6 +72,8 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  combatSkills?: Partial<Record<CombatSkill, { level: number; xp: number }>>;
+  lastMovedAt?: number;
   quests?: Record<string, QuestState>;
   ownedTools?: string[];
   equippedTools?: Partial<Record<GatheringSkill, string>>;
@@ -144,6 +148,8 @@ export type Drop = {
   expires: number;
 };
 export type Projectile = {
+  training?: OffensiveSkill | null;
+  critical?: boolean;
   id: string;
   owner: string;
   kind: 'arrow' | 'orb';
@@ -167,6 +173,7 @@ export type Snapshot = {
 export type Event = {
   type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn' | 'skill' | 'bossAttack';
   radius?: number;
+  critical?: boolean;
   skill?: WeaponKind;
   facing?: number;
   phase?: 'cast' | 'impact';
@@ -216,8 +223,8 @@ export function grantXp(p: Player, amount: number) {
   while (p.xp >= xpNeeded(p.level) && p.level < 100) {
     p.xp -= xpNeeded(p.level);
     p.level++;
-    p.hp = maxHp(p.level);
-    p.mp = 50;
+    p.hp = playerAttributes(p).maxHealth;
+    p.mp = playerAttributes(p).maxMana;
     levels++;
   }
   return levels;
@@ -387,6 +394,8 @@ export class World {
     weapon: Player['weapon'];
     at: number;
     damage: number;
+    training?: OffensiveSkill | null;
+    critical?: boolean;
   }[] = [];
   players = new Map<string, Player>();
   wolves: Wolf[];
@@ -484,21 +493,23 @@ export class World {
       if (Object.values(i).some(Boolean)) p.auto = false;
       if (p.auto) i = autoInput(p, this.wolves, this.map, now, this.drops);
       moveActor(p, i, this.map, dt, now);
+      if (i.left || i.right || i.up || i.down || i.jump) p.lastMovedAt = now;
       this.stepGathering(p, i, now);
       if (p.y > this.map.height + 100) {
         p.x = this.map.spawn.x;
         p.y = this.map.spawn.y;
-        p.hp = maxHp(p.level);
+        p.hp = playerAttributes(p).maxHealth;
         p.vy = 0;
         p.vx = 0;
         p.climbing = false;
         p.grounded = true;
         p.platform = 'ground';
       }
-      if (now - p.lastHit > 6000) p.hp = Math.min(maxHp(p.level), p.hp + dt * 3);
-      p.mp = Math.min(50, p.mp + dt * 1.5);
-      if (p.auto && p.hp < (maxHp(p.level) * p.settings.healBelow) / 100) {
-        p.hp = Math.min(maxHp(p.level), p.hp + dt * 5);
+      if (now - p.lastHit > 6000)
+        p.hp = Math.min(playerAttributes(p).maxHealth, p.hp + dt * playerAttributes(p).healthRegen);
+      p.mp = Math.min(playerAttributes(p).maxMana, p.mp + dt * playerAttributes(p).manaRegen);
+      if (p.auto && p.hp < (playerAttributes(p).maxHealth * p.settings.healBelow) / 100) {
+        p.hp = Math.min(playerAttributes(p).maxHealth, p.hp + dt * 5);
       }
       if (i.attack || i.skill) this.attack(p, i.skill, now);
       if (!p.auto || p.settings.loot) this.collect(p, now);
@@ -577,7 +588,26 @@ export class World {
     this.stepProjectiles(dt, now);
     this.drops = this.drops.filter((d) => d.expires > now);
   }
-  hitPlayer(p: Player, amount: number, now: number) {
+  hitPlayer(p: Player, amount: number, now: number, kind: 'basic' | 'special' = 'basic') {
+    const stats = playerAttributes(p),
+      active = weaponTrainingSkill(p.weapon) !== null;
+    if (kind === 'basic') {
+      if (active && (p.vx !== 0 || !p.grounded)) trainCombat(p, 'Evasion', 1);
+      if (stats.dodgeChance > 0 && Math.random() < stats.dodgeChance) {
+        if (active) trainCombat(p, 'Evasion', 3);
+        this.events.push({ type: 'hit', x: p.x, y: p.y - 55, text: 'Dodge!', playerId: p.id });
+        return;
+      }
+      const blocked = stats.blockChance > 0 && Math.random() < stats.blockChance;
+      amount = Math.max(
+        1,
+        Math.round(Math.max(1, amount - stats.armor) * (blocked ? 1 - stats.blockReduction : 1)),
+      );
+      if (blocked)
+        this.events.push({ type: 'hit', x: p.x, y: p.y - 80, text: 'Block!', playerId: p.id });
+      if (active) trainCombat(p, 'Defense', 2);
+    }
+    if (active) trainCombat(p, 'Vitality', 2);
     p.hp -= amount;
     p.lastHit = now;
     delete p.gathering;
@@ -586,7 +616,7 @@ export class World {
     const deathX = p.x,
       deathY = p.y;
     this.flurry = this.flurry.filter((strike) => strike.owner !== p.id);
-    p.hp = maxHp(p.level);
+    p.hp = playerAttributes(p).maxHealth;
     p.x = this.map.spawn.x;
     p.y = this.map.spawn.y;
     p.platform = 'ground';
@@ -631,7 +661,15 @@ export class World {
           p,
           WOODS_MONSTERS[w.monster ?? 'wolf'].damage * BOSS_ATTACK.specialDamageMultiplier,
           now,
+          'special',
         );
+      else if (
+        weaponTrainingSkill(p.weapon) &&
+        (p.lastMovedAt ?? 0) > zone.startedAt &&
+        Math.abs(p.x - zone.x) <= zone.radius + 350 &&
+        Math.abs(p.y - zone.y) < 220
+      )
+        trainCombat(p, 'Evasion', 5);
     }
   }
   attack(p: Player, skill: boolean, now: number) {
@@ -656,7 +694,12 @@ export class World {
       });
       p.lastSkill = now;
     }
-    const hit = damage(p.level, attackBonus(p)) * (empowered ? 2 : 1);
+    const stats = playerAttributes(p);
+    const critical = stats.critChance > 0 && Math.random() < stats.critChance;
+    const training = weaponTrainingSkill(p.weapon);
+    const hit = Math.round(
+      attackPower(p) * (empowered ? 2 : 1) * (critical ? stats.critDamage : 1),
+    );
     if (profile.projectile) {
       this.projectiles.push({
         id: `shot-${++this.serial}`,
@@ -669,6 +712,8 @@ export class World {
         range: profile.range * (empowered && profile.projectile === 'arrow' ? 1.5 : 1),
         damage: hit,
         empowered,
+        training,
+        critical,
       });
       return;
     }
@@ -686,8 +731,8 @@ export class World {
     if (empowered && weaponKind(p.weapon) === 'dagger') {
       const target = targets[0];
       if (target) {
-        const strike = damage(p.level, attackBonus(p));
-        this.hitWolf(p, target, strike, now);
+        const strike = Math.round(attackPower(p) * (critical ? stats.critDamage : 1));
+        this.hitWolf(p, target, strike, now, { skill: training, focus: true, critical });
         for (const delay of [110, 220])
           this.flurry.push({
             owner: p.id,
@@ -695,9 +740,13 @@ export class World {
             weapon: p.weapon,
             at: now + delay,
             damage: strike,
+            training,
+            critical,
           });
       }
-    } else for (const w of targets.slice(0, empowered ? 3 : 1)) this.hitWolf(p, w, hit, now);
+    } else
+      for (const w of targets.slice(0, empowered ? 3 : 1))
+        this.hitWolf(p, w, hit, now, { skill: training, focus: empowered, critical });
   }
   stepFlurry(now: number) {
     this.flurry = this.flurry.filter((strike) => {
@@ -713,7 +762,11 @@ export class World {
         Math.abs(target.y - owner.y) < 55 &&
         (target.x - owner.x) * owner.facing >= -12
       ) {
-        this.hitWolf(owner, target, strike.damage, now);
+        this.hitWolf(owner, target, strike.damage, now, {
+          skill: strike.training ?? weaponTrainingSkill(owner.weapon),
+          focus: true,
+          critical: !!strike.critical,
+        });
         this.events.push({
           type: 'skill',
           skill: 'dagger',
@@ -727,10 +780,30 @@ export class World {
       return false;
     });
   }
-  hitWolf(p: Player, w: Wolf, hit: number, now: number) {
+  hitWolf(
+    p: Player,
+    w: Wolf,
+    hit: number,
+    now: number,
+    training = {
+      skill: weaponTrainingSkill(p.weapon) as OffensiveSkill | null,
+      focus: false,
+      critical: false,
+    },
+  ) {
     if (w.hp <= 0) return;
+    if (training.skill && hit > 0) {
+      trainCombat(p, training.skill, 3);
+      if (training.focus) trainCombat(p, 'Focus', 2);
+    }
     w.hp = Math.max(0, w.hp - hit);
-    this.events.push({ type: 'hit', x: w.x, y: w.y - 50, text: String(hit) });
+    this.events.push({
+      type: 'hit',
+      x: w.x,
+      y: w.y - 50,
+      text: training.critical ? `${hit} CRIT!` : String(hit),
+      critical: training.critical,
+    });
     if (!w.hp) {
       w.state = 'dead';
       delete w.special;
@@ -819,7 +892,11 @@ export class World {
       if (shot.empowered && shot.kind === 'arrow') {
         shot.hitIds ??= [];
         for (const target of targets) {
-          this.hitWolf(owner, target, shot.damage, now);
+          this.hitWolf(owner, target, shot.damage, now, {
+            skill: shot.training ?? (shot.kind === 'arrow' ? 'Distance' : 'Magic'),
+            focus: shot.empowered,
+            critical: !!shot.critical,
+          });
           shot.hitIds.push(target.id);
           if (shot.hitIds.length >= 3) return false;
         }
@@ -839,7 +916,12 @@ export class World {
               ),
             ].slice(0, 3)
           : [first];
-        for (const w of affected) this.hitWolf(owner, w, shot.damage, now);
+        for (const w of affected)
+          this.hitWolf(owner, w, shot.damage, now, {
+            skill: shot.training ?? (shot.kind === 'arrow' ? 'Distance' : 'Magic'),
+            focus: shot.empowered,
+            critical: !!shot.critical,
+          });
         if (shot.empowered)
           this.events.push({
             type: 'skill',
