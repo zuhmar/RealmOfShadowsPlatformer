@@ -16,8 +16,8 @@ import {
   type CharacterState,
 } from './character-animation';
 
-const gatheringKey = (appearance: string, outfit: string) =>
-  `${characterKey(appearance, outfit)}-gathering`;
+const gatheringKey = (appearance: string, outfit: string, material = 'wood') =>
+  `${characterKey(appearance, outfit)}-gathering${material === 'iron' ? '-iron' : ''}`;
 const WEAPONS = ['sword', 'bow', 'staff', 'dagger'] as const;
 const armedKey = (appearance: string, outfit: string, weapon: string) =>
   `${characterKey(appearance, outfit)}-${weapon}`;
@@ -39,11 +39,13 @@ export function preloadCharacters(scene: Phaser.Scene) {
       scene.load.atlas(armedKey(a, 'sage', w), `${path}.png`, `${path}.json`);
       scene.load.json(`armed-atlas-${a}-${w}`, `${path}.json`);
     }
-  for (const a of APPEARANCES) {
-    const path = `/assets/characters/gathering/citizen-${a}`;
-    scene.load.atlas(gatheringKey(a, 'sage'), `${path}.png`, `${path}.json`);
-    scene.load.json(`gathering-atlas-${a}`, `${path}.json`);
-  }
+  for (const a of APPEARANCES)
+    for (const material of ['wood', 'iron']) {
+      const suffix = material === 'iron' ? '-iron' : '';
+      const path = `/assets/characters/gathering/citizen-${a}${suffix}`;
+      scene.load.atlas(gatheringKey(a, 'sage', material), `${path}.png`, `${path}.json`);
+      scene.load.json(`gathering-atlas-${a}${suffix}`, `${path}.json`);
+    }
   scene.load.json('citizen-clips', '/assets/characters/citizen-animations.json');
   for (const a of APPEARANCES)
     scene.load.atlas(
@@ -117,30 +119,32 @@ export function registerCharacters(scene: Phaser.Scene) {
         }
       }
     }
-  for (const a of APPEARANCES) {
-    const atlas = scene.cache.json.get(`gathering-atlas-${a}`) as Atlas;
-    const original = scene.textures
-      .get(gatheringKey(a, 'sage'))
-      .getSourceImage() as HTMLImageElement;
-    for (const outfit of OUTFITS) {
-      const key = gatheringKey(a, outfit);
-      if (outfit !== 'sage') {
-        const texture = scene.textures.addCanvas(
-          key,
-          recolorOutfit(original, atlas.meta.size.w, atlas.meta.size.h, outfit),
-        );
-        if (!texture) throw new Error('Cannot prepare gathering outfit');
-        scene.textures.addAtlas(key, texture, atlas);
+  for (const a of APPEARANCES)
+    for (const material of ['wood', 'iron']) {
+      const suffix = material === 'iron' ? '-iron' : '';
+      const atlas = scene.cache.json.get(`gathering-atlas-${a}${suffix}`) as Atlas;
+      const original = scene.textures
+        .get(gatheringKey(a, 'sage', material))
+        .getSourceImage() as HTMLImageElement;
+      for (const outfit of OUTFITS) {
+        const key = gatheringKey(a, outfit, material);
+        if (outfit !== 'sage') {
+          const texture = scene.textures.addCanvas(
+            key,
+            recolorOutfit(original, atlas.meta.size.w, atlas.meta.size.h, outfit),
+          );
+          if (!texture) throw new Error('Cannot prepare gathering outfit');
+          scene.textures.addAtlas(key, texture, atlas);
+        }
+        for (const name of ['mining', 'woodcutting', 'fishing', 'herbalism'])
+          scene.anims.create({
+            key: `${key}-${name}`,
+            frames: Array.from({ length: 6 }, (_, i) => ({ key, frame: `${name}-${i}` })),
+            frameRate: name === 'fishing' ? 4 : 7,
+            repeat: -1,
+          });
       }
-      for (const name of ['mining', 'woodcutting', 'fishing', 'herbalism'])
-        scene.anims.create({
-          key: `${key}-${name}`,
-          frames: Array.from({ length: 6 }, (_, i) => ({ key, frame: `${name}-${i}` })),
-          frameRate: name === 'fishing' ? 4 : 7,
-          repeat: -1,
-        });
     }
-  }
 }
 
 export class CharacterVisual {
@@ -172,8 +176,9 @@ export class CharacterVisual {
         : undefined;
     const kind = weaponKind(p.weapon);
     const armed = kind !== 'unarmed' && motion !== 'climb' && !p.gathering;
+    const gatheringMaterial = p.gathering?.toolId?.startsWith('iron-') ? 'iron' : 'wood';
     const key = gathering
-      ? gatheringKey(p.appearance, p.outfit)
+      ? gatheringKey(p.appearance, p.outfit, gatheringMaterial)
       : armed
         ? armedKey(p.appearance, p.outfit, kind)
         : characterKey(p.appearance, p.outfit);
@@ -216,7 +221,7 @@ export class CharacterVisual {
         x = (gathering.x + 22 - p.x) * p.facing,
         y = 30 + Math.sin(now / 180) * 2;
       const atlas = this.scene.cache.json.get(
-        `gathering-atlas-${appearanceOf(p.appearance)}`,
+        `gathering-atlas-${appearanceOf(p.appearance)}${gatheringMaterial === 'iron' ? '-iron' : ''}`,
       ) as Atlas & { meta: { rodTips: Record<string, { x: number; y: number }> } };
       const tip = atlas.meta.rodTips[String(this.sprite.frame.name)];
       if (tip) {

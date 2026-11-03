@@ -1,3 +1,4 @@
+export * from './forging';
 import {
   RULES,
   MAPS,
@@ -13,6 +14,8 @@ import {
   fishingCatch,
   gatheringXpNeeded,
   starterTool,
+  GATHERING_TOOLS,
+  IRON_TOOL_DURATION,
   maxHp,
   xpNeeded,
   damage,
@@ -59,6 +62,11 @@ export type Actor = {
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
   quests?: Record<string, QuestState>;
+  ownedTools?: string[];
+  equippedTools?: Partial<Record<GatheringSkill, string>>;
+  forgeRevision?: number;
+  forgeQuest?: { accepted: boolean; claimed: boolean; barsSmelted: number; toolsCrafted: number };
+  blacksmithing?: { level: number; xp: number };
   gatheringSkills?: Partial<Record<GatheringSkill, { level: number; xp: number }>>;
   gathering?: { nodeId: string; startedAt: number; finishAt: number; toolId?: string };
   id: string;
@@ -82,6 +90,18 @@ export type Player = Actor & {
   kills: number;
   targetId: string | null;
 };
+export function activeGatheringTool(
+  p: Pick<Player, 'ownedTools' | 'equippedTools'>,
+  skill: GatheringSkill,
+) {
+  const id = p.equippedTools?.[skill];
+  return (
+    GATHERING_TOOLS.find(
+      (t) =>
+        t.id === id && t.skill === skill && t.material === 'iron' && p.ownedTools?.includes(t.id),
+    ) ?? starterTool(skill)
+  );
+}
 export type Wolf = {
   id: string;
   x: number;
@@ -379,11 +399,12 @@ export class World {
     if (!node || !this.nearResource(p, node)) return false;
     if (p.gathering) return true;
     p.auto = false;
+    const tool = activeGatheringTool(p, node.skill);
     p.gathering = {
       nodeId,
       startedAt: now,
-      finishAt: now + node.duration,
-      toolId: starterTool(node.skill).id,
+      finishAt: now + node.duration * (tool.material === 'iron' ? IRON_TOOL_DURATION : 1),
+      toolId: tool.id,
     };
     return true;
   }

@@ -1,3 +1,4 @@
+export * from './forging';
 export * from './tools';
 import { WOODS_RESOURCE_ITEMS, WOODS_RESOURCE_NODES, type ResourceNode } from './gathering';
 export * from './gathering';
@@ -61,7 +62,7 @@ export const MAPS: Record<string, GameMap> = {
     spawns: [],
     npcs: [
       { id: 'mira', x: 500, y: 650, name: 'Mira', role: 'Village guide' },
-      { x: 900, y: 650, name: 'Bram', role: 'Blacksmith · coming later' },
+      { id: 'bram', x: 900, y: 650, name: 'Bram', role: 'Blacksmith' },
     ],
   },
   woods: {
@@ -200,6 +201,17 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  'iron-bar': {
+    id: 'iron-bar',
+    name: 'Iron Bar',
+    rarity: 'Common',
+    type: 'resource',
+    description: 'Smelted by Bram from 20 Iron Ore. Used to forge Iron gathering tools.',
+    sellValue: 2,
+    level: 1,
+    bonus: 0,
+    icon: '▰',
+  },
   ...WOODS_RESOURCE_ITEMS,
   'elderwood-blade': {
     id: 'elderwood-blade',

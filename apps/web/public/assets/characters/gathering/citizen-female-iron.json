@@ -1,0 +1,517 @@
+{
+  "frames": {
+    "mining-0": {
+      "frame": {
+        "x": 68,
+        "y": 30,
+        "w": 167,
+        "h": 225
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 120,
+        "y": 114,
+        "w": 167,
+        "h": 225
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "mining-1": {
+      "frame": {
+        "x": 311,
+        "y": 29,
+        "w": 186,
+        "h": 226
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 119,
+        "y": 113,
+        "w": 186,
+        "h": 226
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "mining-2": {
+      "frame": {
+        "x": 542,
+        "y": 8,
+        "w": 165,
+        "h": 248
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 107,
+        "y": 92,
+        "w": 165,
+        "h": 248
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "mining-3": {
+      "frame": {
+        "x": 807,
+        "y": 42,
+        "w": 213,
+        "h": 213
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 126,
+        "y": 126,
+        "w": 213,
+        "h": 213
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "mining-4": {
+      "frame": {
+        "x": 1054,
+        "y": 64,
+        "w": 202,
+        "h": 203
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 117,
+        "y": 148,
+        "w": 202,
+        "h": 203
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "mining-5": {
+      "frame": {
+        "x": 1317,
+        "y": 30,
+        "w": 166,
+        "h": 226
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 120,
+        "y": 114,
+        "w": 166,
+        "h": 226
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "woodcutting-0": {
+      "frame": {
+        "x": 68,
+        "y": 286,
+        "w": 177,
+        "h": 225
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 120,
+        "y": 115,
+        "w": 177,
+        "h": 225
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "woodcutting-1": {
+      "frame": {
+        "x": 311,
+        "y": 285,
+        "w": 186,
+        "h": 226
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 118,
+        "y": 114,
+        "w": 186,
+        "h": 226
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "woodcutting-2": {
+      "frame": {
+        "x": 541,
+        "y": 257,
+        "w": 167,
+        "h": 254
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 104,
+        "y": 86,
+        "w": 167,
+        "h": 254
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "woodcutting-3": {
+      "frame": {
+        "x": 808,
+        "y": 299,
+        "w": 221,
+        "h": 212
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 125,
+        "y": 128,
+        "w": 221,
+        "h": 212
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "woodcutting-4": {
+      "frame": {
+        "x": 1054,
+        "y": 321,
+        "w": 203,
+        "h": 195
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 102,
+        "y": 150,
+        "w": 203,
+        "h": 195
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "woodcutting-5": {
+      "frame": {
+        "x": 1317,
+        "y": 286,
+        "w": 177,
+        "h": 226
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 120,
+        "y": 115,
+        "w": 177,
+        "h": 226
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "fishing-0": {
+      "frame": {
+        "x": 53,
+        "y": 540,
+        "w": 201,
+        "h": 228
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 109,
+        "y": 112,
+        "w": 201,
+        "h": 228
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "fishing-1": {
+      "frame": {
+        "x": 300,
+        "y": 540,
+        "w": 204,
+        "h": 227
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 108,
+        "y": 112,
+        "w": 204,
+        "h": 227
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "fishing-2": {
+      "frame": {
+        "x": 539,
+        "y": 537,
+        "w": 207,
+        "h": 231
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 103,
+        "y": 109,
+        "w": 207,
+        "h": 231
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "fishing-3": {
+      "frame": {
+        "x": 795,
+        "y": 541,
+        "w": 207,
+        "h": 227
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 110,
+        "y": 113,
+        "w": 207,
+        "h": 227
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "fishing-4": {
+      "frame": {
+        "x": 1049,
+        "y": 555,
+        "w": 219,
+        "h": 212
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 119,
+        "y": 127,
+        "w": 219,
+        "h": 212
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "fishing-5": {
+      "frame": {
+        "x": 1302,
+        "y": 540,
+        "w": 201,
+        "h": 228
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 109,
+        "y": 112,
+        "w": 201,
+        "h": 228
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "herbalism-0": {
+      "frame": {
+        "x": 56,
+        "y": 797,
+        "w": 176,
+        "h": 227
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 107,
+        "y": 113,
+        "w": 176,
+        "h": 227
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "herbalism-1": {
+      "frame": {
+        "x": 308,
+        "y": 812,
+        "w": 186,
+        "h": 212
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 125,
+        "y": 128,
+        "w": 186,
+        "h": 212
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "herbalism-2": {
+      "frame": {
+        "x": 544,
+        "y": 837,
+        "w": 202,
+        "h": 186
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 114,
+        "y": 153,
+        "w": 202,
+        "h": 186
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "herbalism-3": {
+      "frame": {
+        "x": 805,
+        "y": 820,
+        "w": 190,
+        "h": 204
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 126,
+        "y": 136,
+        "w": 190,
+        "h": 204
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "herbalism-4": {
+      "frame": {
+        "x": 1059,
+        "y": 804,
+        "w": 176,
+        "h": 220
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 125,
+        "y": 120,
+        "w": 176,
+        "h": 220
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    },
+    "herbalism-5": {
+      "frame": {
+        "x": 1306,
+        "y": 797,
+        "w": 175,
+        "h": 227
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 109,
+        "y": 113,
+        "w": 175,
+        "h": 227
+      },
+      "sourceSize": {
+        "w": 384,
+        "h": 384
+      }
+    }
+  },
+  "meta": {
+    "image": "citizen-female-iron.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "rodTips": {
+      "fishing-0": {
+        "x": 304,
+        "y": 157
+      },
+      "fishing-1": {
+        "x": 306,
+        "y": 150
+      },
+      "fishing-2": {
+        "x": 304,
+        "y": 121
+      },
+      "fishing-3": {
+        "x": 311,
+        "y": 149
+      },
+      "fishing-4": {
+        "x": 332,
+        "y": 188
+      },
+      "fishing-5": {
+        "x": 304,
+        "y": 157
+      }
+    }
+  }
+}

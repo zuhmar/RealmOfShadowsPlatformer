@@ -1,3 +1,5 @@
+import { ForgePanel } from './ForgePanel';
+import { GatheringTools } from './GatheringTools';
 import { ToolIcon } from './ToolIcon';
 import { ControlIcon } from './ControlIcon';
 import { ActionIcon } from './ActionIcon';
@@ -66,6 +68,7 @@ function App() {
   const [playerId, setPlayerId] = useState('');
   const [chatOpen, setChatOpen] = useState(() => window.innerWidth > 700);
   const [panel, setPanel] = useState<string | null>(null);
+  const [forgePending, setForgePending] = useState(false);
   const [questPending, setQuestPending] = useState(false);
   const [chat, setChat] = useState<{ name: string; text: string }[]>([
     { name: 'Elderwood', text: 'Welcome, traveler. Your story starts here.' },
@@ -90,6 +93,7 @@ function App() {
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
   const trialStatus = p ? questStatus(p) : 'available';
+  const closeToBram = !!p && map.id === 'village' && nearNpc(p, map, 'bram');
   const closeToMira = !!p && nearNpc(p, map, 'mira');
   const quest = QUESTS['mira-wolves'];
   const nearbyResource =
@@ -202,6 +206,12 @@ function App() {
     next.onMessage('notice', (m: string) => setNotice(m));
     next.onMessage('npc', (npc: { id: string }) => {
       if (npc.id === 'mira') setPanel('mira');
+      if (npc.id === 'bram') setPanel('bram');
+    });
+    next.onMessage('forgeResult', (result: { ok: boolean; message: string }) => {
+      setForgePending(false);
+      if (result.ok) setNotice(result.message);
+      else setError(result.message);
     });
     next.onMessage('questResult', (result: { ok: boolean; message: string }) => {
       setQuestPending(false);
@@ -220,6 +230,7 @@ function App() {
     });
     next.onError((_code, text) => {
       setQuestPending(false);
+      setForgePending(false);
       setError(text ?? 'Connection error');
     });
     next.onLeave((code) => {
@@ -227,6 +238,7 @@ function App() {
         roomRef.current = null;
         setRoom(null);
         setQuestPending(false);
+        setForgePending(false);
         setPanel(null);
         setPage('characters');
         setNotice(
@@ -318,8 +330,8 @@ function App() {
     return () => clearTimeout(t);
   }, [notice]);
   useEffect(() => {
-    bridge.current.blocked = panel === 'mira';
-    if (panel === 'mira') bridge.current.held = {};
+    bridge.current.blocked = panel === 'mira' || panel === 'bram';
+    if (panel === 'mira' || panel === 'bram') bridge.current.held = {};
   }, [panel]);
   function isolateControlInput(e: React.SyntheticEvent) {
     if (page === 'game' && (e.target as Element).closest('button,input,textarea,select,.modal'))
@@ -672,7 +684,9 @@ function App() {
                       : map.id === 'village'
                         ? closeToMira
                           ? 'E · Talk to Mira'
-                          : 'E · Talk to Mira or use a portal'
+                          : closeToBram
+                            ? 'E · Talk to Bram'
+                            : 'E · Talk to Mira, Bram or use a portal'
                         : 'W / ↑ to climb · J to attack · K for weapon skill'}
                 </div>
                 <div className="touch-controls">
@@ -958,6 +972,7 @@ function App() {
                     character: 'The road so far.',
                     quests: 'Adventure journal.',
                     mira: 'Mira · Village guide',
+                    bram: 'Bram’s Forge',
                     map: 'Beyond the Elderwood.',
                     settings: 'Hunt your way.',
                   } as Record<string, string>
@@ -1039,18 +1054,10 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <h3>Wooden starter tools</h3>
-                <div className="starter-tools">
-                  {GATHERING_SKILLS.map((skill) => (
-                    <div key={skill}>
-                      <ToolIcon id={starterTool(skill).id} />
-                      <span>{skill}</span>
-                    </div>
-                  ))}
-                </div>
+                <GatheringTools player={p} onEquip={(id) => room?.send('equipTool', id)} />
                 <details className="tool-tiers">
                   <summary>View tool tiers</summary>
-                  <p>Ore tools are future crafting upgrades.</p>
+                  <p>Forge Iron tools with Bram. Higher ore tiers arrive with later islands.</p>
                   {TOOL_MATERIALS.map((material) => (
                     <div className="tool-tier" key={material.id}>
                       <span>{material.name}</span>
@@ -1093,6 +1100,19 @@ function App() {
                   if (questPending) return;
                   setQuestPending(true);
                   room?.send('quest', { questId: quest.id, action });
+                }}
+              />
+            )}
+            {(panel === 'bram' || panel === 'quests') && (
+              <ForgePanel
+                player={p}
+                near={closeToBram}
+                pending={forgePending}
+                onTalk={() => room?.send('interact', { npcId: 'bram' })}
+                onAction={(action, recipeId) => {
+                  if (forgePending) return;
+                  setForgePending(true);
+                  room?.send('forge', { action, recipeId });
                 }}
               />
             )}

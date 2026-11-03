@@ -6,7 +6,7 @@ Mining/chopping/herbalism loops play at7 FPS; fishing at4 FPS. Atlas source fram
 
 `packages/game-data/src/tools.ts` defines32 tool variants: pickaxe, axe, fishing rod, and sickle in Wooden, Iron, Crystal, Mire, Frost, Ember, Celestial, and Shadow materials. `/assets/equipment/gathering-tools.{png,json}` supplies their matching icon atlas. The server selects a free wooden starter tool for each gathering action. Character displays the starter set and an expandable tier gallery.
 
-Ore-tier tools are prepared as catalog/artwork for future crafting upgrades. They are not granted, craftable, equipable, or stat upgrades in this change; held-tool animation sheets currently depict the starter wooden set. No tool recipes, ownership, or upgrade costs are invented by this implementation.
+Iron tools are craftable at Bram’s forge and must be equipped manually in Character. Only wooden starters are selected automatically. Equipped Iron tools reduce gathering duration by20% and use matching male/female Iron held-tool animation atlases. Crystal through Shadow remain catalog/artwork for later upgrades. See `docs/forging.md` for recipes and persistence.
 
 Game buttons and the canvas suppress context menus, image dragging, text selection and WebKit touch callouts. SVG artwork ignores pointer events so touches target the actual buttons. Movement/skill controls retain `touch-action:none`, pointer capture and clean release; chat text fields retain normal selection behavior. HUD mouse/pointer/touch events also stop before reaching the world behind them, so sending chat near Mira does not accidentally open her dialog. Menus remain accessible by keyboard with visible focus outlines.
 

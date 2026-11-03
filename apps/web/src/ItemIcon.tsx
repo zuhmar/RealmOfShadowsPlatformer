@@ -4,6 +4,17 @@ import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
   const item = itemDefinition(id);
+  if (id === 'iron-bar')
+    return (
+      <img
+        src="/assets/ui/iron-bar.png"
+        alt="Iron Bar"
+        draggable={false}
+        width="32"
+        height="32"
+        style={{ objectFit: 'contain', verticalAlign: 'middle' }}
+      />
+    );
   const resource =
     id && Object.prototype.hasOwnProperty.call(resources.frames, id)
       ? resources.frames[id as keyof typeof resources.frames]

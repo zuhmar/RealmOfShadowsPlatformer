@@ -28,7 +28,8 @@
     "test:browser:game-layout": "node --env-file-if-exists=apps/server/.env scripts/browser-game-layout.mjs",
     "test:browser:portals": "node --env-file-if-exists=apps/server/.env scripts/browser-portals.mjs",
     "test:browser:gathering": "node --env-file-if-exists=apps/server/.env scripts/browser-gathering.mjs",
-    "test:browser:gathering-animations": "node scripts/browser-gathering-animations.mjs"
+    "test:browser:gathering-animations": "node scripts/browser-gathering-animations.mjs",
+    "test:browser:forge": "node --env-file-if-exists=apps/server/.env scripts/browser-forge.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

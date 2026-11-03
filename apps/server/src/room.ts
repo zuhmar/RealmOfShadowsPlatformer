@@ -1,5 +1,15 @@
+import { changeForge } from './forge.js';
 import { Room, type Client } from '@colyseus/core';
-import { MAPS, ITEMS, QUESTS, MIRA_WEAPON_KIT_LEDGER, itemDefinition, maxHp } from '@ros/game-data';
+import {
+  MAPS,
+  ITEMS,
+  QUESTS,
+  MIRA_WEAPON_KIT_LEDGER,
+  itemDefinition,
+  maxHp,
+  GATHERING_TOOLS,
+  BRAM_QUEST,
+} from '@ros/game-data';
 import {
   World,
   idleInput,
@@ -107,13 +117,32 @@ export class MapRoom extends Room {
         p.auto = false;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: 'mira' });
-      } else if (payload?.npcId === 'mira')
+      } else if (nearNpc(p, this.world.map, 'bram')) {
+        p.auto = false;
+        delete p.gathering;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: 'bram' });
+      } else if (payload?.npcId === 'bram') c.send('notice', 'Walk closer to Bram.');
+      else if (payload?.npcId === 'mira')
         c.send('notice', 'Walk closer to Mira to speak with her.');
       else {
         const node = this.world.map.resources?.find((n) => this.world.nearResource(p, n));
         if (node) this.world.startGathering(p, node.id, Date.now());
         else void this.travel(c);
       }
+    });
+    this.onMessage('forge', (c, payload) => this.forge(c, payload));
+    this.onMessage('equipTool', (c, id) => {
+      const p = this.player(c);
+      if (!p || !this.rate(c, 100) || typeof id !== 'string') return;
+      const tool = GATHERING_TOOLS.find((t) => t.id === id);
+      if (!tool || (!tool.starter && (tool.material !== 'iron' || !p.ownedTools?.includes(id)))) {
+        c.send('notice', 'You do not own that tool.');
+        return;
+      }
+      delete p.gathering;
+      p.equippedTools ??= {};
+      p.equippedTools[tool.skill] = id;
     });
     this.onMessage('gather', (c, nodeId) => {
       const p = this.player(c);
@@ -205,6 +234,57 @@ export class MapRoom extends Room {
       )
       .finally(() => this.questTasks.delete(p.id));
   }
+  forge(c: Client, payload: unknown) {
+    const result = (ok: boolean, message: string) => {
+      if (this.clients.includes(c)) c.send('forgeResult', { ok, message });
+    };
+    const p = this.player(c);
+    if (!p) {
+      result(false, 'Please wait for the current action.');
+      return;
+    }
+    if (!this.rate(c, 100)) return;
+    const value = payload as { action?: unknown; recipeId?: unknown } | null;
+    if (
+      !value ||
+      typeof value.action !== 'string' ||
+      !['accept', 'craft', 'claim'].includes(value.action) ||
+      (value.recipeId !== undefined && typeof value.recipeId !== 'string')
+    ) {
+      result(false, 'Unknown forge action.');
+      return;
+    }
+    if (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'bram')) {
+      result(false, 'Return to Bram’s forge in Elderwood Village.');
+      return;
+    }
+    const action = value.action as 'accept' | 'craft' | 'claim',
+      recipeId = value.recipeId as string | undefined;
+    p.auto = false;
+    delete p.gathering;
+    this.inputs.set(p.id, idleInput());
+    const task = this.saves
+      .catch(() => {})
+      .then(async () => {
+        if (!nearNpc(p, this.world.map, 'bram')) throw new Error('Stand near Bram’s forge.');
+        const { next, message } = await changeForge(structuredClone(p), action, recipeId);
+        p.inventory = next.inventory;
+        p.gold = next.gold;
+        p.forgeQuest = next.forgeQuest;
+        p.forgeRevision = next.forgeRevision;
+        p.blacksmithing = next.blacksmithing;
+        p.ownedTools = next.ownedTools;
+        p.equippedTools = next.equippedTools;
+        result(true, message);
+      });
+    this.questTasks.set(p.id, task);
+    this.saves = task.catch(() => {});
+    void task
+      .catch((error) =>
+        result(false, error instanceof Error ? error.message : 'Could not save crafting.'),
+      )
+      .finally(() => this.questTasks.delete(p.id));
+  }
   rate(c: Client, limit: number) {
     const now = Date.now();
     let r = this.rates.get(c.sessionId);
@@ -244,6 +324,16 @@ export class MapRoom extends Room {
               },
             ]),
         );
+        const forgeLedger = questRows.find((q) => q.questId === BRAM_QUEST.id);
+        if (forgeLedger) {
+          p.forgeQuest ??= {
+            accepted: true,
+            claimed: forgeLedger.claimed,
+            barsSmelted: 0,
+            toolsCrafted: 0,
+          };
+          p.forgeQuest.claimed = forgeLedger.claimed;
+        } else delete p.forgeQuest;
         const activity = await tx.offlineActivity.findUnique({ where: { characterId: id } });
         if (activity) {
           const reward = offlineReward(activity.startedAt.getTime(), Date.now());

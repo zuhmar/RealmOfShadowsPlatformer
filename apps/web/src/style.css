@@ -2829,3 +2829,48 @@ footer {
   width: 100%;
   max-width: 40px;
 }
+
+.forge-panel {
+  margin-top: 16px;
+  color: #eedff9;
+}
+.forge-panel p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #cdb8df;
+  margin: 12px 0;
+}
+.forge-recipes {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+.forge-recipes section {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #74508a66;
+}
+.forge-recipes p {
+  font-size: 10px;
+  margin: 5px 0;
+}
+.starter-tools button {
+  font-size: 10px;
+  padding: 3px;
+  color: #e5c8fc;
+}
+.starter-tools button[aria-pressed='true'] {
+  text-decoration: underline;
+}
+@media (max-width: 500px) {
+  .forge-recipes section {
+    grid-template-columns: 36px 1fr;
+  }
+  .forge-recipes button {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

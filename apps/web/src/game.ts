@@ -163,6 +163,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           })
           .setOrigin(0.5);
         c.setDepth(8);
+        if (npc.id === 'bram')
+          this.add
+            .zone(npc.x, npc.y - 40, 80, 100)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => bridge.send('interact', { npcId: 'bram' }));
         if (npc.id === 'mira') {
           this.miraMarker = this.add
             .text(npc.x, npc.y - 126, '!', {
