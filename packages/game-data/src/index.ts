@@ -1,3 +1,5 @@
+export * from './monsters';
+import type { WoodsMonster } from './monsters';
 export * from './portals';
 export * from './forging';
 export * from './tools';
@@ -10,12 +12,14 @@ export type GameMap = {
   name: string;
   island: string;
   requiredLevel: number;
+  monster?: WoodsMonster;
+  background?: string;
   width: number;
   height: number;
   spawn: { x: number; y: number };
   platforms: Platform[];
   ladders: Ladder[];
-  portals: { x: number; y: number; target: string; label: string }[];
+  portals: { x: number; y: number; target: string; label: string; key?: string }[];
   spawns: { x: number; y: number; platform: string }[];
   resources?: ResourceNode[];
   npcs: { id?: string; x: number; y: number; name: string; role: string }[];
@@ -94,7 +98,10 @@ export const MAPS: Record<string, GameMap> = {
       { x: 1850, bottom: 555, top: 350, from: 'ridge', to: 'herb-garden' },
       { x: 2220, bottom: 760, top: 555, from: 'ground', to: 'mining-ledge' },
     ],
-    portals: [{ x: 90, y: 760, target: 'village', label: 'Elderwood Village' }],
+    portals: [
+      { x: 90, y: 760, target: 'village', label: 'Elderwood Village' },
+      { x: 2300, y: 760, target: 'woods-2', label: 'Silkshade Glade' },
+    ],
     spawns: [
       { x: 680, y: 760, platform: 'ground' },
       { x: 1080, y: 760, platform: 'ground' },
@@ -170,6 +177,55 @@ export const ISLANDS = [
     available: false,
   },
 ];
+/** All islands follow three monster areas, then a key-gated boss area. */
+export const ISLAND_AREAS = ISLANDS.map((island) => ({
+  islandId: island.id,
+  areas: [island.id, `${island.id}-2`, `${island.id}-3`, `${island.id}-boss`],
+  monsters: [...island.monsters, island.boss],
+  bossKey: island.id === 'woods' ? 'forest-bear-key' : `${island.id}-boss-key`,
+}));
+for (const [stage, name, monster, background] of [
+  [2, 'Silkshade Glade', 'thorn-spider', 'spider-glade'],
+  [3, 'Brambleboar Run', 'wild-boar', 'boar-run'],
+  ['boss', 'Forest Bear Den', 'forest-bear', 'bear-den'],
+] as const) {
+  const id = `woods-${stage}`;
+  const previous = stage === 2 ? 'woods' : stage === 3 ? 'woods-2' : 'woods-3';
+  const next = stage === 2 ? 'woods-3' : stage === 3 ? 'woods-boss' : null;
+  MAPS[id] = {
+    ...MAPS.woods,
+    id,
+    name,
+    monster,
+    background: `/assets/backgrounds/${background}.png`,
+    resources: [],
+    platforms: MAPS.woods.platforms.slice(0, 4).map((p) => ({ ...p })),
+    ladders: MAPS.woods.ladders.slice(0, 3).map((l) => ({ ...l })),
+    portals: [
+      {
+        x: 90,
+        y: 760,
+        target: previous,
+        label: stage === 2 ? 'Wolf Hollow' : stage === 3 ? 'Silkshade Glade' : 'Brambleboar Run',
+      },
+      ...(next
+        ? [
+            {
+              x: 2300,
+              y: 760,
+              target: next,
+              label: stage === 2 ? 'Brambleboar Run' : 'Forest Bear Den',
+              ...(stage === 3 ? { key: 'forest-bear-key' } : {}),
+            },
+          ]
+        : []),
+    ],
+    spawns:
+      stage === 'boss'
+        ? [{ x: 1250, y: 760, platform: 'ground' }]
+        : MAPS.woods.spawns.map((p) => ({ ...p })),
+  };
+}
 export const STORY = {
   title: 'The last survivor',
   prologue:
@@ -208,6 +264,17 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  'forest-bear-key': {
+    id: 'forest-bear-key',
+    name: 'Forest Bear Key',
+    rarity: 'Uncommon',
+    description: 'Dropped by Wild Boars. Consumed when entering the Forest Bear Den.',
+    type: 'resource' as const,
+    sellValue: 0,
+    level: 1,
+    bonus: 0,
+    icon: '⚿',
+  },
   'iron-bar': {
     id: 'iron-bar',
     name: 'Iron Bar',

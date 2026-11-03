@@ -1,3 +1,4 @@
+import { WoodsMonsterVisual, preloadWoodsMonster, registerWoodsMonster } from './woods-monsters';
 import { preloadPortals, registerPortals, addPortal } from './portals';
 import { skillEffect } from './combat-effects';
 import Phaser from 'phaser';
@@ -5,7 +6,7 @@ import { VillageScenery, preloadVillage } from './village';
 import { WoodsScenery, preloadWoods } from './woods';
 import { CharacterVisual, preloadCharacters, registerCharacters } from './character';
 import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
-import { MAPS, RULES, weaponKind, type GameMap } from '@ros/game-data';
+import { MAPS, WOODS_MONSTERS, weaponKind, type GameMap } from '@ros/game-data';
 import {
   idleInput,
   questStatus,
@@ -34,7 +35,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     lastInput = '';
     floor!: Phaser.Physics.Arcade.StaticGroup;
     playerBody?: Phaser.Physics.Arcade.Sprite;
-    wolves = new Map<string, WolfVisual>();
+    wolves = new Map<string, WolfVisual | WoodsMonsterVisual>();
     characters = new Map<string, CharacterVisual>();
     woods?: WoodsScenery;
     village?: VillageScenery;
@@ -45,8 +46,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     preload() {
       preloadCharacters(this);
       this.load.image('bram', '/assets/characters/bram.png');
+      this.load.image('forest-bear-key', '/assets/ui/forest-bear-key.png');
       preloadPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
-      if (bridge.snapshot?.mapId === 'woods') preloadWoods(this);
+      const loadingMap = MAPS[bridge.snapshot?.mapId ?? 'village'];
+      preloadWoodsMonster(this, loadingMap.monster);
+      if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
       else preloadVillage(this);
       this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
       this.load.spritesheet(WOLF_TEXTURE, '/assets/monsters/wolf-spritesheet.png', {
@@ -56,11 +60,14 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     create() {
       registerWolfAnimations(this);
+      registerWoodsMonster(this, MAPS[bridge.snapshot?.mapId ?? 'village'].monster);
       registerCharacters(this);
       registerPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
       const id = bridge.snapshot?.mapId ?? 'village';
       this.map = MAPS[id];
-      this.cameras.main.setBackgroundColor(id === 'woods' ? '#b6c9b2' : '#c1d6c5');
+      this.cameras.main.setBackgroundColor(
+        this.map.island === 'Whispering Woods' ? '#b6c9b2' : '#c1d6c5',
+      );
       this.cameras.main.setBounds(0, 0, this.map.width, this.map.height);
       this.physics.world.setBounds(0, 0, this.map.width, this.map.height);
       this.drawWorld();
@@ -98,7 +105,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     drawWorld() {
       const m = this.map;
-      const woods = m.id === 'woods';
+      const woods = m.island === 'Whispering Woods';
       if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
       else this.village = new VillageScenery(this, m);
       this.floor = this.physics.add.staticGroup();
@@ -109,9 +116,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       for (const p of m.portals) {
         addPortal(this, m.id, p);
+        if (p.key)
+          this.add
+            .image(p.x, p.y - 205, 'forest-bear-key')
+            .setDisplaySize(42, 28)
+            .setDepth(7)
+            .setName('boss-key-marker');
         this.add
-          .text(p.x, p.y - 164, p.label, {
+          .text(p.x, p.y - 164, p.key ? `${p.label}\nForest Bear Key ×1` : p.label, {
             fontSize: '14px',
+            align: 'center',
             fontFamily: 'Georgia',
             color: '#fff5d5',
             stroke: '#241034',
@@ -289,7 +303,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         alive.add(w.id);
         let visual = this.wolves.get(w.id);
         if (!visual) {
-          visual = new WolfVisual(this, w);
+          visual =
+            w.monster && w.monster !== 'wolf'
+              ? new WoodsMonsterVisual(this, w)
+              : new WolfVisual(this, w);
           this.wolves.set(w.id, visual);
           this.labels.set(
             w.id,
@@ -308,8 +325,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.labels
           .get(w.id)!
           .setVisible(w.hp > 0)
-          .setText(`Wolf · ${w.hp}/${RULES.wolfHp}`)
-          .setPosition(visual.container.x, w.y - 78);
+          .setText(
+            `${WOODS_MONSTERS[w.monster ?? 'wolf'].name} · ${w.hp}/${WOODS_MONSTERS[w.monster ?? 'wolf'].hp}`,
+          )
+          .setPosition(visual.container.x, w.y - (w.monster === 'forest-bear' ? 155 : 78));
       }
       for (const shot of s.projectiles ?? []) {
         alive.add(shot.id);

@@ -1,6 +1,11 @@
+export * from './travel';
 export * from './forging';
 import {
   RULES,
+  WOODS_MONSTERS,
+  FOREST_BEAR_KEY,
+  FOREST_BEAR_KEY_CHANCE,
+  type WoodsMonster,
   MAPS,
   QUESTS,
   INTERACTION,
@@ -88,6 +93,7 @@ export type Player = Actor & {
   lastHit: number;
   mapId: string;
   kills: number;
+  bossKills?: Record<string, number>;
   targetId: string | null;
 };
 export function activeGatheringTool(
@@ -103,6 +109,7 @@ export function activeGatheringTool(
   );
 }
 export type Wolf = {
+  monster?: WoodsMonster;
   id: string;
   x: number;
   y: number;
@@ -372,12 +379,13 @@ export class World {
   constructor(public map: GameMap) {
     this.wolves = map.spawns.map((s, i) => ({
       id: `wolf-${i}`,
+      monster: map.monster,
       x: s.x,
       y: s.y,
       homeX: s.x,
       homeY: s.y,
       platform: s.platform,
-      hp: RULES.wolfHp,
+      hp: WOODS_MONSTERS[map.monster ?? 'wolf'].hp,
       deadUntil: 0,
       lastAttack: 0,
       state: 'idle',
@@ -481,7 +489,7 @@ export class World {
     for (const w of this.wolves) {
       if (w.hp <= 0) {
         if (now >= w.deadUntil) {
-          w.hp = RULES.wolfHp;
+          w.hp = WOODS_MONSTERS[w.monster ?? 'wolf'].hp;
           w.x = w.homeX;
           w.state = 'idle';
           w.killer = null;
@@ -495,16 +503,17 @@ export class World {
       if (nearest && Math.abs(nearest.x - w.x) < 260) {
         const dx = nearest.x - w.x;
         w.state = Math.abs(dx) < 44 ? 'attacking' : 'chasing';
-        if (w.state === 'chasing') w.x += Math.sign(dx) * 75 * dt;
-        else if (now - w.lastAttack > 1200) {
+        if (w.state === 'chasing')
+          w.x += Math.sign(dx) * WOODS_MONSTERS[w.monster ?? 'wolf'].speed * dt;
+        else if (now - w.lastAttack > WOODS_MONSTERS[w.monster ?? 'wolf'].cooldown) {
           w.lastAttack = now;
-          nearest.hp -= RULES.wolfDamage;
+          nearest.hp -= WOODS_MONSTERS[w.monster ?? 'wolf'].damage;
           nearest.lastHit = now;
           this.events.push({
             type: 'hit',
             x: nearest.x,
             y: nearest.y - 55,
-            text: `−${RULES.wolfDamage}`,
+            text: `−${WOODS_MONSTERS[w.monster ?? 'wolf'].damage}`,
             playerId: nearest.id,
           });
           if (nearest.hp <= 0) {
@@ -641,16 +650,31 @@ export class World {
     this.events.push({ type: 'hit', x: w.x, y: w.y - 50, text: String(hit) });
     if (!w.hp) {
       w.state = 'dead';
-      w.deadUntil = now + RULES.respawnMs;
+      const stats = WOODS_MONSTERS[w.monster ?? 'wolf'];
+      w.deadUntil = now + stats.respawn;
       w.killer = p.id;
       p.kills++;
-      advanceQuests(p, 'wolf', this.map.id);
-      const leveled = grantXp(p, RULES.wolfXp);
+      advanceQuests(p, w.monster ?? 'wolf', this.map.id);
+      if (w.monster === 'wild-boar' && Math.random() < FOREST_BEAR_KEY_CHANCE) {
+        p.inventory[FOREST_BEAR_KEY] = (p.inventory[FOREST_BEAR_KEY] ?? 0) + 1;
+        this.events.push({
+          type: 'loot',
+          x: p.x,
+          y: p.y - 105,
+          text: '+1 Forest Bear Key',
+          playerId: p.id,
+        });
+      }
+      if (w.monster === 'forest-bear') {
+        p.bossKills ??= {};
+        p.bossKills['forest-bear'] = (p.bossKills['forest-bear'] ?? 0) + 1;
+      }
+      const leveled = grantXp(p, stats.xp);
       this.events.push({
         type: leveled ? 'level' : 'kill',
         x: p.x,
         y: p.y - 80,
-        text: leveled ? `Level ${p.level}!` : `+${RULES.wolfXp} XP`,
+        text: leveled ? `Level ${p.level}!` : `+${stats.xp} XP`,
         playerId: p.id,
       });
       this.drops.push({
@@ -658,7 +682,7 @@ export class World {
         x: w.x,
         y: w.y,
         owner: p.id,
-        gold: RULES.wolfGold,
+        gold: stats.gold,
         item: p.kills % 5 === 0 ? 'sword' : 'fang',
         expires: now + 60000,
       });

@@ -105,6 +105,8 @@ function App() {
         Math.abs(p.x - n.x) <= 72 &&
         Math.abs(p.y - n.y) < 40,
     );
+  const nearbyPortal =
+    p && map.portals.find((q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65);
   const gatheringNode = p?.gathering && map.resources?.find((n) => n.id === p.gathering?.nodeId);
   const skillCooldown = p
     ? Math.max(
@@ -698,13 +700,15 @@ function App() {
                     ? `${gatheringNode.skill}… ${Math.max(0, Math.ceil(((p.gathering?.finishAt ?? 0) - (snapshot?.time ?? 0)) / 1000))}s • Repeats · Move to stop`
                     : nearbyResource
                       ? `E • ${nearbyResource.skill} • Lv. ${p.gatheringSkills?.[nearbyResource.skill]?.level ?? 1}`
-                      : map.id === 'village'
-                        ? closeToMira
-                          ? 'E · Talk to Mira'
-                          : closeToBram
-                            ? 'E · Talk to Bram'
-                            : 'E · Talk to Mira, Bram or use a portal'
-                        : 'W / ↑ to climb · J to attack · K for weapon skill'}
+                      : nearbyPortal
+                        ? `E • ${nearbyPortal.label}${nearbyPortal.key ? ` • ${p.inventory[nearbyPortal.key] ?? 0} key(s) · 1 consumed` : ''}`
+                        : map.id === 'village'
+                          ? closeToMira
+                            ? 'E · Talk to Mira'
+                            : closeToBram
+                              ? 'E · Talk to Bram'
+                              : 'E · Talk to Mira, Bram or use a portal'
+                          : 'W / ↑ to climb · J to attack · K for weapon skill'}
                 </div>
                 <div className="touch-controls">
                   <div className="movement-buttons">
@@ -1058,7 +1062,7 @@ function App() {
                     ['Health', `${Math.floor(p.hp)} / ${maxHp(p.level)}`],
                     ['Mana', `${Math.floor(p.mp)} / 50`],
                     ['Attack', `${RULES.baseDamage + (p.level - 1) * 3 + weaponBonus(p.weapon)}`],
-                    ['Wolves defeated', p.kills],
+                    ['Enemies defeated', p.kills],
                     ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
                     ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
                     ['Weapon trial', weaponProfile(p.weapon).className],
@@ -1150,7 +1154,9 @@ function App() {
                         <h3>{island.name}</h3>
                         <p>
                           Lv. {island.minLevel}–{island.maxLevel} ·{' '}
-                          {island.available ? 'Wolf Hollow open' : 'Coming in an expansion'}
+                          {island.available
+                            ? '4 areas · Forest Bear key required'
+                            : 'Coming in an expansion'}
                         </p>
                       </div>
                       <b>{island.available ? '◇' : '⌑'}</b>
@@ -1158,8 +1164,10 @@ function App() {
                   ))}
                 </div>
                 <p>
-                  Travel through the portals in the world. Later islands are planned content; the
-                  journey ends in Shadow Fortress with the Shadow Dragon at levels 61–100.
+                  Whispering Woods: Wolf Hollow → Silkshade Glade → Brambleboar Run → Forest Bear
+                  Den. Wild Boars have a 20% chance to drop a Forest Bear Key; entering the den
+                  consumes one key. Later islands are planned content; the journey ends in Shadow
+                  Fortress with the Shadow Dragon at levels 61–100.
                 </p>
               </>
             )}

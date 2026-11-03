@@ -14,7 +14,7 @@ type ArtManifest = {
     { image: string; atlas: string; alignmentHints?: Record<string, { surfaceY: number }> }
   >;
 };
-export function preloadWoods(scene: Phaser.Scene) {
+export function preloadWoods(scene: Phaser.Scene, map?: GameMap) {
   scene.load.atlas(
     'woods-resources',
     '/assets/props/woods-resource-nodes.png',
@@ -26,7 +26,10 @@ export function preloadWoods(scene: Phaser.Scene) {
     '/assets/tilesets/woods-fishing-platform.json',
   );
   scene.load.json('woods-art', '/assets/maps/whispering-woods-art.json');
-  scene.load.image('woods-background', '/assets/backgrounds/whispering-woods.png');
+  scene.load.image(
+    'woods-background',
+    map?.background ?? '/assets/backgrounds/whispering-woods.png',
+  );
   for (const [name, folder] of [
     ['platforms', 'tilesets'],
     ['ladders', 'tilesets'],

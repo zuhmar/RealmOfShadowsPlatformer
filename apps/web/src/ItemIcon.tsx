@@ -4,6 +4,17 @@ import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
   const item = itemDefinition(id);
+  if (id === 'forest-bear-key')
+    return (
+      <img
+        src="/assets/ui/forest-bear-key.png"
+        alt="Forest Bear Key"
+        draggable={false}
+        width="32"
+        height="32"
+        style={{ objectFit: 'contain', verticalAlign: 'middle' }}
+      />
+    );
   if (id === 'iron-bar')
     return (
       <img

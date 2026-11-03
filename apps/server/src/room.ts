@@ -1,3 +1,4 @@
+import { usePortal } from '@ros/shared';
 import { changeForge } from './forge.js';
 import { Room, type Client } from '@colyseus/core';
 import {
@@ -155,26 +156,18 @@ export class MapRoom extends Room {
   async travel(c: Client) {
     const p = this.player(c);
     if (!p || !this.rate(c, 100)) return;
-    const portal = this.world.map.portals.find(
-      (q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65,
-    );
-    if (!portal) {
-      c.send('notice', 'Walk close to a portal first.');
+    let target: string;
+    try {
+      target = usePortal(p, this.world.map);
+    } catch (error) {
+      c.send('notice', error instanceof Error ? error.message : 'Could not travel.');
       return;
     }
-    p.auto = false;
     this.inputs.set(p.id, idleInput());
-    delete p.gathering;
-    p.mapId = portal.target;
-    const m = MAPS[portal.target];
-    p.x = m.spawn.x;
-    p.y = m.spawn.y;
-    p.vy = 0;
-    p.platform = 'ground';
     this.world.players.delete(p.id);
     try {
       await this.enqueueSave(p);
-      c.send('travel', portal.target);
+      c.send('travel', target);
     } catch {
       c.send('notice', 'Travel save failed. Please reconnect.');
       c.leave();

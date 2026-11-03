@@ -1,0 +1,45 @@
+export const WOODS_MONSTERS = {
+  wolf: {
+    name: 'Wolf',
+    hp: 48,
+    damage: 7,
+    xp: 24,
+    gold: 5,
+    speed: 75,
+    cooldown: 1200,
+    respawn: 6500,
+  },
+  'thorn-spider': {
+    name: 'Thorn Spider',
+    hp: 75,
+    damage: 9,
+    xp: 36,
+    gold: 5,
+    speed: 85,
+    cooldown: 1100,
+    respawn: 8000,
+  },
+  'wild-boar': {
+    name: 'Wild Boar',
+    hp: 110,
+    damage: 14,
+    xp: 50,
+    gold: 8,
+    speed: 95,
+    cooldown: 1400,
+    respawn: 10000,
+  },
+  'forest-bear': {
+    name: 'Forest Bear',
+    hp: 450,
+    damage: 22,
+    xp: 180,
+    gold: 75,
+    speed: 65,
+    cooldown: 1500,
+    respawn: 45000,
+  },
+} as const;
+export type WoodsMonster = keyof typeof WOODS_MONSTERS;
+export const FOREST_BEAR_KEY = 'forest-bear-key';
+export const FOREST_BEAR_KEY_CHANCE = 0.2;
