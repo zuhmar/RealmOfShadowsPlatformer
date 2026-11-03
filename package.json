@@ -30,7 +30,8 @@
     "test:browser:gathering": "node --env-file-if-exists=apps/server/.env scripts/browser-gathering.mjs",
     "test:browser:gathering-animations": "node scripts/browser-gathering-animations.mjs",
     "test:browser:forge": "node --env-file-if-exists=apps/server/.env scripts/browser-forge.mjs",
-    "test:browser:woods-areas": "node --env-file-if-exists=apps/server/.env scripts/browser-woods-areas.mjs"
+    "test:browser:woods-areas": "node --env-file-if-exists=apps/server/.env scripts/browser-woods-areas.mjs",
+    "test:browser:boss-props": "node scripts/browser-boss-props.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

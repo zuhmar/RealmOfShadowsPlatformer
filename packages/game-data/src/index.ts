@@ -1,3 +1,5 @@
+import { WOODS_HUNTING_LAYOUTS } from './hunting-layouts';
+import type { PortalTheme } from './portals';
 export * from './monsters';
 import type { WoodsMonster } from './monsters';
 export * from './portals';
@@ -14,6 +16,7 @@ export type GameMap = {
   requiredLevel: number;
   monster?: WoodsMonster;
   background?: string;
+  bossEntrance?: { theme: PortalTheme; x: number; y: number; platform: string };
   width: number;
   height: number;
   spawn: { x: number; y: number };
@@ -182,6 +185,7 @@ export const ISLAND_AREAS = ISLANDS.map((island) => ({
   islandId: island.id,
   areas: [island.id, `${island.id}-2`, `${island.id}-3`, `${island.id}-boss`],
   monsters: [...island.monsters, island.boss],
+  bossEntranceTheme: island.id as PortalTheme,
   bossKey: island.id === 'woods' ? 'forest-bear-key' : `${island.id}-boss-key`,
 }));
 for (const [stage, name, monster, background] of [
@@ -199,8 +203,10 @@ for (const [stage, name, monster, background] of [
     monster,
     background: `/assets/backgrounds/${background}.png`,
     resources: [],
-    platforms: MAPS.woods.platforms.slice(0, 4).map((p) => ({ ...p })),
-    ladders: MAPS.woods.ladders.slice(0, 3).map((l) => ({ ...l })),
+    ...WOODS_HUNTING_LAYOUTS[id],
+    ...(stage === 3
+      ? { bossEntrance: { theme: 'woods' as const, x: 2050, y: 285, platform: 'boss-perch' } }
+      : {}),
     portals: [
       {
         x: 90,
@@ -211,8 +217,8 @@ for (const [stage, name, monster, background] of [
       ...(next
         ? [
             {
-              x: 2300,
-              y: 760,
+              x: stage === 3 ? 2240 : 2300,
+              y: stage === 3 ? 285 : 760,
               target: next,
               label: stage === 2 ? 'Brambleboar Run' : 'Forest Bear Den',
               ...(stage === 3 ? { key: 'forest-bear-key' } : {}),
@@ -220,10 +226,6 @@ for (const [stage, name, monster, background] of [
           ]
         : []),
     ],
-    spawns:
-      stage === 'boss'
-        ? [{ x: 1250, y: 760, platform: 'ground' }]
-        : MAPS.woods.spawns.map((p) => ({ ...p })),
   };
 }
 export const STORY = {

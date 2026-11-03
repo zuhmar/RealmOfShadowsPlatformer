@@ -53,3 +53,45 @@ export function backgroundArtwork(
     height,
   };
 }
+
+export const WOODS_AREA_PROPS: Record<
+  string,
+  { frame: string; platform: string; offset: number; height: number }[]
+> = {
+  'woods-2': [
+    { frame: 'mushrooms', platform: 'ground', offset: 330, height: 32 },
+    { frame: 'fern', platform: 'ground', offset: 1260, height: 45 },
+    { frame: 'leafy-bush', platform: 'silk-left', offset: 90, height: 45 },
+    { frame: 'mushrooms', platform: 'silk-right', offset: 350, height: 28 },
+    { frame: 'fern', platform: 'silk-bridge', offset: 470, height: 35 },
+    { frame: 'treasure-chest', platform: 'silk-crown', offset: 400, height: 32 },
+  ],
+  'woods-3': [
+    { frame: 'tree-stump', platform: 'ground', offset: 280, height: 52 },
+    { frame: 'hollow-log', platform: 'ground', offset: 960, height: 58 },
+    { frame: 'moss-boulder', platform: 'root-bank', offset: 360, height: 56 },
+    { frame: 'mushrooms', platform: 'mud-rim', offset: 90, height: 30 },
+    { frame: 'berry-bush', platform: 'boar-rise', offset: 285, height: 42 },
+    { frame: 'lantern-post', platform: 'boss-perch', offset: 370, height: 100 },
+  ],
+  'woods-boss': [
+    { frame: 'moss-boulder', platform: 'ground', offset: 700, height: 95 },
+    { frame: 'moss-boulder', platform: 'ground', offset: 1680, height: 85 },
+    { frame: 'tree-stump', platform: 'ground', offset: 2080, height: 55 },
+    { frame: 'fern', platform: 'den-left', offset: 190, height: 35 },
+    { frame: 'leafy-bush', platform: 'den-right', offset: 390, height: 48 },
+    { frame: 'mushrooms', platform: 'den-overlook', offset: 240, height: 28 },
+  ],
+};
+export function woodsPlatformFrame(p: Platform) {
+  return (
+    WOODS_PLATFORM_FRAMES[p.id] ??
+    (!p.oneWay
+      ? 'ground'
+      : p.width <= 380
+        ? 'platform-small'
+        : p.width <= 600
+          ? 'platform-medium'
+          : 'platform-wide')
+  );
+}

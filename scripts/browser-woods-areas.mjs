@@ -106,6 +106,20 @@ try {
     expect(backdrop.right).toBeGreaterThanOrEqual(backdrop.viewRight);
     expect(backdrop.top).toBeLessThanOrEqual(backdrop.viewTop);
     expect(backdrop.bottom).toBeGreaterThanOrEqual(backdrop.viewBottom);
+    await page.evaluate(() => {
+      const s = window.areaTest.game.scene.getScene('realm');
+      s.cameras.main.setZoom(0.46).centerOn(1200, 450);
+    });
+    await page.waitForTimeout(150);
+    await page.screenshot({ path: `artifacts/${mapId}-layout.png` });
+    await page.evaluate(() => {
+      const s = window.areaTest.game.scene.getScene('realm');
+      const entrance = s.children.getByName('boss-entrance-prop');
+      s.cameras.main.setZoom(1).centerOn(entrance ? 2140 : 900, entrance ? 215 : 620);
+      if (entrance && (entrance.y !== 285 || entrance.getData('platformId') !== 'boss-perch'))
+        throw new Error('Boss prop is not on its upper platform');
+    });
+    await page.waitForTimeout(150);
     await page.screenshot({ path: `artifacts/${mapId}-desktop.png` });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({ path: `artifacts/${mapId}-mobile.png` });
@@ -150,14 +164,30 @@ try {
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await expect(page.locator('.world-title h1')).toContainText('Silkshade Glade');
   await ready();
-  for (const title of ['Brambleboar Run', 'Forest Bear Den']) {
-    await page.keyboard.down('d');
-    await page.waitForTimeout(11000);
-    await page.keyboard.up('d');
-    await page.getByRole('button', { name: 'Interact', exact: true }).click();
-    await expect(page.locator('.world-title h1')).toContainText(title);
-    await ready();
+  await page.keyboard.down('d');
+  await page.waitForTimeout(11000);
+  await page.keyboard.up('d');
+  await page.getByRole('button', { name: 'Interact', exact: true }).click();
+  await expect(page.locator('.world-title h1')).toContainText('Brambleboar Run');
+  await ready();
+  // Climb the ground→rise→highest-perch route to the boss entrance.
+  for (const [key, duration] of [
+    ['d', 7800],
+    ['w', 3000],
+    ['d', 1200],
+    ['w', 1800],
+    ['d', 1300],
+  ]) {
+    await page.keyboard.down(key);
+    await page.waitForTimeout(duration);
+    await page.keyboard.up(key);
+    await page.waitForTimeout(100);
   }
+  await expect(page.locator('.world-hint')).toContainText('1 key(s)');
+  await page.screenshot({ path: 'artifacts/boss-perch-live.png' });
+  await page.getByRole('button', { name: 'Interact', exact: true }).click();
+  await expect(page.locator('.world-title h1')).toContainText('Forest Bear Den');
+  await ready();
   // The key was consumed on boss entry and survives return/reconnect as spent.
   await page.screenshot({ path: 'artifacts/boss-entry-live.png' });
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
@@ -172,6 +202,8 @@ try {
   const saved = await db.character.findUnique({ where: { id: c.id } });
   expect(saved.data.inventory['forest-bear-key'] ?? 0).toBe(0);
   expect(saved.data.mapId).toBe('woods-3');
+  expect(saved.data.platform).toBe('boss-perch');
+  expect(saved.data.y).toBe(285);
   expect(errors).toEqual([]);
   console.log(
     'PASS: all48 monster poses, three new backgrounds, desktop/mobile, four-area live route, server key consumption and denial on second entry, durable save.',

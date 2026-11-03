@@ -3,7 +3,8 @@ import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import {
   WOODS_PROPS,
-  WOODS_PLATFORM_FRAMES,
+  woodsPlatformFrame,
+  WOODS_AREA_PROPS,
   platformArtwork,
   backgroundArtwork,
 } from './woods-layout';
@@ -82,8 +83,7 @@ export class WoodsScenery {
         );
         continue;
       }
-      const name =
-        WOODS_PLATFORM_FRAMES[platform.id] ?? (platform.oneWay ? 'platform-wide' : 'ground');
+      const name = woodsPlatformFrame(platform);
       const frame = scene.textures.getFrame('woods-platforms', name);
       const surface = this.manifest.atlases.platforms.alignmentHints?.[name]?.surfaceY ?? 0;
       const rect = platformArtwork(
@@ -111,7 +111,7 @@ export class WoodsScenery {
           .setData({ top: ladder.top, bottom: ladder.bottom }),
       );
     });
-    for (const prop of WOODS_PROPS) {
+    for (const prop of WOODS_AREA_PROPS[map.id] ?? WOODS_PROPS) {
       const platform = map.platforms.find((p) => p.id === prop.platform);
       if (!platform) continue;
       const frame = scene.textures.getFrame('woods-props', prop.frame);

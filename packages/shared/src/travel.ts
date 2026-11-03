@@ -21,7 +21,9 @@ export function usePortal(p: Player, source: GameMap) {
   p.y = arrival?.y ?? target.spawn.y;
   p.vx = 0;
   p.vy = 0;
-  p.platform = 'ground';
+  p.platform =
+    target.platforms.find((f) => Math.abs(f.y - p.y) < 1 && p.x >= f.x && p.x <= f.x + f.width)
+      ?.id ?? 'ground';
   p.grounded = true;
   p.climbing = false;
   p.auto = false;

@@ -1,0 +1,107 @@
+{
+  "fortress": {
+    "width": 1254,
+    "height": 1025,
+    "origin": {
+      "x": 0.5007974481658692,
+      "y": 0.9106858054226475
+    },
+    "bounds": {
+      "x": 269,
+      "y": 117,
+      "width": 718,
+      "height": 1025
+    },
+    "sourceHeight": 1254
+  },
+  "woods": {
+    "width": 1254,
+    "height": 1089,
+    "origin": {
+      "x": 0.4948165869218501,
+      "y": 0.9226475279106858
+    },
+    "bounds": {
+      "x": 186,
+      "y": 68,
+      "width": 869,
+      "height": 1089
+    },
+    "sourceHeight": 1254
+  },
+  "crystal": {
+    "width": 1254,
+    "height": 1065,
+    "origin": {
+      "x": 0.4964114832535885,
+      "y": 0.9226475279106858
+    },
+    "bounds": {
+      "x": 345,
+      "y": 92,
+      "width": 555,
+      "height": 1065
+    },
+    "sourceHeight": 1254
+  },
+  "murkmire": {
+    "width": 1254,
+    "height": 992,
+    "origin": {
+      "x": 0.5,
+      "y": 0.8955342902711324
+    },
+    "bounds": {
+      "x": 191,
+      "y": 131,
+      "width": 872,
+      "height": 992
+    },
+    "sourceHeight": 1254
+  },
+  "frostfall": {
+    "width": 1254,
+    "height": 1088,
+    "origin": {
+      "x": 0.5,
+      "y": 0.9330143540669856
+    },
+    "bounds": {
+      "x": 93,
+      "y": 82,
+      "width": 1068,
+      "height": 1088
+    },
+    "sourceHeight": 1254
+  },
+  "ember": {
+    "width": 1254,
+    "height": 1067,
+    "origin": {
+      "x": 0.48724082934609253,
+      "y": 0.9338118022328549
+    },
+    "bounds": {
+      "x": 271,
+      "y": 104,
+      "width": 680,
+      "height": 1067
+    },
+    "sourceHeight": 1254
+  },
+  "celestial": {
+    "width": 1254,
+    "height": 1040,
+    "origin": {
+      "x": 0.49920255183413076,
+      "y": 0.9154704944178629
+    },
+    "bounds": {
+      "x": 96,
+      "y": 108,
+      "width": 1060,
+      "height": 1040
+    },
+    "sourceHeight": 1254
+  }
+}

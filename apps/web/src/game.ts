@@ -1,3 +1,4 @@
+import { preloadBossEntrance, addBossEntrance } from './boss-entrances';
 import { WoodsMonsterVisual, preloadWoodsMonster, registerWoodsMonster } from './woods-monsters';
 import { preloadPortals, registerPortals, addPortal } from './portals';
 import { skillEffect } from './combat-effects';
@@ -49,6 +50,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.load.image('forest-bear-key', '/assets/ui/forest-bear-key.png');
       preloadPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
       const loadingMap = MAPS[bridge.snapshot?.mapId ?? 'village'];
+      preloadBossEntrance(this, loadingMap);
       preloadWoodsMonster(this, loadingMap.monster);
       if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
       else preloadVillage(this);
@@ -114,6 +116,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.physics.add.existing(body, true);
         this.floor.add(body);
       }
+      addBossEntrance(this, m);
       for (const p of m.portals) {
         addPortal(this, m.id, p);
         if (p.key)

@@ -24,8 +24,10 @@ test('seven islands declare three monster stages and one boss; Woods route is co
 });
 test('boss entry requires proximity and consumes one key per entry; return is free', () => {
   const p = createPlayer('p', 'Hero', 'woods-3');
-  p.x = 2300;
-  p.y = 760;
+  const gate = MAPS['woods-3'].portals.find((q) => q.key)!;
+  p.x = gate.x;
+  p.y = gate.y;
+  p.platform = 'boss-perch';
   const before = JSON.stringify(p);
   assert.throws(() => usePortal(p, MAPS['woods-3']), /Key/);
   assert.equal(JSON.stringify(p), before);
@@ -33,11 +35,13 @@ test('boss entry requires proximity and consumes one key per entry; return is fr
   p.x = 1000;
   assert.throws(() => usePortal(p, MAPS['woods-3']), /Walk/);
   assert.equal(p.inventory[FOREST_BEAR_KEY], 2);
-  p.x = 2300;
+  p.x = gate.x;
   assert.equal(usePortal(p, MAPS['woods-3']), 'woods-boss');
   assert.equal(p.inventory[FOREST_BEAR_KEY], 1);
   assert.equal(usePortal(p, MAPS['woods-boss']), 'woods-3');
   assert.equal(p.inventory[FOREST_BEAR_KEY], 1);
+  assert.equal(p.platform, 'boss-perch');
+  assert.equal(p.y, gate.y);
   assert.equal(usePortal(p, MAPS['woods-3']), 'woods-boss');
   assert.equal(p.inventory[FOREST_BEAR_KEY], undefined);
   usePortal(p, MAPS['woods-boss']);
