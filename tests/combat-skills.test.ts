@@ -8,15 +8,33 @@ import {
   trainCombat,
   playerAttributes,
   attackPower,
+  createGear,
+  identifyGear,
+  equipGear,
+  identifyCost,
 } from '@ros/shared';
 
-test('class weapons train the correct skill; civilians have none', () => {
+test('class mapping and training only increase base damage, never attributes', () => {
   assert.deepEqual(
     [null, 'elderwood-blade', 'elderwood-dagger', 'elderwood-staff', 'elderwood-bow'].map(
       weaponTrainingSkill,
     ),
     [null, 'Melee', 'Melee', 'Magic', 'Distance'],
   );
+  const p = createPlayer('p', 'Tester');
+  p.weapon = 'elderwood-blade';
+  const before = playerAttributes(p),
+    power = attackPower(p);
+  for (const skill of ['Melee', 'Defense', 'Evasion', 'Vitality', 'Focus'] as const)
+    trainCombat(p, skill, 1e9);
+  const after = playerAttributes(p);
+  assert.deepEqual({ ...after, trainingDamage: 0 }, { ...before, trainingDamage: 0 });
+  assert.equal(attackPower(p), power + 198);
+  p.weapon = 'elderwood-staff';
+  assert.equal(playerAttributes(p).trainingDamage, 0);
+  assert.deepEqual(JSON.parse(JSON.stringify(p)).combatSkills, p.combatSkills);
+});
+test('hits train the correct skill; civilians, misses, dead targets do not; Focus is retired', () => {
   for (const weapon of [
     null,
     'elderwood-blade',
@@ -27,34 +45,23 @@ test('class weapons train the correct skill; civilians have none', () => {
     const w = new World(MAPS.woods),
       p = createPlayer('p', 'Tester');
     p.weapon = weapon;
-    w.hitWolf(p, w.wolves[0], 1, 10000);
+    p.x = -1000;
+    w.attack(p, false, 10000);
+    assert.equal(Boolean(p.combatSkills), false);
+    w.hitWolf(p, w.wolves[0], 1, 11000, {
+      skill: weaponTrainingSkill(weapon),
+      focus: true,
+      critical: false,
+    });
     const skill = weaponTrainingSkill(weapon);
+    assert.equal(skill ? p.combatSkills?.[skill]?.xp : p.combatSkills, skill ? 3 : undefined);
+    assert.equal(p.combatSkills?.Focus, undefined);
+    w.wolves[0].hp = 0;
+    w.hitWolf(p, w.wolves[0], 1, 12000);
     assert.equal(skill ? p.combatSkills?.[skill]?.xp : p.combatSkills, skill ? 3 : undefined);
   }
 });
-test('training thresholds grow, stop at level 100 and survive snapshot serialization', () => {
-  const p = createPlayer('p', 'Tester');
-  trainCombat(p, 'Melee', 90);
-  assert.deepEqual(p.combatSkills?.Melee, { level: 3, xp: 0 });
-  trainCombat(p, 'Melee', 1e9);
-  assert.deepEqual(p.combatSkills?.Melee, { level: 100, xp: 0 });
-  assert.deepEqual(JSON.parse(JSON.stringify(p)).combatSkills, p.combatSkills);
-});
-test('real hits train while misses and already dead targets do not; specials train Focus', () => {
-  const w = new World(MAPS.woods),
-    p = createPlayer('p', 'Tester');
-  p.weapon = 'elderwood-blade';
-  p.x = -1000;
-  w.attack(p, false, 10000);
-  assert.equal(Boolean(p.combatSkills), false);
-  const target = w.wolves[0];
-  w.hitWolf(p, target, 1, 11000, { skill: 'Melee', focus: true, critical: false });
-  assert.equal(p.combatSkills?.Focus?.xp, 2);
-  target.hp = 0;
-  w.hitWolf(p, target, 1, 12000);
-  assert.equal(p.combatSkills?.Melee?.xp, 3);
-});
-test('projectiles retain their original weapon training after swapping weapons', () => {
+test('projectiles retain originating training after a weapon swap', () => {
   const w = new World(MAPS.woods),
     p = createPlayer('p', 'Tester');
   p.weapon = 'elderwood-bow';
@@ -68,23 +75,89 @@ test('projectiles retain their original weapon training after swapping weapons',
   assert.equal(p.combatSkills?.Distance?.xp, 3);
   assert.equal(p.combatSkills?.Magic, undefined);
 });
-test('trained armor, dodge and block affect basic damage but cannot cancel a boss slam', () => {
+test('rarities identify once into one through four distinct attributes and charge once', () => {
+  for (const [roll, count, cost] of [
+    [0, 1, 25],
+    [0.7, 2, 75],
+    [0.95, 3, 200],
+    [0.999, 4, 500],
+  ]) {
+    const p = createPlayer('p', 'Tester'),
+      g = createGear('elderwood-blade', 1, () => roll);
+    p.gear = [g];
+    p.gold = 1000;
+    assert.equal(g.attributes, undefined);
+    assert.equal(identifyCost(g), cost);
+    assert.throws(() => equipGear(p, g.id));
+    identifyGear(p, g.id, () => 0.1);
+    assert.equal(Object.keys(g.attributes!).length, count);
+    assert.equal(p.gold, 1000 - cost);
+    const snapshot = JSON.stringify(p);
+    assert.throws(() => identifyGear(p, g.id));
+    assert.equal(JSON.stringify(p), snapshot);
+    assert.throws(() => identifyGear(p, 'unowned'));
+  }
+});
+test('insufficient gold cannot reveal attributes; level requirements prevent equipping', () => {
+  const p = createPlayer('p', 'Tester'),
+    g = createGear('woods-armor', 10, () => 0);
+  p.gear = [g];
+  p.gold = 0;
+  assert.throws(() => identifyGear(p, g.id));
+  assert.equal(g.identified, false);
+  p.gold = 1000;
+  identifyGear(p, g.id);
+  assert.throws(() => equipGear(p, g.id));
+});
+test('only owned identified equipped gear grants stats; weapon and armor stack, unequip removes stats', () => {
+  const p = createPlayer('p', 'Tester'),
+    weapon = createGear('elderwood-blade', 1, () => 0),
+    armor = createGear('woods-armor', 1, () => 0);
+  weapon.identified = armor.identified = true;
+  weapon.attributes = { critChance: 0.1, critDamage: 0.5 };
+  armor.attributes = { critChance: 0.05, health: 40, armor: 5 };
+  p.gear = [weapon, armor];
+  assert.equal(playerAttributes(p).critChance, 0);
+  equipGear(p, weapon.id);
+  equipGear(p, armor.id);
+  assert.ok(Math.abs(playerAttributes(p).critChance - 0.15) < 1e-8);
+  assert.equal(playerAttributes(p).maxHealth, 140);
+  p.weapon = 'elderwood-staff';
+  assert.equal(playerAttributes(p).critChance, 0.05);
+  equipGear(p, armor.id);
+  assert.equal(playerAttributes(p).maxHealth, 100);
+  p.equippedGear!.armor = 'unowned';
+  assert.equal(playerAttributes(p).armor, 0);
+});
+test('gear crits and defenses affect basic combat but cannot cancel a boss slam', () => {
   const w = new World(MAPS.woods),
-    p = createPlayer('p', 'Tester');
+    p = createPlayer('p', 'Tester'),
+    g = createGear('woods-armor', 1, () => 0);
+  g.identified = true;
+  g.attributes = { armor: 5, critChance: 0.2, critDamage: 0.5, dodgeChance: 0.1, blockChance: 0.1 };
+  p.gear = [g];
+  equipGear(p, g.id);
   p.weapon = 'elderwood-blade';
+  p.x = 500;
+  p.y = 760;
   p.grounded = true;
-  p.combatSkills = { Defense: { level: 11, xp: 0 }, Evasion: { level: 11, xp: 0 } };
-  const original = Math.random;
+  const target = w.wolves[0];
+  target.x = 530;
+  target.y = 760;
+  target.hp = 1000;
+  const power = attackPower(p),
+    original = Math.random;
   try {
-    Math.random = () => 0.99;
-    w.hitPlayer(p, 22, 10000);
-    assert.equal(p.hp, 83);
-    assert.equal(p.combatSkills.Defense?.xp, 2);
-    assert.equal(p.combatSkills.Vitality?.xp, 2);
     Math.random = () => 0;
+    w.attack(p, false, 10000);
+    assert.equal(target.hp, 1000 - power * 2);
+    w.hitPlayer(p, 22, 10000);
+    assert.equal(p.hp, 100);
+    Math.random = () => 0.99;
     w.hitPlayer(p, 22, 11000);
     assert.equal(p.hp, 83);
-    p.combatSkills.Evasion = { level: 1, xp: 0 };
+    g.attributes.dodgeChance = 0;
+    Math.random = () => 0;
     w.hitPlayer(p, 22, 12000);
     assert.equal(p.hp, 72);
     p.hp = 100;
@@ -94,30 +167,23 @@ test('trained armor, dodge and block affect basic damage but cannot cancel a bos
     Math.random = original;
   }
 });
-test('offensive levels and Focus produce actual critical hits and bounded attributes', () => {
+test('hunting gear drops are owner-only loot and persist as separate instances', () => {
   const w = new World(MAPS.woods),
-    p = createPlayer('p', 'Tester');
-  p.weapon = 'elderwood-blade';
-  p.x = 500;
-  p.y = 760;
-  p.combatSkills = { Melee: { level: 51, xp: 0 }, Focus: { level: 11, xp: 0 } };
-  const target = w.wolves[0];
-  target.x = 530;
-  target.y = 760;
-  target.hp = 1000;
-  const power = attackPower(p),
-    attrs = playerAttributes(p),
-    original = Math.random;
+    p = createPlayer('p', 'Tester'),
+    other = createPlayer('other', 'Other');
+  const original = Math.random;
   try {
     Math.random = () => 0;
-    w.attack(p, false, 10000);
+    w.hitWolf(p, w.wolves[0], 1000, 10000);
   } finally {
     Math.random = original;
   }
-  assert.equal(target.hp, 1000 - Math.round(power * attrs.critDamage));
-  assert.ok(w.events.some((e) => e.critical));
-  assert.equal(attrs.maxMana, 70);
-  p.weapon = null;
-  assert.equal(playerAttributes(p).activeSkill, null);
-  assert.equal(playerAttributes(p).trainingDamage, 0);
+  p.x = other.x = w.wolves[0].x;
+  p.y = other.y = w.wolves[0].y;
+  w.collect(other, 11000);
+  assert.equal(other.gear, undefined);
+  w.collect(p, 11000);
+  assert.equal(p.gear?.length, 1);
+  assert.equal(p.gear?.[0].identified, false);
+  assert.deepEqual(JSON.parse(JSON.stringify(p)).gear, p.gear);
 });

@@ -32,7 +32,7 @@ export function SkillsPanel({ player: p }: { player: Player }) {
       </h3>
       <p>
         {active
-          ? 'Land hits to train your weapon skill. Weapon specials also train Focus.'
+          ? 'Land hits to train your weapon skill and increase base damage.'
           : 'Equip a class weapon to train combat skills. Civilian attacks do not train Melee, Magic or Distance.'}{' '}
         Saved training stays when you switch weapons.
       </p>
@@ -45,6 +45,7 @@ export function SkillsPanel({ player: p }: { player: Player }) {
         ))}
       </div>
       <p>
+        Identify and equip weapons or armor to gain attributes. Training only increases base damage.
         Crits deal extra damage. Dodge avoids basic attacks; block and armor reduce them. Boss
         red-zone slams must still be avoided by moving or jumping clear.
       </p>

@@ -1,3 +1,5 @@
+import { changeEquipment } from './equipment.js';
+import { equipGear } from '@ros/shared';
 import { usePortal, applyWoodsMilestones } from '@ros/shared';
 import { changeForge } from './forge.js';
 import { Room, type Client } from '@colyseus/core';
@@ -70,17 +72,35 @@ export class MapRoom extends Room {
     this.onMessage('equip', (c, item) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
-      if (item === null) p.weapon = null;
-      else if (typeof item === 'string') {
+      if (item === null) {
+        p.weapon = null;
+        if (p.equippedGear) delete p.equippedGear.weapon;
+      } else if (typeof item === 'string') {
         const definition = itemDefinition(item);
         if (
           definition?.type === 'weapon' &&
           (p.inventory[item] ?? 0) > 0 &&
           p.level >= definition.level
-        )
+        ) {
           p.weapon = item;
+          if (p.equippedGear) delete p.equippedGear.weapon;
+        }
+      }
+      p.hp = Math.min(p.hp, playerAttributes(p).maxHealth);
+      p.mp = Math.min(p.mp, playerAttributes(p).maxMana);
+    });
+    this.onMessage('equipGear', (c, id) => {
+      const p = this.player(c);
+      if (!p || typeof id !== 'string' || !this.rate(c, 100)) return;
+      try {
+        equipGear(p, id);
+        p.hp = Math.min(p.hp, playerAttributes(p).maxHealth);
+        p.mp = Math.min(p.mp, playerAttributes(p).maxMana);
+      } catch (error) {
+        c.send('notice', (error as Error).message);
       }
     });
+    this.onMessage('identify', (c, id) => this.identify(c, id));
     this.onMessage('equipAccessory', (c, id) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
@@ -287,6 +307,37 @@ export class MapRoom extends Room {
       .catch((error) =>
         result(false, error instanceof Error ? error.message : 'Could not save crafting.'),
       )
+      .finally(() => this.questTasks.delete(p.id));
+  }
+  identify(c: Client, id: unknown) {
+    const p = this.player(c);
+    if (!p || typeof id !== 'string' || !this.rate(c, 100)) return;
+    if (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'bram')) {
+      c.send('notice', 'Bring unidentified gear to Bram in Elderwood Village.');
+      return;
+    }
+    p.auto = false;
+    delete p.gathering;
+    this.inputs.set(p.id, idleInput());
+    const task = this.saves
+      .catch(() => {})
+      .then(async () => {
+        if (!nearNpc(p, this.world.map, 'bram'))
+          throw new Error('Stand near Bram to identify gear.');
+        const next = await changeEquipment(structuredClone(p), id);
+        p.gear = next.gear;
+        p.gold = next.gold;
+        p.equipmentRevision = next.equipmentRevision;
+        if (this.clients.includes(c))
+          c.send('notice', 'Equipment identified! Open your Bag to view its attributes.');
+      });
+    this.questTasks.set(p.id, task);
+    this.saves = task.catch(() => {});
+    void task
+      .catch((error) => {
+        if (this.clients.includes(c))
+          c.send('notice', error instanceof Error ? error.message : 'Could not identify gear.');
+      })
       .finally(() => this.questTasks.delete(p.id));
   }
   rate(c: Client, limit: number) {

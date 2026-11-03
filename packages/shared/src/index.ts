@@ -1,3 +1,5 @@
+export * from './equipment';
+import { createGear, type Gear } from './equipment';
 export * from './combat-skills';
 import { weaponTrainingSkill, trainCombat, playerAttributes, attackPower } from './combat-skills';
 export * from './woods-progression';
@@ -72,6 +74,9 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  gear?: Gear[];
+  equippedGear?: Partial<Record<'weapon' | 'armor', string>>;
+  equipmentRevision?: number;
   combatSkills?: Partial<Record<CombatSkill, { level: number; xp: number }>>;
   lastMovedAt?: number;
   quests?: Record<string, QuestState>;
@@ -144,6 +149,7 @@ export type Drop = {
   owner: string;
   gold: number;
   item: ItemId;
+  gear?: Gear;
   items?: { item: ItemId; quantity: number }[];
   expires: number;
 };
@@ -589,12 +595,9 @@ export class World {
     this.drops = this.drops.filter((d) => d.expires > now);
   }
   hitPlayer(p: Player, amount: number, now: number, kind: 'basic' | 'special' = 'basic') {
-    const stats = playerAttributes(p),
-      active = weaponTrainingSkill(p.weapon) !== null;
+    const stats = playerAttributes(p);
     if (kind === 'basic') {
-      if (active && (p.vx !== 0 || !p.grounded)) trainCombat(p, 'Evasion', 1);
       if (stats.dodgeChance > 0 && Math.random() < stats.dodgeChance) {
-        if (active) trainCombat(p, 'Evasion', 3);
         this.events.push({ type: 'hit', x: p.x, y: p.y - 55, text: 'Dodge!', playerId: p.id });
         return;
       }
@@ -605,9 +608,8 @@ export class World {
       );
       if (blocked)
         this.events.push({ type: 'hit', x: p.x, y: p.y - 80, text: 'Block!', playerId: p.id });
-      if (active) trainCombat(p, 'Defense', 2);
     }
-    if (active) trainCombat(p, 'Vitality', 2);
+
     p.hp -= amount;
     p.lastHit = now;
     delete p.gathering;
@@ -663,13 +665,6 @@ export class World {
           now,
           'special',
         );
-      else if (
-        weaponTrainingSkill(p.weapon) &&
-        (p.lastMovedAt ?? 0) > zone.startedAt &&
-        Math.abs(p.x - zone.x) <= zone.radius + 350 &&
-        Math.abs(p.y - zone.y) < 220
-      )
-        trainCombat(p, 'Evasion', 5);
     }
   }
   attack(p: Player, skill: boolean, now: number) {
@@ -794,7 +789,6 @@ export class World {
     if (w.hp <= 0) return;
     if (training.skill && hit > 0) {
       trainCombat(p, training.skill, 3);
-      if (training.focus) trainCombat(p, 'Focus', 2);
     }
     w.hp = Math.max(0, w.hp - hit);
     this.events.push({
@@ -860,6 +854,19 @@ export class World {
         x: w.x,
         y: w.y,
         owner: p.id,
+        gear:
+          monster === 'forest-bear' || Math.random() < 0.1
+            ? createGear(
+                [
+                  'elderwood-blade',
+                  'elderwood-bow',
+                  'elderwood-staff',
+                  'elderwood-dagger',
+                  'woods-armor',
+                ][Math.floor(Math.random() * 5)],
+                { wolf: 1, 'thorn-spider': 4, 'wild-boar': 7, 'forest-bear': 10 }[monster],
+              )
+            : undefined,
         gold: stats.gold,
         item: monster === 'wolf' ? (p.kills % 5 === 0 ? 'sword' : 'fang') : materials[monster],
         items,
@@ -940,6 +947,7 @@ export class World {
     for (const d of this.drops.filter(
       (d) => d.owner === p.id && Math.abs(d.x - p.x) < 110 && Math.abs(d.y - p.y) < 55,
     )) {
+      if (d.gear) (p.gear ??= []).push(d.gear);
       p.gold += d.gold;
       p.inventory[d.item] = (p.inventory[d.item] ?? 0) + 1;
       for (const bonus of d.items ?? [])

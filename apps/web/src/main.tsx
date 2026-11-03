@@ -1,3 +1,4 @@
+import { EquipmentPanel } from './EquipmentPanel';
 import { SkillsPanel } from './SkillsPanel';
 import { WoodsQuests } from './WoodsQuests';
 import { ForgePanel } from './ForgePanel';
@@ -1022,6 +1023,7 @@ function App() {
                 <div className="inventory-summary">
                   ◈ {p.gold} gold <span>Weapon: {itemDefinition(p.weapon)?.name ?? 'Unarmed'}</span>
                 </div>
+                <EquipmentPanel player={p} send={(type, id) => room?.send(type, id)} />
                 <div className="inventory-grid">
                   {Array.from({ length: 24 }, (_, i) => {
                     const entry = Object.entries(p.inventory).filter(([, n]) => n > 0)[i];

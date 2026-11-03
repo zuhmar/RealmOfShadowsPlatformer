@@ -7,6 +7,7 @@ import {
   type OffensiveSkill,
 } from '@ros/game-data';
 import { attackBonus } from './woods-progression';
+import { gearAttributes } from './equipment';
 import type { Player } from './index';
 export function weaponTrainingSkill(weapon: string | null): OffensiveSkill | null {
   const kind = weaponKind(weapon);
@@ -37,23 +38,20 @@ export function playerAttributes(p: Player) {
   const rank = (skill: CombatSkill) =>
     Math.max(0, Math.min(99, (p.combatSkills?.[skill]?.level ?? 1) - 1));
   const offense = active ? rank(active) : 0,
-    defense = rank('Defense'),
-    evasion = rank('Evasion'),
-    vitality = rank('Vitality'),
-    focus = rank('Focus');
+    gear = gearAttributes(p);
   return {
     activeSkill: active,
     trainingDamage: offense * 2,
-    critChance: active ? Math.min(0.3, offense * 0.003 + focus * 0.002) : 0,
-    critDamage: Math.min(2.5, 1.5 + focus * 0.02),
-    dodgeChance: Math.min(0.25, evasion * 0.005),
-    blockChance: Math.min(0.3, defense * 0.004),
-    blockReduction: Math.min(0.6, 0.35 + defense * 0.002),
-    armor: Math.min(30, defense * 0.5),
-    maxHealth: maxHp(p.level) + vitality * 3,
-    maxMana: 50 + focus * 2,
-    healthRegen: 3 + vitality * 0.03,
-    manaRegen: 1.5 + focus * 0.02,
+    critChance: Math.min(0.3, gear.critChance),
+    critDamage: Math.min(2.5, 1.5 + gear.critDamage),
+    dodgeChance: Math.min(0.25, gear.dodgeChance),
+    blockChance: Math.min(0.3, gear.blockChance),
+    blockReduction: 0.35,
+    armor: Math.min(30, gear.armor),
+    maxHealth: maxHp(p.level) + gear.health,
+    maxMana: 50 + gear.mana,
+    healthRegen: 3 + gear.healthRegen,
+    manaRegen: 1.5 + gear.manaRegen,
   };
 }
 export const attackPower = (p: Player) =>

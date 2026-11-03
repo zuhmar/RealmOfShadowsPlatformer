@@ -127,7 +127,7 @@ try {
     await expect(
       page.getByRole('heading', { name: 'Civilian · No class combat skill' }),
     ).toBeVisible();
-    await expect(page.locator('.skills-panel progress')).toHaveCount(12);
+    await expect(page.locator('.skills-panel progress')).toHaveCount(8);
     await expect(page.getByLabel('Combat attributes')).toContainText('Crit chance');
     await expect(page.getByLabel('Combat attributes')).toContainText('Block chance');
     const skillsBounds = await page.locator('.skills-panel').boundingBox();

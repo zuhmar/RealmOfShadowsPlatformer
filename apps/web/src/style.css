@@ -3034,3 +3034,26 @@ footer {
 .skills-panel .stat-grid span {
   color: #d6b9ee;
 }
+.equipment-panel {
+  margin: 1rem 0;
+}
+.gear-card[data-rarity='Uncommon'] {
+  border-color: #72d77c;
+}
+.gear-card[data-rarity='Rare'] {
+  border-color: #65adff;
+}
+.gear-card[data-rarity='Epic'] {
+  border-color: #c879ff;
+}
+.gear-card[data-rarity='Legendary'] {
+  border-color: #f4bf55;
+}
+.gear-card ul {
+  padding-left: 1.2rem;
+  color: #ead5ff;
+}
+.gear-card button {
+  max-width: 100%;
+  white-space: normal;
+}
