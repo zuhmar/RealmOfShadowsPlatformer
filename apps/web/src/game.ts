@@ -1,3 +1,4 @@
+import { skillEffect } from './combat-effects';
 import Phaser from 'phaser';
 import { VillageScenery, preloadVillage } from './village';
 import { WoodsScenery, preloadWoods } from './woods';
@@ -64,6 +65,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         false,
       ) as typeof this.keys;
       this.events.on('float', (e: Event) => {
+        if (e.type === 'skill') {
+          skillEffect(this, e);
+          if (!e.text) return;
+        }
         if (e.type === 'respawn' && e.playerId)
           this.characters.get(e.playerId)?.die(e.deathX, e.deathY);
         const t = this.add
@@ -323,6 +328,18 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             g.fillCircle(0, 0, 5);
             g.fillStyle(0xe9ffff);
             g.fillCircle(-1, -1, 2);
+          }
+          if (shot.empowered) {
+            const glow = this.add.graphics();
+            glow.fillStyle(0xd899ff, 0.25);
+            if (shot.kind === 'arrow') glow.fillRoundedRect(-24, -6, 44, 12, 6);
+            else {
+              glow.fillCircle(0, 0, 17);
+              glow.lineStyle(2, 0xe0a6ff);
+              glow.strokeCircle(0, 0, 13);
+            }
+            node.add(glow);
+            g.setScale(1.25);
           }
           node.add(g);
           this.actors.set(shot.id, node);

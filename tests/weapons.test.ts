@@ -107,3 +107,131 @@ test('AUTO continues basic attacks when there is not enough mana for the weapon 
   assert.equal(input.attack, true);
   assert.equal(input.skill, false);
 });
+
+test('Cleave hits the nearest three enemies in front and respects vertical separation', () => {
+  const w = new World(MAPS.woods),
+    p = createPlayer('p', 'Knight');
+  p.x = 500;
+  p.y = 760;
+  p.weapon = 'elderwood-blade';
+  w.players.set(p.id, p);
+  const template = w.wolves[0];
+  w.wolves = [20, 60, 100, 115, -35].map((dx, i) => ({
+    ...template,
+    id: `target-${i}`,
+    x: 500 + dx,
+    y: 760,
+    hp: 200,
+  }));
+  w.wolves.push({ ...template, id: 'upper', x: 530, y: 650, hp: 200 });
+  w.attack(p, true, 10000);
+  assert.deepEqual(
+    w.wolves.map((t) => t.hp),
+    [156, 156, 156, 200, 200, 200],
+  );
+  assert.equal(p.mp, 38);
+  assert.equal(p.lastSkill, 10000);
+});
+
+test('Power Shot pierces three targets in travel order with no repeat hits or splash', () => {
+  const w = new World(MAPS.woods),
+    p = createPlayer('p', 'Archer');
+  p.x = 100;
+  p.y = 760;
+  p.weapon = 'elderwood-bow';
+  w.players.set(p.id, p);
+  const template = w.wolves[0];
+  w.wolves = [200, 310, 450, 490].map((x, i) => ({
+    ...template,
+    id: `target-${i}`,
+    x,
+    y: 760,
+    hp: 200,
+  }));
+  w.wolves.push({ ...template, id: 'upper', x: 210, y: 700, hp: 200 });
+  w.attack(p, true, 10000);
+  assert.equal(w.projectiles[0].range, 420);
+  for (let i = 0; i < 50; i++) w.stepProjectiles(0.02, 10020 + i * 20);
+  assert.deepEqual(
+    w.wolves.map((t) => t.hp),
+    [160, 160, 160, 200, 200],
+  );
+  assert.equal(w.projectiles.length, 0);
+});
+
+test('Arcane Burst explodes on impact and catches nearby enemies outside its flight path', () => {
+  const w = new World(MAPS.woods),
+    p = createPlayer('p', 'Mage');
+  p.x = 100;
+  p.y = 760;
+  p.weapon = 'elderwood-staff';
+  w.players.set(p.id, p);
+  const template = w.wolves[0];
+  w.wolves = [
+    { x: 180, y: 760 },
+    { x: 250, y: 720 },
+    { x: 400, y: 760 },
+    { x: 190, y: 650 },
+  ].map((pos, i) => ({ ...template, ...pos, id: `target-${i}`, hp: 200 }));
+  w.attack(p, true, 10000);
+  assert.deepEqual(
+    w.wolves.map((t) => t.hp),
+    [200, 200, 200, 200],
+  );
+  w.stepProjectiles(0.3, 10300);
+  assert.deepEqual(
+    w.wolves.map((t) => t.hp),
+    [156, 156, 200, 200],
+  );
+  assert.ok(
+    w.events.some((e) => e.type === 'skill' && e.skill === 'staff' && e.phase === 'impact'),
+  );
+});
+
+test('Flurry deals three timed hits to one target and cancels remaining hits after swapping weapons', () => {
+  const w = new World(MAPS.woods),
+    p = createPlayer('p', 'Rogue');
+  p.x = 630;
+  p.y = 760;
+  p.weapon = 'elderwood-dagger';
+  w.players.set(p.id, p);
+  w.wolves = [{ ...w.wolves[0], x: 660, hp: 200 }];
+  w.attack(p, true, 10000);
+  assert.equal(w.wolves[0].hp, 182);
+  w.stepFlurry(10100);
+  assert.equal(w.wolves[0].hp, 182);
+  w.stepFlurry(10110);
+  assert.equal(w.wolves[0].hp, 164);
+  w.stepFlurry(10220);
+  assert.equal(w.wolves[0].hp, 146);
+  assert.equal(p.mp, 38);
+  w.attack(p, true, 16000);
+  assert.equal(w.flurry.length, 2);
+  p.weapon = 'elderwood-blade';
+  w.stepFlurry(16300);
+  assert.equal(w.wolves[0].hp, 128);
+  assert.equal(w.flurry.length, 0);
+});
+
+test('Flurry cannot duplicate kill rewards; unavailable skills do not consume mana or emit cast effects', () => {
+  const w = new World(MAPS.woods),
+    p = createPlayer('p', 'Rogue');
+  p.x = 630;
+  p.y = 760;
+  p.weapon = 'elderwood-dagger';
+  w.players.set(p.id, p);
+  w.wolves = [{ ...w.wolves[0], x: 660, hp: 20 }];
+  w.attack(p, true, 10000);
+  w.stepFlurry(10300);
+  assert.equal(p.kills, 1);
+  assert.equal(w.drops.length, 1);
+  assert.equal(w.flurry.length, 0);
+  const events = w.events.length;
+  w.attack(p, true, 11000);
+  assert.equal(p.mp, 38);
+  assert.equal(w.events.length, events);
+  p.mp = 0;
+  w.attack(p, true, 16000);
+  assert.equal(w.events.length, events);
+  assert.equal(p.lastSkill, 10000);
+});

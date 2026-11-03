@@ -301,6 +301,13 @@ export function weaponBonus(id: string | null | undefined) {
   return item?.type === 'weapon' ? item.bonus : 0;
 }
 
+export const WEAPON_SKILL = { mana: 12, cooldown: 5000 } as const;
+export const SKILL_DESCRIPTIONS = {
+  Cleave: 'Sweep through up to three enemies in front of you.',
+  'Power Shot': 'Fire a long-range arrow that pierces up to three enemies.',
+  'Arcane Burst': 'Launch an orb that explodes around its first target.',
+  Flurry: 'Strike one nearby enemy three times in rapid succession.',
+} as const;
 export type WeaponKind = 'unarmed' | 'sword' | 'bow' | 'staff' | 'dagger';
 export const WEAPON_PROFILES: Record<
   WeaponKind,

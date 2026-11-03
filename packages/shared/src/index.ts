@@ -5,6 +5,9 @@ import {
   INTERACTION,
   weaponBonus,
   weaponProfile,
+  weaponKind,
+  WEAPON_SKILL,
+  type WeaponKind,
   maxHp,
   xpNeeded,
   damage,
@@ -105,6 +108,7 @@ export type Projectile = {
   range: number;
   damage: number;
   empowered: boolean;
+  hitIds?: string[];
 };
 export type Snapshot = {
   projectiles?: Projectile[];
@@ -115,7 +119,10 @@ export type Snapshot = {
   mapId: string;
 };
 export type Event = {
-  type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn';
+  type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn' | 'skill';
+  skill?: WeaponKind;
+  facing?: number;
+  phase?: 'cast' | 'impact';
   x: number;
   y: number;
   text: string;
@@ -313,12 +320,23 @@ export function autoInput(
   } else {
     p.facing = dx < 0 ? -1 : 1;
     i.attack = !loot;
-    i.skill = !loot && p.settings.skills && p.mp >= 12 && now - p.lastSkill >= 5000;
+    i.skill =
+      !loot &&
+      p.settings.skills &&
+      p.mp >= WEAPON_SKILL.mana &&
+      now - p.lastSkill >= WEAPON_SKILL.cooldown;
   }
   return i;
 }
 export class World {
   projectiles: Projectile[] = [];
+  flurry: {
+    owner: string;
+    target: string;
+    weapon: Player['weapon'];
+    at: number;
+    damage: number;
+  }[] = [];
   players = new Map<string, Player>();
   wolves: Wolf[];
   drops: Drop[] = [];
@@ -396,6 +414,7 @@ export class World {
           if (nearest.hp <= 0) {
             const deathX = nearest.x,
               deathY = nearest.y;
+            this.flurry = this.flurry.filter((strike) => strike.owner !== nearest.id);
             nearest.hp = maxHp(nearest.level);
             nearest.x = this.map.spawn.x;
             nearest.y = this.map.spawn.y;
@@ -427,18 +446,30 @@ export class World {
       }
       w.x = Math.max(platform.x + 25, Math.min(platform.x + platform.width - 25, w.x));
     }
+    this.stepFlurry(now);
     this.stepProjectiles(dt, now);
     this.drops = this.drops.filter((d) => d.expires > now);
   }
   attack(p: Player, skill: boolean, now: number) {
     const profile = weaponProfile(p.weapon);
     if (now < (p.nextAttackAt ?? p.lastAttack + profile.cooldown)) return;
-    const empowered = skill && p.mp >= 12 && now - p.lastSkill >= 5000;
+    const empowered =
+      skill && p.mp >= WEAPON_SKILL.mana && now - p.lastSkill >= WEAPON_SKILL.cooldown;
     if (skill && !empowered) return;
     p.lastAttack = now;
     p.nextAttackAt = now + profile.cooldown;
     if (empowered) {
-      p.mp -= 12;
+      p.mp -= WEAPON_SKILL.mana;
+      this.events.push({
+        type: 'skill',
+        skill: weaponKind(p.weapon),
+        phase: 'cast',
+        facing: p.facing,
+        playerId: p.id,
+        x: p.x,
+        y: p.y - 30,
+        text: profile.skillName,
+      });
       p.lastSkill = now;
     }
     const hit = damage(p.level, weaponBonus(p.weapon)) * (empowered ? 2 : 1);
@@ -450,8 +481,8 @@ export class World {
         x: p.x + p.facing * 18,
         y: p.y - 30,
         startX: p.x,
-        vx: p.facing * profile.speed,
-        range: profile.range,
+        vx: p.facing * profile.speed * (empowered && profile.projectile === 'arrow' ? 1.35 : 1),
+        range: profile.range * (empowered && profile.projectile === 'arrow' ? 1.5 : 1),
         damage: hit,
         empowered,
       });
@@ -466,7 +497,46 @@ export class World {
           (w.x - p.x) * p.facing >= -12,
       )
       .sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x));
-    for (const w of targets.slice(0, empowered ? 3 : 1)) this.hitWolf(p, w, hit, now);
+    if (empowered && weaponKind(p.weapon) === 'dagger') {
+      const target = targets[0];
+      if (target) {
+        const strike = damage(p.level, weaponBonus(p.weapon));
+        this.hitWolf(p, target, strike, now);
+        for (const delay of [110, 220])
+          this.flurry.push({
+            owner: p.id,
+            target: target.id,
+            weapon: p.weapon,
+            at: now + delay,
+            damage: strike,
+          });
+      }
+    } else for (const w of targets.slice(0, empowered ? 3 : 1)) this.hitWolf(p, w, hit, now);
+  }
+  stepFlurry(now: number) {
+    this.flurry = this.flurry.filter((strike) => {
+      const owner = this.players.get(strike.owner),
+        target = this.wolves.find((w) => w.id === strike.target);
+      if (!owner || owner.weapon !== strike.weapon || !target || target.hp <= 0) return false;
+      if (now < strike.at) return true;
+      if (
+        Math.abs(target.x - owner.x) < weaponProfile(owner.weapon).range + 42 &&
+        Math.abs(target.y - owner.y) < 55 &&
+        (target.x - owner.x) * owner.facing >= -12
+      ) {
+        this.hitWolf(owner, target, strike.damage, now);
+        this.events.push({
+          type: 'skill',
+          skill: 'dagger',
+          phase: 'impact',
+          facing: owner.facing,
+          x: target.x,
+          y: target.y - 30,
+          text: '',
+        });
+      }
+      return false;
+    });
   }
   hitWolf(p: Player, w: Wolf, hit: number, now: number) {
     if (w.hp <= 0) return;
@@ -509,12 +579,22 @@ export class World {
         .filter(
           (w) =>
             w.hp > 0 &&
+            !shot.hitIds?.includes(w.id) &&
             shot.y >= w.y - 60 &&
             shot.y <= w.y &&
             w.x + 23 >= Math.min(previous, shot.x) &&
             w.x - 23 <= Math.max(previous, shot.x),
         )
         .sort((a, b) => Math.abs(a.x - previous) - Math.abs(b.x - previous));
+      if (shot.empowered && shot.kind === 'arrow') {
+        shot.hitIds ??= [];
+        for (const target of targets) {
+          this.hitWolf(owner, target, shot.damage, now);
+          shot.hitIds.push(target.id);
+          if (shot.hitIds.length >= 3) return false;
+        }
+        return Math.abs(shot.x - shot.startX) < shot.range;
+      }
       const first = targets[0];
       if (first) {
         const affected = shot.empowered
@@ -524,12 +604,21 @@ export class World {
                 (w) =>
                   w !== first &&
                   w.hp > 0 &&
-                  Math.abs(w.x - first.x) < 110 &&
+                  Math.abs(w.x - first.x) < 140 &&
                   Math.abs(w.y - first.y) < 55,
               ),
             ].slice(0, 3)
           : [first];
         for (const w of affected) this.hitWolf(owner, w, shot.damage, now);
+        if (shot.empowered)
+          this.events.push({
+            type: 'skill',
+            skill: 'staff',
+            phase: 'impact',
+            x: first.x,
+            y: first.y - 30,
+            text: '',
+          });
         return false;
       }
       return Math.abs(shot.x - shot.startX) < shot.range;

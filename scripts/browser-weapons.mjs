@@ -135,6 +135,25 @@ try {
   await page.evaluate(() => {
     const t = window.weaponTest;
     for (const p of t.bridge.snapshot.players) p.lastAttack = 1000;
+    const scene = t.game.scene.getScene('realm');
+    for (const [i, skill] of ['sword', 'bow', 'staff', 'dagger'].entries())
+      scene.events.emit('float', {
+        type: 'skill',
+        skill,
+        phase: 'cast',
+        x: 500 + i * 150,
+        y: 730,
+        facing: 1,
+        text: '',
+      });
+    scene.events.emit('float', {
+      type: 'skill',
+      skill: 'staff',
+      phase: 'impact',
+      x: 850,
+      y: 730,
+      text: '',
+    });
     t.bridge.snapshot.projectiles = [
       {
         id: 'shot-arrow',
@@ -146,7 +165,7 @@ try {
         vx: 560,
         range: 280,
         damage: 20,
-        empowered: false,
+        empowered: true,
       },
       {
         id: 'shot-orb',
@@ -158,7 +177,7 @@ try {
         vx: 400,
         range: 320,
         damage: 22,
-        empowered: false,
+        empowered: true,
       },
     ];
   });
@@ -170,7 +189,29 @@ try {
       ),
     ),
   ).toBe(true);
+  expect(
+    await page.evaluate(
+      () =>
+        window.weaponTest.game.scene
+          .getScene('realm')
+          .children.list.filter((c) => c.name === 'weapon-skill-effect').length,
+    ),
+  ).toBe(5);
+  expect(
+    await page.evaluate(
+      () => window.weaponTest.game.scene.getScene('realm').actors.get('shot-arrow').list.length,
+    ),
+  ).toBe(2);
   await page.screenshot({ path: 'artifacts/four-weapon-trials.png' });
+  await page.waitForTimeout(550);
+  expect(
+    await page.evaluate(
+      () =>
+        window.weaponTest.game.scene
+          .getScene('realm')
+          .children.list.filter((c) => c.name === 'weapon-skill-effect').length,
+    ),
+  ).toBe(0);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(200);
   await page.screenshot({ path: 'artifacts/weapon-trials-mobile.png' });

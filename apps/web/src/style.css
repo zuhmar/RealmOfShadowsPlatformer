@@ -2753,3 +2753,19 @@ footer {
     display: none;
   }
 }
+
+.skill-status {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  color: #f3d7ff;
+  text-shadow:
+    0 1px 3px #170a25,
+    0 0 3px #170a25;
+}
+.skill[data-ready='false'] .control-icon {
+  opacity: 0.45;
+}

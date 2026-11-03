@@ -122,6 +122,12 @@ try {
   await page.getByRole('button', { name: 'World map', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Beyond the Elderwood.' })).toBeVisible();
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.getByRole('button', { name: 'Weapon skill', exact: true }).click({ delay: 120 });
+  await expect(page.locator('.skill-status')).toHaveText(/[1-5]s/);
+  await expect(page.getByRole('button', { name: 'Weapon skill', exact: true })).toHaveAttribute(
+    'data-ready',
+    'false',
+  );
   await page.getByRole('button', { name: /AUTO OFF/ }).click();
   await expect(page.getByRole('button', { name: /AUTO ON/ })).toHaveAttribute(
     'aria-pressed',

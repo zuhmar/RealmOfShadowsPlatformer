@@ -15,6 +15,8 @@ import {
   itemDefinition,
   weaponBonus,
   weaponProfile,
+  WEAPON_SKILL,
+  SKILL_DESCRIPTIONS,
   maxHp,
   xpNeeded,
   RULES,
@@ -84,6 +86,12 @@ function App() {
   const trialStatus = p ? questStatus(p) : 'available';
   const closeToMira = !!p && nearNpc(p, map, 'mira');
   const quest = QUESTS['mira-wolves'];
+  const skillCooldown = p
+    ? Math.max(
+        0,
+        Math.ceil((WEAPON_SKILL.cooldown - ((snapshot?.time ?? Date.now()) - p.lastSkill)) / 1000),
+      )
+    : 0;
   async function api(path: string, method = 'GET', body?: unknown, override?: string) {
     const response = await fetch(`${SERVER}/api${path}`, {
       method,
@@ -687,10 +695,26 @@ function App() {
                       <small>J</small>
                       <b>Attack</b>
                     </button>
-                    <button className="skill" {...hold('skill')} aria-label="Weapon skill">
+                    <button
+                      className="skill"
+                      {...hold('skill')}
+                      aria-label="Weapon skill"
+                      title={`${SKILL_DESCRIPTIONS[weaponProfile(p.weapon).skillName as keyof typeof SKILL_DESCRIPTIONS]} · ${WEAPON_SKILL.mana} MP · ${WEAPON_SKILL.cooldown / 1000}s cooldown`}
+                      data-ready={skillCooldown === 0 && p.mp >= WEAPON_SKILL.mana}
+                    >
                       <ControlIcon name="skill" />
                       <small>K</small>
-                      <b>{weaponProfile(p.weapon).skillName} · 12 MP</b>
+                      <b>
+                        {weaponProfile(p.weapon).skillName} · {WEAPON_SKILL.mana} MP ·{' '}
+                        {WEAPON_SKILL.cooldown / 1000}s
+                      </b>
+                      <span className="skill-status" aria-live="polite">
+                        {skillCooldown > 0
+                          ? `${skillCooldown}s`
+                          : p.mp < WEAPON_SKILL.mana
+                            ? 'MP'
+                            : ''}
+                      </span>
                     </button>
                     <button
                       className="skill"
