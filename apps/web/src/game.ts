@@ -332,7 +332,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
               .setOrigin(0.5),
           );
         }
-        visual.sync(w, s.players, this.time.now);
+        if (visual instanceof WoodsMonsterVisual) visual.sync(w, s.players, this.time.now, s.time);
+        else visual.sync(w, s.players, this.time.now);
         this.labels
           .get(w.id)!
           .setVisible(w.hp > 0)
@@ -341,7 +342,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           )
           .setPosition(
             visual.container.x,
-            w.y - (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? 285 : 78),
+            w.y - (visual instanceof WoodsMonsterVisual ? visual.labelOffset : 78),
           );
       }
       for (const shot of s.projectiles ?? []) {

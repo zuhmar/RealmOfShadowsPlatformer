@@ -112,6 +112,8 @@ export function activeGatheringTool(
 export type Wolf = {
   monster?: WoodsMonster;
   nextSpecialAt?: number;
+  lastSlamAt?: number;
+  slamFacing?: number;
   special?: { x: number; y: number; radius: number; startedAt: number; impactAt: number };
   id: string;
   x: number;
@@ -498,6 +500,8 @@ export class World {
       if (w.hp <= 0) {
         delete w.special;
         delete w.nextSpecialAt;
+        delete w.lastSlamAt;
+        delete w.slamFacing;
         if (now >= w.deadUntil) {
           w.hp = WOODS_MONSTERS[w.monster ?? 'wolf'].hp;
           w.x = w.homeX;
@@ -510,6 +514,10 @@ export class World {
       if (w.special) {
         w.state = 'attacking';
         if (now >= w.special.impactAt) this.resolveBossSpecial(w, now);
+        continue;
+      }
+      if (stats.boss && w.lastSlamAt !== undefined && now - w.lastSlamAt < BOSS_ATTACK.recovery) {
+        w.state = 'attacking';
         continue;
       }
       const platform = this.map.platforms.find((f) => f.id === w.platform)!;
@@ -525,6 +533,7 @@ export class World {
               BOSS_ATTACK.radius,
               Math.min(this.map.width - BOSS_ATTACK.radius, nearest.x),
             );
+            w.slamFacing = nearest.x < w.x ? -1 : 1;
             w.special = {
               x,
               y: floor?.y ?? w.y,
@@ -596,6 +605,7 @@ export class World {
     w.nextSpecialAt = now + BOSS_ATTACK.specialCooldown;
     w.lastAttack = now;
     if (w.hp <= 0) return;
+    w.lastSlamAt = now;
     this.events.push({
       type: 'bossAttack',
       phase: 'impact',
@@ -718,6 +728,8 @@ export class World {
       w.state = 'dead';
       delete w.special;
       delete w.nextSpecialAt;
+      delete w.lastSlamAt;
+      delete w.slamFacing;
       const stats = WOODS_MONSTERS[w.monster ?? 'wolf'];
       w.deadUntil = now + stats.respawn;
       w.killer = p.id;

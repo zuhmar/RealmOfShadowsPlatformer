@@ -1,3 +1,4 @@
+import { groundSlamFrame } from './boss-animation';
 import Phaser from 'phaser';
 import { WOODS_MONSTERS, BOSS_ATTACK, type WoodsMonster } from '@ros/game-data';
 import type { Wolf, Player } from '@ros/shared';
@@ -9,6 +10,14 @@ type Clips = {
 };
 export function preloadWoodsMonster(scene: Phaser.Scene, monster?: WoodsMonster) {
   if (!monster || monster === 'wolf') return;
+  if (monster === 'forest-bear') {
+    scene.load.atlas(
+      'forest-bear-slam',
+      '/assets/monsters/forest-bear-slam.png',
+      '/assets/monsters/forest-bear-slam.json',
+    );
+    scene.load.json('forest-bear-slam-clips', '/assets/monsters/forest-bear-slam-clips.json');
+  }
   scene.load.atlas(monster, `/assets/monsters/${monster}.png`, `/assets/monsters/${monster}.json`);
   scene.load.json(`${monster}-clips`, `/assets/monsters/${monster}-clips.json`);
 }
@@ -29,18 +38,23 @@ export class WoodsMonsterVisual {
   previous?: WolfVisualState;
   deathCompleteAt: number | null = null;
   private monster: WoodsMonster;
+  private baseScale: number;
+  labelOffset = 78;
   constructor(
     private scene: Phaser.Scene,
     wolf: Wolf,
   ) {
     this.monster = wolf.monster!;
     const clips = scene.cache.json.get(`${this.monster}-clips`) as Clips;
+    this.labelOffset = WOODS_MONSTERS[this.monster].boss ? 285 : 78;
+    this.baseScale = clips.scale * (WOODS_MONSTERS[this.monster].boss ? BOSS_ATTACK.scale : 1);
     this.container = scene.add.container(wolf.x, wolf.y).setDepth(9);
     this.sprite = new Phaser.GameObjects.Sprite(scene, 0, 0, this.monster, 'idle-0').setScale(
-      clips.scale * (WOODS_MONSTERS[this.monster].boss ? BOSS_ATTACK.scale : 1),
+      this.baseScale,
     );
     this.container.add(this.sprite);
     const anchor = () => {
+      if (this.sprite.texture.key !== this.monster) return;
       const [row, frame] = String(this.sprite.frame.name).split('-');
       const index = ['idle', 'walk', 'attack', 'death'].indexOf(row) * 4 + Number(frame);
       const origin = clips.origins[index];
@@ -56,7 +70,7 @@ export class WoodsMonsterVisual {
       },
     );
   }
-  sync(wolf: Wolf, players: Player[], now: number) {
+  sync(wolf: Wolf, players: Player[], now: number, serverTime = now) {
     const key = this.sprite.anims.currentAnim?.key ?? '';
     const oneShot =
       [`${this.monster}-attack`, `${this.monster}-hurt`].includes(key) &&
@@ -69,12 +83,32 @@ export class WoodsMonsterVisual {
         if (this.sprite.active) this.sprite.clearTint();
       });
     }
-    if (animation) this.sprite.play(`${this.monster}-${animation}`, true);
+    const slam = groundSlamFrame(wolf, serverTime);
+    if (slam !== null) {
+      const config = this.scene.cache.json.get('forest-bear-slam-clips') as {
+        origins: { x: number; y: number }[];
+        scaleRatio: number;
+        silhouetteHeights: number[];
+      };
+      this.sprite.anims.stop();
+      this.sprite
+        .setTexture('forest-bear-slam', `slam-${slam}`)
+        .setOrigin(config.origins[slam].x, config.origins[slam].y)
+        .setScale(this.baseScale * config.scaleRatio);
+      this.labelOffset = config.silhouetteHeights[slam] * this.sprite.scaleY + 20;
+      this.sprite.setFlipX(wolf.slamFacing === -1);
+    } else {
+      this.labelOffset = WOODS_MONSTERS[this.monster].boss ? 285 : 78;
+      if (this.sprite.texture.key !== this.monster) {
+        this.sprite.setTexture(this.monster, 'idle-0').setScale(this.baseScale);
+      }
+      if (animation) this.sprite.play(`${this.monster}-${animation}`, true);
+    }
     if (wolf.special && wolf.hp > 0) this.sprite.setTint(0xffad75);
     else if (!this.sprite.anims.currentAnim?.key.endsWith('-hurt')) this.sprite.clearTint();
     if (wolf.hp > 0) {
       const flip = wolfFacing(wolf, this.previous?.x ?? wolf.x, players);
-      if (flip !== null) this.sprite.setFlipX(flip);
+      if (flip !== null && slam === null) this.sprite.setFlipX(flip);
       this.container.setAlpha(1);
     } else
       this.container.setAlpha(

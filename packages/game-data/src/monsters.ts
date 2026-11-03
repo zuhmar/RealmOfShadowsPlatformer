@@ -56,6 +56,7 @@ export const BOSS_ATTACK = {
   firstSpecialDelay: 3500,
   specialCooldown: 8000,
   windup: 1800,
+  recovery: 650,
   radius: 150,
   height: 100,
   specialDamageMultiplier: 4,

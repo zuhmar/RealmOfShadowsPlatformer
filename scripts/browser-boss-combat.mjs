@@ -79,18 +79,44 @@ try {
     await page.waitForTimeout(300);
     await page.screenshot({ path: `artifacts/boss-slam-warning-${label}.png` });
   }
+  const assertPose = async (index) => {
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const v = [...window.bossTest.game.scene.getScene('realm').wolves.values()][0];
+          return `${v.sprite.texture.key}/${v.sprite.frame.name}`;
+        }),
+      )
+      .toBe(`forest-bear-slam/slam-${index}`);
+  };
+  await assertPose(0);
+  await page.evaluate(() => window.bossTest.tick(10450));
+  await assertPose(1);
+  await page.evaluate(() => {
+    const t = window.bossTest;
+    for (let n = 1; n <= 23; n++) t.tick(10450 + n * 20, { ...t.idleInput(), right: true });
+  });
+  await assertPose(2);
+  await page.evaluate(() => {
+    const t = window.bossTest;
+    for (let n = 1; n <= 23; n++) t.tick(10910 + n * 20, { ...t.idleInput(), right: true });
+  });
+  await assertPose(3);
+  await page.setViewportSize({ width: 1100, height: 750 });
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: 'artifacts/boss-slam-raised-paws.png' });
   const dodge = await page.evaluate(() => {
     const t = window.bossTest,
       hp = t.p.hp,
       target = t.world.wolves[0].special.x;
-    for (let n = 1; n <= 55; n++) t.tick(10000 + n * 20, { ...t.idleInput(), right: true });
-    const locked = t.world.wolves[0].special.x;
     t.tick(11800);
-    return { hp, after: t.p.hp, target, locked, x: t.p.x };
+    return { hp, after: t.p.hp, target, x: t.p.x };
   });
-  expect(dodge.target).toBe(dodge.locked);
+  expect(dodge.target).toBe(1350);
   expect(dodge.x).toBeGreaterThan(dodge.target + 150);
   expect(dodge.after).toBe(dodge.hp);
+  await assertPose(4);
+  await page.screenshot({ path: 'artifacts/boss-slam-paw-impact.png' });
   await expect
     .poll(() =>
       page.evaluate(() =>
@@ -100,6 +126,23 @@ try {
       ),
     )
     .toBe(false);
+  for (const [stamp, index] of [
+    [11920, 5],
+    [12060, 6],
+    [12240, 7],
+  ]) {
+    await page.evaluate((stamp) => window.bossTest.tick(stamp), stamp);
+    await assertPose(index);
+  }
+  await page.evaluate(() => window.bossTest.tick(12450));
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          [...window.bossTest.game.scene.getScene('realm').wolves.values()][0].sprite.texture.key,
+      ),
+    )
+    .toBe('forest-bear');
   const hit = await page.evaluate(() => {
     const t = window.bossTest;
     t.p.x = 1350;
@@ -127,7 +170,7 @@ try {
     .toBe(false);
   expect(errors).toEqual([]);
   console.log(
-    'PASS: doubled boss sprite, desktop/mobile warning, fixed target, movement dodge, 88 damage on failed dodge, impact visual and cancelled warning on boss death.',
+    'PASS: all eight dedicated slam poses, exact impact/recovery timing, doubled boss, desktop/mobile warning, movement dodge, 88 damage on failed dodge and cancellation on death.',
   );
 } finally {
   await browser.close();
