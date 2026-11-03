@@ -1,6 +1,6 @@
 # Elderwood Village artwork
 
-Original woodland village kit matching the existing Whispering Woods palette and flat glossy cartoon style. This pack contains artwork and atlas metadata; the current village renderer is not changed by adding it.
+Original woodland village kit matching the existing Whispering Woods palette and flat glossy cartoon style. The live village renderer in `apps/web/src/village.ts` loads this artwork for Elderwood Village. It places the buildings and props around existing NPC, ladder, terrace, and portal positions, with camera-aware background scaling and parallax.
 
 | Asset | PNG dimensions | Frames |
 | --- | --- | --- |
@@ -22,6 +22,6 @@ this.load.atlas(
 this.add.image(500, 650, 'village-buildings', 'guide-cottage').setOrigin(0.5, 1);
 ```
 
-Buildings and props use front-facing elevations and transparent surroundings; the forge, baskets, and signs are part of their building silhouettes. The background has scenery only, with no solid collision floor. Platform pieces are decorative side-view strips, not verified seamless tiles. Their edges, scale, top alignment, and overlaps need tuning when integrated; retain the map's authoritative collision geometry. Use the standalone ladder over the existing ladder interaction and keep NPC labels, quest markers, and portal interaction areas unobstructed.
+Buildings and props use front-facing elevations and transparent surroundings; the forge, baskets, and signs are part of their building silhouettes. The background has scenery only, with no solid collision floor. Platform pieces are decorative side-view strips, not verified seamless tiles. The renderer aligns the grass lip and timber deck to the existing ground and terrace collision tops, with soil fill below the ground strip. Stone paving and the bridge deck decorate the existing ground without adding collision bodies. The standalone ladder covers the existing ladder interaction. NPC labels, quest markers, and portal interactions remain active. `npm run test:browser:village` verifies asset loading, collision surface alignment, camera coverage, Mira click interaction, and desktop/mobile rendering.
 
 The village remains a peaceful woodland setting. This pack adds no new story claims about the protagonist's destroyed hometown.

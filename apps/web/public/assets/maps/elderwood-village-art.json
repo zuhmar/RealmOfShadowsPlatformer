@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "integrated": false,
+  "integrated": true,
   "background": "/assets/backgrounds/elderwood-village.png",
   "atlases": [
     {

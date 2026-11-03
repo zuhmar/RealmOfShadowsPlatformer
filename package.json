@@ -22,7 +22,8 @@
     "test:browser:characters": "node scripts/browser-characters.mjs",
     "test:browser:woods": "node scripts/browser-woods.mjs",
     "test:browser:quest": "node --env-file-if-exists=apps/server/.env scripts/browser-quest.mjs",
-    "test:browser:weapons": "node scripts/browser-weapons.mjs"
+    "test:browser:weapons": "node scripts/browser-weapons.mjs",
+    "test:browser:village": "node scripts/browser-village.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",
