@@ -1,0 +1,436 @@
+{
+  "status": "proposed",
+  "progressionStatus": "approved",
+  "safeHub": "Elderwood Village",
+  "gatheringCraftingPairs": [
+    {
+      "gathering": "Mining",
+      "crafting": "Blacksmithing"
+    },
+    {
+      "gathering": "Woodcutting",
+      "crafting": "Carpentry"
+    },
+    {
+      "gathering": "Fishing",
+      "crafting": "Cooking"
+    },
+    {
+      "gathering": "Herbalism",
+      "crafting": "Alchemy"
+    }
+  ],
+  "islands": [
+    {
+      "id": "woods",
+      "name": "Whispering Woods",
+      "proposedIslandLevels": {
+        "min": 1,
+        "max": 10
+      },
+      "resources": [
+        {
+          "id": "iron-ore",
+          "name": "Iron Ore",
+          "gatheringSkill": "Mining",
+          "craftingSkill": "Blacksmithing",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "oak-logs",
+          "name": "Oak Logs",
+          "gatheringSkill": "Woodcutting",
+          "craftingSkill": "Carpentry",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "greenleaf",
+          "name": "Greenleaf",
+          "gatheringSkill": "Herbalism",
+          "craftingSkill": "Alchemy",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "brook-trout",
+          "name": "Brook Trout",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 1,
+          "rarity": "Common"
+        },
+        {
+          "id": "silver-minnow",
+          "name": "Silver Minnow",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 5,
+          "rarity": "Uncommon"
+        },
+        {
+          "id": "golden-carp",
+          "name": "Golden Carp",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 10,
+          "rarity": "Rare"
+        }
+      ]
+    },
+    {
+      "id": "crystal",
+      "name": "Crystal Caverns",
+      "proposedIslandLevels": {
+        "min": 11,
+        "max": 20
+      },
+      "resources": [
+        {
+          "id": "crystal-ore",
+          "name": "Crystal Ore",
+          "gatheringSkill": "Mining",
+          "craftingSkill": "Blacksmithing",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "crystalwood",
+          "name": "Crystalwood",
+          "gatheringSkill": "Woodcutting",
+          "craftingSkill": "Carpentry",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "glowcap",
+          "name": "Glowcap",
+          "gatheringSkill": "Herbalism",
+          "craftingSkill": "Alchemy",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "crystal-fish",
+          "name": "Crystal Fish",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 11,
+          "rarity": "Common"
+        },
+        {
+          "id": "glowfin",
+          "name": "Glowfin",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 15,
+          "rarity": "Uncommon"
+        },
+        {
+          "id": "prismatic-eel",
+          "name": "Prismatic Eel",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 20,
+          "rarity": "Rare"
+        }
+      ]
+    },
+    {
+      "id": "murkmire",
+      "name": "Murkmire Swamp",
+      "proposedIslandLevels": {
+        "min": 21,
+        "max": 30
+      },
+      "resources": [
+        {
+          "id": "mire-ore",
+          "name": "Mire Ore",
+          "gatheringSkill": "Mining",
+          "craftingSkill": "Blacksmithing",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "bogwood",
+          "name": "Bogwood",
+          "gatheringSkill": "Woodcutting",
+          "craftingSkill": "Carpentry",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "mirebloom",
+          "name": "Mirebloom",
+          "gatheringSkill": "Herbalism",
+          "craftingSkill": "Alchemy",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "mudfish",
+          "name": "Mudfish",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 21,
+          "rarity": "Common"
+        },
+        {
+          "id": "bog-catfish",
+          "name": "Bog Catfish",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 25,
+          "rarity": "Uncommon"
+        },
+        {
+          "id": "venomfin",
+          "name": "Venomfin",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 30,
+          "rarity": "Rare"
+        }
+      ]
+    },
+    {
+      "id": "frostfall",
+      "name": "Frostfall Tundra",
+      "proposedIslandLevels": {
+        "min": 31,
+        "max": 40
+      },
+      "resources": [
+        {
+          "id": "frost-ore",
+          "name": "Frost Ore",
+          "gatheringSkill": "Mining",
+          "craftingSkill": "Blacksmithing",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "frostpine",
+          "name": "Frostpine",
+          "gatheringSkill": "Woodcutting",
+          "craftingSkill": "Carpentry",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "frostleaf",
+          "name": "Frostleaf",
+          "gatheringSkill": "Herbalism",
+          "craftingSkill": "Alchemy",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "icefin",
+          "name": "Icefin",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 31,
+          "rarity": "Common"
+        },
+        {
+          "id": "frost-salmon",
+          "name": "Frost Salmon",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 35,
+          "rarity": "Uncommon"
+        },
+        {
+          "id": "glacier-pike",
+          "name": "Glacier Pike",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 40,
+          "rarity": "Rare"
+        }
+      ]
+    },
+    {
+      "id": "ember",
+      "name": "Ember Peaks",
+      "proposedIslandLevels": {
+        "min": 41,
+        "max": 50
+      },
+      "resources": [
+        {
+          "id": "ember-ore",
+          "name": "Ember Ore",
+          "gatheringSkill": "Mining",
+          "craftingSkill": "Blacksmithing",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "emberwood",
+          "name": "Emberwood",
+          "gatheringSkill": "Woodcutting",
+          "craftingSkill": "Carpentry",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "fireblossom",
+          "name": "Fireblossom",
+          "gatheringSkill": "Herbalism",
+          "craftingSkill": "Alchemy",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "lavafin",
+          "name": "Lavafin",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 41,
+          "rarity": "Common"
+        },
+        {
+          "id": "ember-snapper",
+          "name": "Ember Snapper",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 45,
+          "rarity": "Uncommon"
+        },
+        {
+          "id": "inferno-eel",
+          "name": "Inferno Eel",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 50,
+          "rarity": "Rare"
+        }
+      ]
+    },
+    {
+      "id": "celestial",
+      "name": "Celestial Realm",
+      "proposedIslandLevels": {
+        "min": 51,
+        "max": 60
+      },
+      "resources": [
+        {
+          "id": "celestial-ore",
+          "name": "Celestial Ore",
+          "gatheringSkill": "Mining",
+          "craftingSkill": "Blacksmithing",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "starwood",
+          "name": "Starwood",
+          "gatheringSkill": "Woodcutting",
+          "craftingSkill": "Carpentry",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "moonbloom",
+          "name": "Moonbloom",
+          "gatheringSkill": "Herbalism",
+          "craftingSkill": "Alchemy",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "starfish",
+          "name": "Starfish",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 51,
+          "rarity": "Common"
+        },
+        {
+          "id": "moonfin",
+          "name": "Moonfin",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 55,
+          "rarity": "Uncommon"
+        },
+        {
+          "id": "celestial-koi",
+          "name": "Celestial Koi",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 60,
+          "rarity": "Rare"
+        }
+      ]
+    },
+    {
+      "id": "fortress",
+      "name": "Shadow Fortress",
+      "proposedIslandLevels": {
+        "min": 61,
+        "max": 70
+      },
+      "resources": [
+        {
+          "id": "shadow-ore",
+          "name": "Shadow Ore",
+          "gatheringSkill": "Mining",
+          "craftingSkill": "Blacksmithing",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "shadowwood",
+          "name": "Shadowwood",
+          "gatheringSkill": "Woodcutting",
+          "craftingSkill": "Carpentry",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "nightshade",
+          "name": "Nightshade",
+          "gatheringSkill": "Herbalism",
+          "craftingSkill": "Alchemy",
+          "requiredSkillLevel": null,
+          "rarity": null
+        },
+        {
+          "id": "shadow-eel",
+          "name": "Shadow Eel",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 61,
+          "rarity": "Common"
+        },
+        {
+          "id": "nightfin",
+          "name": "Nightfin",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 65,
+          "rarity": "Uncommon"
+        },
+        {
+          "id": "abyssal-leviathan",
+          "name": "Abyssal Leviathan",
+          "gatheringSkill": "Fishing",
+          "craftingSkill": "Cooking",
+          "requiredSkillLevel": 70,
+          "rarity": "Rare"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Not a finalized roster or implemented gathering system.",
+    "Non-fishing skill requirements and rarities are unspecified; null means not yet designed.",
+    "Island order and level bands approved: Ember41\u201350, Celestial51\u201360, Shadow Fortress61\u201370. Resource roster remains proposed."
+  ]
+}

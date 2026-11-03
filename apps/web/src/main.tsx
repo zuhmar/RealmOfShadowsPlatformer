@@ -1045,7 +1045,7 @@ function App() {
                 </div>
                 <p>
                   Travel through the portals in the world. Later islands are planned content; the
-                  journey ends in Shadow Fortress with the Shadow Dragon at levels 61–100.
+                  journey ends in Shadow Fortress with the Shadow Dragon at levels 61–70.
                 </p>
               </>
             )}
