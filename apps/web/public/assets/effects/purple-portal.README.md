@@ -19,4 +19,4 @@ this.add.sprite(portal.x, portal.y, 'purple-portal', 'idle-0')
   .setOrigin(0.5, 444 / 512).setScale(0.32).play('purple-portal-idle');
 ```
 
-This commit prepares the artwork and animation metadata. The live game's existing portal renderer is not replaced yet. Integration should keep portal labels, destinations, interaction range, and server-authoritative travel unchanged.
+The live game loads this atlas and plays the loop for portals in both Elderwood Village and Whispering Woods. Sprites are anchored to the existing portal coordinates at scale 0.32, with destination labels above the smoke. Destinations, E/interact travel and server interaction range are unchanged.

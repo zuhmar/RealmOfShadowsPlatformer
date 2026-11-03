@@ -43,6 +43,12 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     preload() {
       preloadCharacters(this);
+      this.load.atlas(
+        'purple-portal',
+        '/assets/effects/purple-portal.png',
+        '/assets/effects/purple-portal.json',
+      );
+      this.load.json('purple-portal-animation', '/assets/effects/purple-portal-animation.json');
       if (bridge.snapshot?.mapId === 'woods') preloadWoods(this);
       else preloadVillage(this);
       this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
@@ -54,6 +60,19 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     create() {
       registerWolfAnimations(this);
       registerCharacters(this);
+      const portal = this.cache.json.get('purple-portal-animation') as {
+        key: string;
+        frames: string[];
+        frameRate: number;
+        repeat: number;
+        origin: { x: number; y: number };
+      };
+      this.anims.create({
+        key: portal.key,
+        frames: portal.frames.map((frame) => ({ key: 'purple-portal', frame })),
+        frameRate: portal.frameRate,
+        repeat: portal.repeat,
+      });
       const id = bridge.snapshot?.mapId ?? 'village';
       this.map = MAPS[id];
       this.cameras.main.setBackgroundColor(id === 'woods' ? '#b6c9b2' : '#c1d6c5');
@@ -97,7 +116,6 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const woods = m.id === 'woods';
       if (woods) this.woods = new WoodsScenery(this, m);
       else this.village = new VillageScenery(this, m);
-      const g = this.add.graphics();
       this.floor = this.physics.add.staticGroup();
       for (const p of m.platforms) {
         const body = this.add.rectangle(p.x + p.width / 2, p.y + 12, p.width, 24, 0, 0);
@@ -105,30 +123,25 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.floor.add(body);
       }
       for (const p of m.portals) {
-        g.lineStyle(8, 0x57634a);
-        g.strokeRoundedRect(p.x - 36, p.y - 113, 72, 113, 35);
-        g.fillStyle(0x8cddca, 0.3);
-        g.fillEllipse(p.x, p.y - 55, 59, 103);
-        g.lineStyle(3, 0xc5fff0, 0.9);
-        g.strokeEllipse(p.x, p.y - 55, 46, 90);
-        const glow = this.add.ellipse(p.x, p.y - 55, 25, 68, 0x9cf7df, 0.4);
-        this.tweens.add({
-          targets: glow,
-          alpha: 0.1,
-          scaleX: 1.5,
-          duration: 1600,
-          yoyo: true,
-          repeat: -1,
-        });
+        const portal = this.cache.json.get('purple-portal-animation');
         this.add
-          .text(p.x, p.y - 140, p.label, {
+          .sprite(p.x, p.y, 'purple-portal', 'idle-0')
+          .setOrigin(portal.origin.x, portal.origin.y)
+          .setScale(0.32)
+          .setDepth(6)
+          .setName('travel-portal')
+          .setData('target', p.target)
+          .play(portal.key);
+        this.add
+          .text(p.x, p.y - 164, p.label, {
             fontSize: '14px',
             fontFamily: 'Georgia',
             color: '#fff5d5',
-            stroke: '#294736',
+            stroke: '#241034',
             strokeThickness: 4,
           })
-          .setOrigin(0.5);
+          .setOrigin(0.5)
+          .setDepth(7);
       }
       for (const npc of m.npcs) {
         const c =

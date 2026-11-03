@@ -25,7 +25,8 @@
     "test:browser:weapons": "node scripts/browser-weapons.mjs",
     "test:browser:village": "node scripts/browser-village.mjs",
     "test:browser:fullscreen": "node scripts/browser-fullscreen.mjs",
-    "test:browser:game-layout": "node --env-file-if-exists=apps/server/.env scripts/browser-game-layout.mjs"
+    "test:browser:game-layout": "node --env-file-if-exists=apps/server/.env scripts/browser-game-layout.mjs",
+    "test:browser:portals": "node --env-file-if-exists=apps/server/.env scripts/browser-portals.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",
