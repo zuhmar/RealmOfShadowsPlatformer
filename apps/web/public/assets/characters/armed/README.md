@@ -8,6 +8,6 @@ Use the matching Phaser JSON atlases, not fixed-size spritesheet cuts: generated
 
 The bow sheets include an arrow during preparation/draw only. Flying arrows, magic projectiles, collision, and damage remain game systems. Mirror right-facing artwork for left-facing characters. Pause climbing when stationary and select airborne jump poses from physics rather than looping the full jump row.
 
-These assets are prepared for integration. The current renderer still uses the original unarmed Citizen atlases and procedural weapon overlays; adding this pack does not switch the live character renderer. Outfit recoloring also needs review against the new weapon colors before integration.
+The live renderer selects these sheets from equipped weapon and appearance, with Sage, Ember, and Tide cloth variants. Ladder movement always switches to the original unarmed climbing sheet, including when paused; leaving the ladder restores the equipped weapon sheet. Procedural held-weapon overlays have been removed. Mira plays her greeting loop, and the standalone weapons appear in the hotbar, inventory, quest rewards, and weapon drops.
 
 The matching standalone weapon atlas is `/assets/equipment/elderwood-weapons.{png,json}` with frames `sword`, `bow`, `staff`, and `dagger`. Mira's six-frame idle/greeting atlas is `/assets/characters/mira.{png,json}`. Mira uses a 768×768 source frame and baseline y700; the weapon atlas uses the same source size for storage, and each weapon should be scaled to its intended UI or world size independently.

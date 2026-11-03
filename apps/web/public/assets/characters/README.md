@@ -1,6 +1,6 @@
 # Citizen character artwork
 
-New painted weapon variants and Mira are documented in [armed/README.md](armed/README.md). That pack includes both appearances with sword, bow, staff, and dagger animations, plus texture atlases. It is not yet connected to the live renderer described below.
+New painted weapon variants and Mira are documented in [armed/README.md](armed/README.md). That pack includes both appearances with sword, bow, staff, and dagger animations, plus texture atlases. It is connected to the live renderer; ladders continue to use the original unarmed poses.
 
 Original matching male and female starter Citizens: chestnut hair, sage tunics, cream cuffs, brown belts/trousers/boots. Unarmed; the attack row is a punch. Each sheet has 42 poses: six each for idle, walk, jump, climb, attack, hurt, and non-graphic death. Most poses face right; climbing uses a rear three-quarter view.
 
@@ -22,7 +22,7 @@ this.load.atlas(
 
 `citizen-animations.json` supplies suggested playback ranges and rates. Jump poses cover anticipation through landing and will need selection driven by actual physics, rather than an endlessly looping clip. Climb animation should pause while stationary. The unarmed attack needs equipment layering or a separate weapon animation before replacing sword combat artwork.
 
-The game preloads these atlases for both male and female players. Idle, walk and attack follow server snapshots; incoming damage does not trigger a player hurt animation or interrupt movement/attacks; jump poses follow actual vertical velocity and landing; climbing follows the server's explicit ladder flag and pauses while stationary. A defeat event creates a short-lived cosmetic death sprite at the defeat position while the authoritative player immediately respawns. Equipped swords render in a separate visual layer; unequipped Citizens use the supplied punch artwork.
+The game preloads these atlases for both male and female players. Idle, walk and attack follow server snapshots; incoming damage does not trigger a player hurt animation or interrupt movement/attacks; jump poses follow actual vertical velocity and landing; climbing follows the server's explicit ladder flag and pauses while stationary. A defeat event creates a short-lived cosmetic death sprite at the defeat position while the authoritative player immediately respawns. Equipped weapons select the matching armed animation sheet; unequipped Citizens use the supplied punch artwork.
 
 Sage artwork is used unchanged. Ember and Tide variants recolor the olive cloth at runtime while preserving skin, hair, cuffs, dark outlines and transparency. Character creation, selection, HUD and stats portraits crop the same idle atlas frames. `npm run test:browser:characters` checks both appearances and all 72 active pose frames, the three outfit variants, jump selection, climb pause/resume, attacks continuing through damage, sword visibility, defeat/fade and mobile rendering. Original PNG files remain unchanged.
 

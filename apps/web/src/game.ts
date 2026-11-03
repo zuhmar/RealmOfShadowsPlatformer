@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { WoodsScenery, preloadWoods } from './woods';
 import { CharacterVisual, preloadCharacters, registerCharacters } from './character';
 import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
-import { MAPS, RULES, type GameMap } from '@ros/game-data';
+import { MAPS, RULES, weaponKind, type GameMap } from '@ros/game-data';
 import {
   idleInput,
   questStatus,
@@ -195,7 +195,14 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         }
       }
       for (const npc of m.npcs) {
-        const c = this.character(npc.x, npc.y, 'sage', true);
+        const c =
+          npc.id === 'mira'
+            ? this.add
+                .sprite(npc.x, npc.y, 'mira', 'idle-0')
+                .setOrigin(0.5, 700 / 768)
+                .setScale(0.11)
+                .play('mira-idle')
+            : this.character(npc.x, npc.y, 'sage', true);
         this.add
           .text(npc.x, npc.y - 80, `${npc.name}\n${npc.role}`, {
             fontFamily: 'Georgia',
@@ -397,7 +404,12 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         alive.add(d.id);
         if (!this.actors.has(d.id)) {
           const c = this.add.container(d.x, d.y - 12);
-          c.add(this.add.star(0, 0, 4, 4, 10, 0xf3cf72).setStrokeStyle(2, 0x7d6542));
+          const kind = weaponKind(d.item);
+          if (kind !== 'unarmed') {
+            const icon = this.add.image(0, 0, 'elderwood-weapons', kind);
+            icon.setScale(26 / Math.max(icon.width, icon.height));
+            c.add(icon);
+          } else c.add(this.add.star(0, 0, 4, 4, 10, 0xf3cf72).setStrokeStyle(2, 0x7d6542));
           this.actors.set(d.id, c);
         }
       }

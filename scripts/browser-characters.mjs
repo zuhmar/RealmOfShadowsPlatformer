@@ -92,7 +92,7 @@ try {
           frame: String(v.sprite.frame.name),
           paused: v.sprite.anims.isPaused,
           flip: v.container.scaleX,
-          weapon: v.weapon.visible,
+          weapon: v.drawnWeapon !== 'unarmed',
         })),
         corpses: t.corpses.map((c) => ({ active: c.active, frame: String(c.frame?.name) })),
       };

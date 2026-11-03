@@ -65,9 +65,9 @@ try {
   await page.waitForFunction(
     () => window.weaponTest.game.scene.getScene('realm').characters.size === 4,
   );
-  await page.evaluate(() =>
-    window.weaponTest.game.scene.getScene('realm').cameras.main.centerOn(720, 650),
-  );
+  await page.evaluate(() => {
+    window.weaponTest.game.scene.getScene('realm').cameras.main.centerOn(720, 650);
+  });
   expect(
     await page.evaluate(() =>
       [...window.weaponTest.game.scene.getScene('realm').characters.values()].map(
@@ -75,6 +75,63 @@ try {
       ),
     ),
   ).toEqual(['sword', 'bow', 'staff', 'dagger']);
+  for (const appearance of ['male', 'female']) {
+    await page.evaluate((appearance) => {
+      for (const p of window.weaponTest.bridge.snapshot.players) p.appearance = appearance;
+    }, appearance);
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          [...window.weaponTest.game.scene.getScene('realm').characters.values()].every(
+            (v) => v.key.includes(`-${v.player.appearance}-`) && v.key.endsWith(v.drawnWeapon),
+          ),
+        ),
+      )
+      .toBe(true);
+  }
+  // Entering a ladder during an attack must immediately replace the armed sheet.
+  await page.evaluate(() => {
+    for (const p of window.weaponTest.bridge.snapshot.players)
+      Object.assign(p, { lastAttack: 50, grounded: false, climbing: true, vy: -155 });
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...window.weaponTest.game.scene.getScene('realm').characters.values()].every(
+          (v) =>
+            v.drawnWeapon === 'unarmed' &&
+            v.key === `citizen-${v.player.appearance}-sage` &&
+            String(v.sprite.frame.name).startsWith('climb-'),
+        ),
+      ),
+    )
+    .toBe(true);
+  await page.evaluate(() => {
+    for (const p of window.weaponTest.bridge.snapshot.players) p.vy = 0;
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...window.weaponTest.game.scene.getScene('realm').characters.values()].every(
+          (v) => v.sprite.anims.isPaused,
+        ),
+      ),
+    )
+    .toBe(true);
+  await page.screenshot({ path: 'artifacts/unarmed-ladder-poses.png' });
+  await page.evaluate(() => {
+    for (const p of window.weaponTest.bridge.snapshot.players)
+      Object.assign(p, { grounded: true, climbing: false, vy: 0 });
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...window.weaponTest.game.scene.getScene('realm').characters.values()].every(
+          (v) => v.drawnWeapon !== 'unarmed' && v.key.endsWith(v.drawnWeapon),
+        ),
+      ),
+    )
+    .toBe(true);
   await page.evaluate(() => {
     const t = window.weaponTest;
     for (const p of t.bridge.snapshot.players) p.lastAttack = 1000;
@@ -124,9 +181,39 @@ try {
       window.weaponTest.game.scene.getScene('realm').actors.has('shot-arrow'),
     ),
   ).toBe(false);
+  await page.evaluate(() => {
+    const t = window.weaponTest;
+    t.game.destroy(true);
+    t.host.innerHTML = '';
+    t.host.setAttribute('aria-busy', 'true');
+    t.bridge.snapshot.mapId = 'village';
+    t.bridge.snapshot.players = [];
+  });
+  await page.evaluate(async () => {
+    const { mountGame } = await import('/src/game.ts');
+    const t = window.weaponTest;
+    t.game = mountGame(t.host, t.bridge);
+  });
+  await page.waitForFunction(() => window.weaponTest?.host.getAttribute('aria-busy') === 'false');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.weaponTest.game.scene
+          .getScene('realm')
+          .children.list.some(
+            (c) => c.texture?.key === 'mira' && c.anims?.currentAnim?.key === 'mira-idle',
+          ),
+      ),
+    )
+    .toBe(true);
+  await page.evaluate(() => {
+    window.weaponTest.game.scene.getScene('realm').cameras.main.centerOn(500, 560);
+  });
+  await page.waitForTimeout(100);
+  await page.screenshot({ path: 'artifacts/mira-npc-mobile.png' });
   expect(errors).toEqual([]);
   console.log(
-    'PASS: sword, bow, staff and dagger render separately; arrow/orb snapshots render and clean up; desktop/mobile show no browser errors.',
+    'PASS: Both appearances use all four armed sheets; ladders use paused/resumed unarmed poses and restore weapons; Mira animates; projectiles and desktop/mobile render without browser errors.',
   );
 } finally {
   await browser.close();

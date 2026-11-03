@@ -1,3 +1,4 @@
+import { ItemIcon } from './ItemIcon';
 import { QUESTS, ITEMS, STORY, weaponProfile } from '@ros/game-data';
 import { questStatus, needsTrialWeapons, type Player } from '@ros/shared';
 const quest = QUESTS['mira-wolves'];
@@ -75,7 +76,7 @@ export function QuestPanel({
             const item = ITEMS[reward.itemId];
             return (
               <b key={item.id}>
-                {item.icon} {item.name}{' '}
+                <ItemIcon id={item.id} /> {item.name}{' '}
                 <small>
                   {weaponProfile(item.id).className} · +{item.bonus} attack
                 </small>

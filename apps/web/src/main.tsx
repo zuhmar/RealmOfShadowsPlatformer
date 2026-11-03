@@ -1,3 +1,4 @@
+import { ItemIcon } from './ItemIcon';
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Client, type Room } from 'colyseus.js';
@@ -661,7 +662,7 @@ function App() {
                 </div>
                 <div className="skillbar">
                   <button className="skill attack" {...hold('attack')}>
-                    <span>{itemDefinition(p.weapon)?.icon ?? '⚔'}</span>
+                    <ItemIcon id={p.weapon} />
                     <small>J</small>
                     <b>Attack</b>
                   </button>
@@ -927,7 +928,7 @@ function App() {
                       >
                         {item && (
                           <>
-                            <span>{item.icon}</span>
+                            <ItemIcon id={item.id} />
                             <b>{entry![1]}</b>
                             <div className="item-detail">
                               <strong>{item.name}</strong>

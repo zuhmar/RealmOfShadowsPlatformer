@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "integrated": false,
+  "integrated": true,
   "facing": "right",
   "sourceFrame": {
     "width": 384,
