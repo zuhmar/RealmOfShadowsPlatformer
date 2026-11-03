@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "integrated": false,
+  "background": "/assets/backgrounds/elderwood-village.png",
+  "atlases": [
+    {
+      "image": "/assets/props/elderwood-village-buildings.png",
+      "atlas": "/assets/props/elderwood-village-buildings.json",
+      "frames": [
+        "guide-cottage",
+        "blacksmith",
+        "inn",
+        "market-stall"
+      ],
+      "size": {
+        "w": 1254,
+        "h": 1254
+      }
+    },
+    {
+      "image": "/assets/tilesets/elderwood-village-platforms.png",
+      "atlas": "/assets/tilesets/elderwood-village-platforms.json",
+      "frames": [
+        "grass-ground",
+        "timber-terrace",
+        "stone-walkway",
+        "wooden-bridge"
+      ],
+      "size": {
+        "w": 1536,
+        "h": 1024
+      }
+    },
+    {
+      "image": "/assets/props/elderwood-village-props.png",
+      "atlas": "/assets/props/elderwood-village-props.json",
+      "frames": [
+        "barrel",
+        "crate",
+        "bench",
+        "lantern-post",
+        "well",
+        "training-target",
+        "anvil",
+        "noticeboard",
+        "shrub",
+        "flower-planter",
+        "signpost",
+        "ladder"
+      ],
+      "size": {
+        "w": 1536,
+        "h": 1024
+      }
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "frames": {
+    "guide-cottage": {
+      "frame": {
+        "x": 27,
+        "y": 60,
+        "w": 590,
+        "h": 525
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 590,
+        "h": 525
+      },
+      "sourceSize": {
+        "w": 590,
+        "h": 525
+      }
+    },
+    "blacksmith": {
+      "frame": {
+        "x": 637,
+        "y": 59,
+        "w": 595,
+        "h": 531
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 595,
+        "h": 531
+      },
+      "sourceSize": {
+        "w": 595,
+        "h": 531
+      }
+    },
+    "inn": {
+      "frame": {
+        "x": 19,
+        "y": 632,
+        "w": 625,
+        "h": 591
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 625,
+        "h": 591
+      },
+      "sourceSize": {
+        "w": 625,
+        "h": 591
+      }
+    },
+    "market-stall": {
+      "frame": {
+        "x": 681,
+        "y": 697,
+        "w": 531,
+        "h": 525
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 531,
+        "h": 525
+      },
+      "sourceSize": {
+        "w": 531,
+        "h": 525
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "elderwood-village-buildings.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1"
+  }
+}

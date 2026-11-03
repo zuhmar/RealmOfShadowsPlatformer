@@ -1,0 +1,94 @@
+{
+  "frames": {
+    "grass-ground": {
+      "frame": {
+        "x": 32,
+        "y": 76,
+        "w": 1472,
+        "h": 129
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1472,
+        "h": 129
+      },
+      "sourceSize": {
+        "w": 1472,
+        "h": 129
+      }
+    },
+    "timber-terrace": {
+      "frame": {
+        "x": 32,
+        "y": 346,
+        "w": 1473,
+        "h": 117
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1473,
+        "h": 117
+      },
+      "sourceSize": {
+        "w": 1473,
+        "h": 117
+      }
+    },
+    "stone-walkway": {
+      "frame": {
+        "x": 32,
+        "y": 600,
+        "w": 1472,
+        "h": 102
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1472,
+        "h": 102
+      },
+      "sourceSize": {
+        "w": 1472,
+        "h": 102
+      }
+    },
+    "wooden-bridge": {
+      "frame": {
+        "x": 31,
+        "y": 854,
+        "w": 1475,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1475,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 1475,
+        "h": 96
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "elderwood-village-platforms.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}

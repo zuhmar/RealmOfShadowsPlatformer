@@ -1,0 +1,254 @@
+{
+  "frames": {
+    "barrel": {
+      "frame": {
+        "x": 76,
+        "y": 69,
+        "w": 237,
+        "h": 266
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 237,
+        "h": 266
+      },
+      "sourceSize": {
+        "w": 237,
+        "h": 266
+      }
+    },
+    "crate": {
+      "frame": {
+        "x": 458,
+        "y": 84,
+        "w": 241,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 241,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 241,
+        "h": 239
+      }
+    },
+    "bench": {
+      "frame": {
+        "x": 791,
+        "y": 104,
+        "w": 329,
+        "h": 219
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 329,
+        "h": 219
+      },
+      "sourceSize": {
+        "w": 329,
+        "h": 219
+      }
+    },
+    "lantern-post": {
+      "frame": {
+        "x": 1230,
+        "y": 14,
+        "w": 213,
+        "h": 341
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 213,
+        "h": 341
+      },
+      "sourceSize": {
+        "w": 213,
+        "h": 341
+      }
+    },
+    "well": {
+      "frame": {
+        "x": 45,
+        "y": 368,
+        "w": 309,
+        "h": 329
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 309,
+        "h": 329
+      },
+      "sourceSize": {
+        "w": 309,
+        "h": 329
+      }
+    },
+    "training-target": {
+      "frame": {
+        "x": 461,
+        "y": 373,
+        "w": 235,
+        "h": 319
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 235,
+        "h": 319
+      },
+      "sourceSize": {
+        "w": 235,
+        "h": 319
+      }
+    },
+    "anvil": {
+      "frame": {
+        "x": 797,
+        "y": 430,
+        "w": 290,
+        "h": 266
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 290,
+        "h": 266
+      },
+      "sourceSize": {
+        "w": 290,
+        "h": 266
+      }
+    },
+    "noticeboard": {
+      "frame": {
+        "x": 1157,
+        "y": 375,
+        "w": 354,
+        "h": 318
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 354,
+        "h": 318
+      },
+      "sourceSize": {
+        "w": 354,
+        "h": 318
+      }
+    },
+    "shrub": {
+      "frame": {
+        "x": 21,
+        "y": 750,
+        "w": 350,
+        "h": 245
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 350,
+        "h": 245
+      },
+      "sourceSize": {
+        "w": 350,
+        "h": 245
+      }
+    },
+    "flower-planter": {
+      "frame": {
+        "x": 418,
+        "y": 763,
+        "w": 328,
+        "h": 235
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 328,
+        "h": 235
+      },
+      "sourceSize": {
+        "w": 328,
+        "h": 235
+      }
+    },
+    "signpost": {
+      "frame": {
+        "x": 845,
+        "y": 724,
+        "w": 246,
+        "h": 286
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 246,
+        "h": 286
+      },
+      "sourceSize": {
+        "w": 246,
+        "h": 286
+      }
+    },
+    "ladder": {
+      "frame": {
+        "x": 1240,
+        "y": 712,
+        "w": 173,
+        "h": 294
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 173,
+        "h": 294
+      },
+      "sourceSize": {
+        "w": 173,
+        "h": 294
+      }
+    }
+  },
+  "meta": {
+    "app": "Realm of Shadows",
+    "image": "elderwood-village-props.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}
