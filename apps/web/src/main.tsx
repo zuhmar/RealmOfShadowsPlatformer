@@ -610,7 +610,24 @@ function App() {
                 </button>
               </div>
             </div>
-            <div className="phaser-host" ref={host} />
+            <div className="phaser-host" ref={host} aria-busy="true" />
+            <div className="adventure-loading" role="status" aria-live="polite">
+              <div className="adventure-loading-content">
+                <img
+                  src="/assets/ui/realm-of-shadows-logo.png"
+                  alt="Realm of Shadows"
+                  draggable={false}
+                />
+                <span className="loading-rune" aria-hidden="true">
+                  ✦
+                </span>
+                <h2>Preparing your adventure…</h2>
+                <p>The shadows await.</p>
+                <div className="loading-trail" aria-hidden="true">
+                  <span />
+                </div>
+              </div>
+            </div>
             <div className="stage-vignette" />
             {p && (
               <>

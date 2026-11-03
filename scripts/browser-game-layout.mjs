@@ -28,8 +28,20 @@ try {
     headers: { Authorization: `Bearer ${token}` },
   }).then((r) => r.json());
   userId = data.characters[0].userId;
+  let releaseAssets;
+  const assetGate = new Promise((resolve) => {
+    releaseAssets = resolve;
+  });
+  await page.route('**/assets/characters/bram.png', async (route) => {
+    await assetGate;
+    await route.continue();
+  });
   await page.getByRole('button', { name: 'Enter world' }).click();
+  await expect(page.getByRole('status')).toContainText('Preparing your adventure');
+  await expect(page.locator('.adventure-loading img')).toBeVisible();
+  releaseAssets();
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
+  await expect(page.locator('.adventure-loading')).not.toBeVisible();
   for (const [label, width, height] of [
     ['desktop', 1440, 900],
     ['mobile', 390, 844],
@@ -38,6 +50,20 @@ try {
   ]) {
     await page.setViewportSize({ width, height });
     await page.waitForTimeout(250);
+    await page.locator('.phaser-host').evaluate((el) => el.setAttribute('aria-busy', 'true'));
+    const loading = page.locator('.adventure-loading');
+    await expect(loading).toBeVisible();
+    const cover = await loading.boundingBox();
+    expect(cover.x).toBe(0);
+    expect(cover.y).toBe(0);
+    expect(cover.width).toBe(width);
+    expect(cover.height).toBe(height);
+    const content = await page.locator('.adventure-loading-content').boundingBox();
+    expect(content.y).toBeGreaterThanOrEqual(0);
+    expect(content.y + content.height).toBeLessThanOrEqual(height);
+    await page.screenshot({ path: `artifacts/loading-${label}.png` });
+    await page.locator('.phaser-host').evaluate((el) => el.setAttribute('aria-busy', 'false'));
+    await expect(loading).not.toBeVisible();
     const geometry = await page.evaluate(() => {
       const b = document.querySelector('canvas').getBoundingClientRect();
       return {

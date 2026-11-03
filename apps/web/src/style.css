@@ -1804,19 +1804,97 @@ footer i {
     height: 48px;
   }
 }
-.phaser-host[aria-busy='true']::after {
-  content: 'Preparing your adventure…';
+/* The engine owns aria-busy; keep the branded cover up until its scene is ready. */
+.adventure-loading {
   position: absolute;
   inset: 0;
+  z-index: 80;
   display: grid;
   place-items: center;
-  background: #20382c;
-  color: #ded6ae;
-  font:
-    18px Georgia,
-    serif;
-  pointer-events: none;
+  overflow: hidden;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at 50% 40%, #6b258655, #0c0619dd 75%),
+    linear-gradient(#160a27aa, #0b0617ed),
+    url('/assets/backgrounds/shadow-realm-login.png') center / cover;
+  color: #f3dfff;
+  text-align: center;
 }
+.phaser-host[aria-busy='false'] + .adventure-loading {
+  display: none;
+}
+.adventure-loading-content {
+  width: min(540px, 100%);
+}
+.adventure-loading-content > img {
+  display: block;
+  width: 100%;
+  max-height: 42dvh;
+  object-fit: contain;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 0 25px #a74de955);
+}
+.adventure-loading h2 {
+  margin: 10px 0 6px;
+  font:
+    500 clamp(18px, 3vw, 25px) Georgia,
+    serif;
+  color: #f2d9ff;
+  text-shadow: 0 0 16px #b763ee99;
+}
+.adventure-loading p {
+  margin: 0 0 20px;
+  font:
+    14px Georgia,
+    serif;
+  color: #c4a5d9;
+}
+.loading-rune {
+  display: inline-block;
+  color: #e0a5ff;
+  font-size: 26px;
+  animation: shadow-rune 2s ease-in-out infinite;
+}
+.loading-trail {
+  width: min(220px, 65%);
+  height: 4px;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #66388366;
+}
+.loading-trail > span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9d44d4, #f3d2ff, #9d44d4);
+  animation: shadow-trail 1.8s ease-in-out infinite alternate;
+}
+@keyframes shadow-rune {
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+@keyframes shadow-trail {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(225%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-rune,
+  .loading-trail > span {
+    animation: none;
+  }
+  .loading-trail > span {
+    margin: auto;
+  }
+}
+
 .story-prologue {
   border-left: 2px solid #b9ab73;
   padding: 4px 0 4px 14px;
