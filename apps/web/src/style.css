@@ -2284,3 +2284,75 @@ body:has(.app.playing) {
     left: max(8px, env(safe-area-inset-left));
   }
 }
+
+/* Transparent sprite controls: retain hit areas and keyboard focus, without plates. */
+.app.playing button,
+.app.playing button:hover,
+.app.playing button:active,
+.app.playing button:focus-visible,
+.playing .world-title {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.app.playing button:focus-visible {
+  outline: 2px solid #f0d28c;
+  outline-offset: 2px;
+}
+.app.playing button:disabled {
+  opacity: 0.45;
+}
+.app.playing button svg {
+  filter: drop-shadow(0 1px 2px #102119bd);
+}
+.control-icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+.skill .control-icon {
+  width: 34px;
+  height: 34px;
+  margin: auto;
+}
+.touch-controls .control-icon {
+  width: 36px;
+  height: 36px;
+  margin: auto;
+}
+.auto-button .control-icon {
+  width: 30px;
+  height: 30px;
+}
+.auto-settings .control-icon {
+  width: 30px;
+  height: 30px;
+}
+.auto-settings {
+  min-width: 42px;
+}
+.app.playing .auto-button b {
+  background: transparent;
+  padding: 0;
+}
+.app.playing .auto-button.active .control-icon {
+  filter: drop-shadow(0 0 4px #a5ed78);
+}
+.objective button .control-icon {
+  width: 22px;
+  height: 22px;
+}
+.chat-box form button .control-icon {
+  width: 25px;
+  height: 25px;
+}
+.modal .close .control-icon {
+  width: 24px;
+  height: 24px;
+}
+.app.playing .profile-menu small {
+  text-shadow:
+    0 1px 3px #000,
+    0 0 4px #000;
+}

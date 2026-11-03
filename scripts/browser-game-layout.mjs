@@ -62,6 +62,19 @@ try {
       expect(b.y + b.height).toBeLessThanOrEqual(height + 1);
     }
     await expect(page.locator('.game-toolbar, .mini-map, .map-hud')).toHaveCount(0);
+    expect(
+      await page.locator('.game-stage button').evaluateAll((buttons) =>
+        buttons.every((button) => {
+          const s = getComputedStyle(button);
+          return (
+            s.backgroundColor === 'rgba(0, 0, 0, 0)' &&
+            s.backgroundImage === 'none' &&
+            s.boxShadow === 'none'
+          );
+        }),
+      ),
+    ).toBe(true);
+    expect(await page.locator('.control-icon image').count()).toBeGreaterThanOrEqual(12);
     const profile = await page.locator('.player-hud').boundingBox();
     const menus = await page.locator('.profile-menu').boundingBox();
     expect(menus.y).toBeGreaterThanOrEqual(profile.y + profile.height);
@@ -84,6 +97,15 @@ try {
   await expect(page.getByLabel('World chat', { exact: true })).not.toBeVisible();
   await page.getByRole('button', { name: 'World map', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Beyond the Elderwood.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.getByRole('button', { name: /AUTO OFF/ }).click();
+  await expect(page.getByRole('button', { name: /AUTO ON/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: /AUTO ON/ }).click();
+  await page.getByRole('button', { name: 'Auto settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Hunt your way.' })).toBeVisible();
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.getByRole('button', { name: /Bag/ }).click();
   await expect(page.getByRole('heading', { name: 'Your satchel.' })).toBeVisible();

@@ -1,3 +1,4 @@
+import { ControlIcon } from './ControlIcon';
 import { ActionIcon } from './ActionIcon';
 import { MenuIcon } from './MenuIcon';
 import { FullscreenButton } from './FullscreenButton';
@@ -618,7 +619,7 @@ function App() {
                     </span>
                   </div>
                   <button aria-label="Open journal" onClick={() => setPanel('quests')}>
-                    ›
+                    <ControlIcon name="right" />
                   </button>
                 </div>
                 <div className="world-hint">
@@ -631,24 +632,24 @@ function App() {
                 <div className="touch-controls">
                   <div>
                     <button {...hold('left')} aria-label="Move left">
-                      ◀
+                      <ControlIcon name="left" />
                     </button>
                     <button {...hold('right')} aria-label="Move right">
-                      ▶
+                      <ControlIcon name="right" />
                     </button>
                     <button {...hold('up')} aria-label="Climb up">
-                      ↑
+                      <ControlIcon name="up" />
                     </button>
                     <button {...hold('down')} aria-label="Climb down">
-                      ↓
+                      <ControlIcon name="down" />
                     </button>
                   </div>
                   <div>
                     <button {...hold('jump')} aria-label="Jump">
-                      ↟
+                      <ControlIcon name="jump" />
                     </button>
                     <button {...hold('attack')} aria-label="Attack">
-                      ⚔
+                      <ControlIcon name="attack" />
                     </button>
                   </div>
                 </div>
@@ -667,18 +668,22 @@ function App() {
                 </div>
                 <div className="floating-actions" role="group" aria-label="Combat controls">
                   <div className="skillbar">
-                    <button className="skill attack" {...hold('attack')}>
-                      <ItemIcon id={p.weapon} />
+                    <button className="skill attack" {...hold('attack')} aria-label="Basic attack">
+                      <ControlIcon name="attack" />
                       <small>J</small>
                       <b>Attack</b>
                     </button>
-                    <button className="skill" {...hold('skill')}>
-                      <span>✧</span>
+                    <button className="skill" {...hold('skill')} aria-label="Weapon skill">
+                      <ControlIcon name="skill" />
                       <small>K</small>
                       <b>{weaponProfile(p.weapon).skillName} · 12 MP</b>
                     </button>
-                    <button className="skill" onClick={() => room?.send('interact', null)}>
-                      <span>⌘</span>
+                    <button
+                      className="skill"
+                      aria-label="Interact"
+                      onClick={() => room?.send('interact', null)}
+                    >
+                      <ControlIcon name="interact" />
                       <small>E</small>
                       <b>Interact</b>
                     </button>
@@ -686,16 +691,17 @@ function App() {
                   <div className="auto-group">
                     <button
                       className={`auto-button ${p.auto ? 'active' : ''}`}
+                      aria-pressed={p.auto}
                       onClick={() => room?.send('auto', !p.auto)}
                     >
-                      <span>⟳</span> AUTO <b>{p.auto ? 'ON' : 'OFF'}</b>
+                      <ControlIcon name="auto" /> AUTO <b>{p.auto ? 'ON' : 'OFF'}</b>
                     </button>
                     <button
                       className="auto-settings"
                       onClick={() => setPanel('settings')}
                       aria-label="Auto settings"
                     >
-                      ⚙
+                      <ControlIcon name="settings" />
                     </button>
                   </div>
                 </div>
@@ -731,7 +737,9 @@ function App() {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                       />
-                      <button aria-label="Send chat">↵</button>
+                      <button aria-label="Send chat">
+                        <ControlIcon name="send" />
+                      </button>
                     </form>
                   </section>
                 </div>
@@ -750,7 +758,7 @@ function App() {
         <div className="modal-backdrop">
           <section className="modal">
             <button className="close" aria-label="Close" onClick={() => setAuth(null)}>
-              ×
+              <ControlIcon name="close" />
             </button>
             <span className="eyebrow">A PLACE TO CALL YOUR OWN</span>
             <h2>
@@ -792,7 +800,7 @@ function App() {
         <div className="modal-backdrop">
           <section className="modal">
             <button className="close" aria-label="Close" onClick={() => setCreating(false)}>
-              ×
+              <ControlIcon name="close" />
             </button>
             <span className="eyebrow">EVERY HERO STARTS SOMEWHERE</span>
             <h2>A new adventurer.</h2>
@@ -872,7 +880,7 @@ function App() {
         <div className="modal-backdrop">
           <section className="modal wide">
             <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
-              ×
+              <ControlIcon name="close" />
             </button>
             <span className="eyebrow">THE TRAVELER’S COMPANION</span>
             <h2>
