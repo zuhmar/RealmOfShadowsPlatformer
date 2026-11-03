@@ -630,7 +630,7 @@ function App() {
                     : 'W / ↑ to climb · J to attack · K for weapon skill'}
                 </div>
                 <div className="touch-controls">
-                  <div>
+                  <div className="movement-buttons">
                     <button {...hold('left')} aria-label="Move left">
                       <ControlIcon name="left" />
                     </button>
@@ -644,7 +644,23 @@ function App() {
                       <ControlIcon name="down" />
                     </button>
                   </div>
-                  <div>
+                  <div className="auto-group">
+                    <button
+                      className={`auto-button ${p.auto ? 'active' : ''}`}
+                      aria-pressed={p.auto}
+                      onClick={() => room?.send('auto', !p.auto)}
+                    >
+                      <ControlIcon name="auto" /> AUTO <b>{p.auto ? 'ON' : 'OFF'}</b>
+                    </button>
+                    <button
+                      className="auto-settings"
+                      onClick={() => setPanel('settings')}
+                      aria-label="Auto settings"
+                    >
+                      <ControlIcon name="settings" />
+                    </button>
+                  </div>
+                  <div className="jump-buttons">
                     <button {...hold('jump')} aria-label="Jump">
                       <ControlIcon name="jump" />
                     </button>
@@ -686,22 +702,6 @@ function App() {
                       <ControlIcon name="interact" />
                       <small>E</small>
                       <b>Interact</b>
-                    </button>
-                  </div>
-                  <div className="auto-group">
-                    <button
-                      className={`auto-button ${p.auto ? 'active' : ''}`}
-                      aria-pressed={p.auto}
-                      onClick={() => room?.send('auto', !p.auto)}
-                    >
-                      <ControlIcon name="auto" /> AUTO <b>{p.auto ? 'ON' : 'OFF'}</b>
-                    </button>
-                    <button
-                      className="auto-settings"
-                      onClick={() => setPanel('settings')}
-                      aria-label="Auto settings"
-                    >
-                      <ControlIcon name="settings" />
                     </button>
                   </div>
                 </div>

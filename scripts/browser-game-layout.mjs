@@ -33,6 +33,7 @@ try {
   for (const [label, width, height] of [
     ['desktop', 1440, 900],
     ['mobile', 390, 844],
+    ['small-mobile', 320, 740],
     ['landscape', 844, 390],
   ]) {
     await page.setViewportSize({ width, height });
@@ -85,6 +86,29 @@ try {
     }
     await expect(page.locator('.world-actions svg image')).toHaveCount(4);
     await expect(page.locator('.profile-menu svg image')).toHaveCount(3);
+    const actions = await page.locator('.floating-actions').boundingBox();
+    expect(actions.x + actions.width / 2).toBeCloseTo(width / 2, 0);
+    const top = await page
+      .locator('.world-actions button')
+      .evaluateAll((buttons) => buttons.map((b) => b.getBoundingClientRect().y));
+    expect(Math.max(...top) - Math.min(...top)).toBeLessThan(2);
+    if (width <= 700) {
+      const move = await page.getByRole('button', { name: 'Move left', exact: true }).boundingBox();
+      const auto = await page.locator('.auto-button').boundingBox();
+      expect(Math.abs(move.y - auto.y)).toBeLessThan(3);
+      expect(actions.y + actions.height).toBeLessThan(move.y);
+      const buttons = await page.locator('.touch-controls button').evaluateAll((bs) =>
+        bs.map((b) => {
+          const r = b.getBoundingClientRect();
+          return { x: r.x, right: r.right, y: r.y };
+        }),
+      );
+      for (const b of buttons) {
+        expect(b.x).toBeGreaterThanOrEqual(0);
+        expect(b.right).toBeLessThanOrEqual(width);
+      }
+    }
+
     await page.screenshot({ path: `artifacts/full-page-game-${label}.png` });
   }
   await page.setViewportSize({ width: 390, height: 844 });

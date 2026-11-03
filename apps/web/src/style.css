@@ -2356,3 +2356,135 @@ body:has(.app.playing) {
     0 1px 3px #000,
     0 0 4px #000;
 }
+
+/* Center the action row; group Auto with the bottom movement controls. */
+.playing .floating-actions {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  bottom: 94px;
+}
+.playing .touch-controls {
+  display: flex;
+  position: absolute;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  right: 16px;
+  left: auto;
+  z-index: 4;
+  align-items: center;
+}
+.playing .touch-controls .movement-buttons,
+.playing .touch-controls .jump-buttons {
+  display: none;
+}
+.playing .touch-controls .auto-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin: 0;
+}
+.playing .touch-controls .auto-button {
+  width: auto;
+  height: 46px;
+  border-radius: 0;
+  font-size: 9px;
+}
+.playing .touch-controls .auto-settings {
+  width: 40px;
+  height: 44px;
+  padding: 4px;
+  border-radius: 0;
+}
+.playing .world-actions {
+  flex-direction: row;
+}
+@media (max-width: 700px), (pointer: coarse) {
+  .playing .touch-controls {
+    left: 8px;
+    right: 8px;
+    justify-content: space-between;
+    gap: 5px;
+  }
+  .playing .touch-controls .movement-buttons,
+  .playing .touch-controls .jump-buttons {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .playing .touch-controls .movement-buttons button {
+    width: 35px;
+    height: 44px;
+    padding: 0;
+  }
+  .playing .touch-controls .movement-buttons .control-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .playing .touch-controls .jump-buttons button {
+    width: 40px;
+    height: 44px;
+    padding: 0;
+    border-radius: 0;
+  }
+  .playing .touch-controls .auto-group {
+    gap: 0;
+  }
+  .playing .touch-controls .auto-button {
+    width: 38px;
+    height: 44px;
+    padding: 0;
+    position: relative;
+    font-size: 0;
+    gap: 0;
+    justify-content: center;
+  }
+  .playing .touch-controls .auto-button b {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    font-size: 7px;
+    text-align: center;
+  }
+  .playing .touch-controls .auto-settings {
+    min-width: 32px;
+    width: 32px;
+    height: 44px;
+    padding: 1px;
+  }
+  .playing .floating-actions {
+    bottom: 92px;
+  }
+  .playing .world-actions {
+    flex-direction: row;
+    gap: 3px;
+  }
+}
+@media (max-width: 700px) {
+  .playing .world-actions .utility-button {
+    width: 32px;
+    height: 32px;
+    padding: 3px;
+  }
+}
+@media (max-width: 380px) {
+  .playing .vitals {
+    width: 100px;
+  }
+  .playing .touch-controls {
+    gap: 1px;
+    left: 4px;
+    right: 4px;
+  }
+  .playing .touch-controls .movement-buttons button {
+    width: 32px;
+  }
+  .playing .touch-controls .jump-buttons button {
+    width: 36px;
+  }
+}
+
+.playing .touch-controls .auto-settings .control-icon {
+  width: 28px;
+  height: 28px;
+}
