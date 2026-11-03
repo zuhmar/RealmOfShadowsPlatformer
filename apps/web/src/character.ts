@@ -108,6 +108,7 @@ export function registerCharacters(scene: Phaser.Scene) {
 export class CharacterVisual {
   container: Phaser.GameObjects.Container;
   sprite: Phaser.GameObjects.Sprite;
+  gatheringVisual: Phaser.GameObjects.Graphics;
   previous?: CharacterState;
   key: string;
   drawnWeapon?: WeaponKind;
@@ -122,12 +123,13 @@ export class CharacterVisual {
     this.sprite = new Phaser.GameObjects.Sprite(scene, 0, 0, this.key, 'idle-0')
       .setOrigin(0.5, 224 / 256)
       .setScale(0.36);
-    this.container.add(this.sprite);
+    this.gatheringVisual = new Phaser.GameObjects.Graphics(scene);
+    this.container.add([this.gatheringVisual, this.sprite]);
   }
   sync(p: Player, map: GameMap, now: number) {
     const motion = characterMotion(p, map);
     const kind = weaponKind(p.weapon);
-    const armed = kind !== 'unarmed' && motion !== 'climb';
+    const armed = kind !== 'unarmed' && motion !== 'climb' && !p.gathering;
     const key = armed
       ? armedKey(p.appearance, p.outfit, kind)
       : characterKey(p.appearance, p.outfit);
@@ -160,6 +162,19 @@ export class CharacterVisual {
         if (Math.abs(p.vy) < 1) this.sprite.anims.pause();
         else this.sprite.anims.resume();
       } else this.sprite.play(`${key}-${motion}`, true);
+    }
+    this.gatheringVisual.clear();
+    const gathering = p.gathering && map.resources?.find((n) => n.id === p.gathering?.nodeId);
+    if (gathering?.skill === 'Fishing') {
+      const g = this.gatheringVisual,
+        x = (gathering.x + 22 - p.x) * p.facing,
+        y = 30 + Math.sin(now / 180) * 2;
+      g.lineStyle(3, 0x966642);
+      g.lineBetween(10, -28, 28, -60);
+      g.lineStyle(1, 0xf3e1ff);
+      g.lineBetween(28, -60, x, y);
+      g.fillStyle(0xd7a4ff);
+      g.fillCircle(x, y, 3);
     }
     this.container.scaleX = p.facing;
     this.container.x = Phaser.Math.Linear(this.container.x, p.x, 0.55);

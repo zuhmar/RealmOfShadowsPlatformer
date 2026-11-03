@@ -1,0 +1,71 @@
+{
+  "frames": {
+    "iron-deposit": {
+      "frame": {
+        "x": 35,
+        "y": 312,
+        "w": 678,
+        "h": 354
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 678,
+        "h": 354
+      },
+      "sourceSize": {
+        "w": 678,
+        "h": 354
+      }
+    },
+    "oak-tree": {
+      "frame": {
+        "x": 725,
+        "y": 13,
+        "w": 719,
+        "h": 659
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 719,
+        "h": 659
+      },
+      "sourceSize": {
+        "w": 719,
+        "h": 659
+      }
+    },
+    "greenleaf-patch": {
+      "frame": {
+        "x": 1468,
+        "y": 255,
+        "w": 669,
+        "h": 420
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 669,
+        "h": 420
+      },
+      "sourceSize": {
+        "w": 669,
+        "h": 420
+      }
+    }
+  },
+  "meta": {
+    "size": {
+      "w": 2172,
+      "h": 724
+    },
+    "image": "woods-resource-nodes.png"
+  }
+}

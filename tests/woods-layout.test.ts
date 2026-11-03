@@ -14,7 +14,7 @@ const atlas = JSON.parse(
 );
 const manifest = JSON.parse(readFileSync(new URL('maps/whispering-woods-art.json', root), 'utf8'));
 test('every painted walking surface aligns with the authoritative platform and ground covers the bottom', () => {
-  for (const platform of MAPS.woods.platforms) {
+  for (const platform of MAPS.woods.platforms.filter((p) => p.id !== 'fishing-dock')) {
     const name = WOODS_PLATFORM_FRAMES[platform.id],
       frame = atlas.frames[name].frame,
       surface = manifest.atlases.platforms.alignmentHints[name].surfaceY;

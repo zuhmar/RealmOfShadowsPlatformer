@@ -1,8 +1,32 @@
+import resources from '../public/assets/ui/woods-resources.json';
 import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
   const item = itemDefinition(id);
+  const resource =
+    id && Object.prototype.hasOwnProperty.call(resources.frames, id)
+      ? resources.frames[id as keyof typeof resources.frames]
+      : null;
+  if (resource) {
+    const { x, y, w, h } = resource.frame;
+    return (
+      <svg
+        width="30"
+        height="32"
+        viewBox={`${x} ${y} ${w} ${h}`}
+        role="img"
+        aria-label={item?.name ?? id!}
+        style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+      >
+        <image
+          href="/assets/ui/woods-resources.png"
+          width={resources.meta.size.w}
+          height={resources.meta.size.h}
+        />
+      </svg>
+    );
+  }
   const kind = weaponKind(id);
   if (kind === 'unarmed') return <span>{item?.icon ?? '⚔'}</span>;
   const { x, y, w, h } = atlas.frames[kind].frame;

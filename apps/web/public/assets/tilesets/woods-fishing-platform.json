@@ -1,0 +1,36 @@
+{
+  "frames": {
+    "fishing-dock": {
+      "frame": {
+        "x": 5,
+        "y": 423,
+        "w": 1523,
+        "h": 285
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1523,
+        "h": 285
+      },
+      "sourceSize": {
+        "w": 1523,
+        "h": 285
+      }
+    }
+  },
+  "meta": {
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "image": "woods-fishing-platform.png"
+  },
+  "alignment": {
+    "surfaceY": 25,
+    "deckLeft": 75,
+    "deckWidth": 1380
+  }
+}

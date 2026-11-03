@@ -114,7 +114,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     drawWorld() {
       const m = this.map;
       const woods = m.id === 'woods';
-      if (woods) this.woods = new WoodsScenery(this, m);
+      if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
       else this.village = new VillageScenery(this, m);
       this.floor = this.physics.add.staticGroup();
       for (const p of m.platforms) {

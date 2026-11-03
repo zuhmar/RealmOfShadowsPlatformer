@@ -8,6 +8,10 @@ import {
   weaponKind,
   WEAPON_SKILL,
   type WeaponKind,
+  type GatheringSkill,
+  type ResourceNode,
+  fishingCatch,
+  gatheringXpNeeded,
   maxHp,
   xpNeeded,
   damage,
@@ -54,6 +58,8 @@ export type Actor = {
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
   quests?: Record<string, QuestState>;
+  gatheringSkills?: Partial<Record<GatheringSkill, { level: number; xp: number }>>;
+  gathering?: { nodeId: string; startedAt: number; finishAt: number };
   id: string;
   name: string;
   appearance: string;
@@ -357,6 +363,62 @@ export class World {
       killer: null,
     }));
   }
+  nearResource(p: Player, node: ResourceNode) {
+    return (
+      p.mapId === this.map.id &&
+      p.grounded &&
+      !p.climbing &&
+      p.platform === node.platform &&
+      Math.abs(p.x - node.x) <= 72 &&
+      Math.abs(p.y - node.y) < 40
+    );
+  }
+  startGathering(p: Player, nodeId: string, now: number) {
+    const node = this.map.resources?.find((n) => n.id === nodeId);
+    if (!node || !this.nearResource(p, node)) return false;
+    if (p.gathering) return true;
+    p.auto = false;
+    p.gathering = { nodeId, startedAt: now, finishAt: now + node.duration };
+    return true;
+  }
+  stepGathering(p: Player, input: Input, now: number) {
+    const active = p.gathering;
+    if (!active) return;
+    const node = this.map.resources?.find((n) => n.id === active.nodeId);
+    if (
+      !node ||
+      !this.nearResource(p, node) ||
+      input.left ||
+      input.right ||
+      input.up ||
+      input.down ||
+      input.jump ||
+      input.attack ||
+      input.skill ||
+      p.lastHit > active.startedAt
+    ) {
+      delete p.gathering;
+      return;
+    }
+    if (now < active.finishAt) return;
+    p.gatheringSkills ??= {};
+    const skill = (p.gatheringSkills[node.skill] ??= { level: 1, xp: 0 });
+    const item = node.item ?? fishingCatch(skill.level, Math.random());
+    p.inventory[item] = (p.inventory[item] ?? 0) + 1;
+    skill.xp += 10;
+    while (skill.xp >= gatheringXpNeeded(skill.level)) {
+      skill.xp -= gatheringXpNeeded(skill.level);
+      skill.level++;
+    }
+    delete p.gathering;
+    this.events.push({
+      type: 'loot',
+      x: p.x,
+      y: p.y - 60,
+      text: `+1 ${item.replaceAll('-', ' ')} · ${node.skill} +10 XP`,
+      playerId: p.id,
+    });
+  }
   step(dt: number, now: number, inputs: Map<string, Input>) {
     this.events = [];
     for (const p of this.players.values()) {
@@ -364,6 +426,7 @@ export class World {
       if (Object.values(i).some(Boolean)) p.auto = false;
       if (p.auto) i = autoInput(p, this.wolves, this.map, now, this.drops);
       moveActor(p, i, this.map, dt, now);
+      this.stepGathering(p, i, now);
       if (p.y > this.map.height + 100) {
         p.x = this.map.spawn.x;
         p.y = this.map.spawn.y;
@@ -414,6 +477,7 @@ export class World {
           if (nearest.hp <= 0) {
             const deathX = nearest.x,
               deathY = nearest.y;
+            delete nearest.gathering;
             this.flurry = this.flurry.filter((strike) => strike.owner !== nearest.id);
             nearest.hp = maxHp(nearest.level);
             nearest.x = this.map.spawn.x;

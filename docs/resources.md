@@ -1,6 +1,6 @@
 # Gathering and crafting resource proposal
 
-Status: proposed, not locked. The island order and level bands in this roster are approved and reflected in the world map. Resource names and skill requirements remain proposed. No gathering mechanics, nodes, recipes, drop rates, or future-island access are enabled by this document.
+Status: proposed, not locked. The island order and level bands in this roster are approved and reflected in the world map. Resource names and skill requirements remain proposed. Whispering Woods now implements its first gathering nodes and fishing dock; crafting recipes and later-island access remain planned. See `docs/whispering-woods-gathering.md` for the initial mechanics.
 
 Elderwood Village remains the safe hub and is not counted as a hunting island.
 

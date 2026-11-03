@@ -1,3 +1,5 @@
+import { WOODS_RESOURCE_ITEMS, WOODS_RESOURCE_NODES, type ResourceNode } from './gathering';
+export * from './gathering';
 export type Platform = { id: string; x: number; y: number; width: number; oneWay: boolean };
 export type Ladder = { x: number; bottom: number; top: number; from: string; to: string };
 export type GameMap = {
@@ -12,6 +14,7 @@ export type GameMap = {
   ladders: Ladder[];
   portals: { x: number; y: number; target: string; label: string }[];
   spawns: { x: number; y: number; platform: string }[];
+  resources?: ResourceNode[];
   npcs: { id?: string; x: number; y: number; name: string; role: string }[];
 };
 export const RULES = {
@@ -63,6 +66,7 @@ export const MAPS: Record<string, GameMap> = {
   woods: {
     id: 'woods',
     name: 'Wolf Hollow',
+    resources: WOODS_RESOURCE_NODES,
     island: 'Whispering Woods',
     requiredLevel: 1,
     width: 2400,
@@ -73,11 +77,13 @@ export const MAPS: Record<string, GameMap> = {
       { id: 'moss', x: 450, y: 555, width: 550, oneWay: true },
       { id: 'canopy', x: 1160, y: 350, width: 570, oneWay: true },
       { id: 'ridge', x: 1550, y: 555, width: 590, oneWay: true },
+      { id: 'fishing-dock', x: 40, y: 555, width: 360, oneWay: true },
     ],
     ladders: [
       { x: 530, bottom: 760, top: 555, from: 'ground', to: 'moss' },
       { x: 1640, bottom: 760, top: 555, from: 'ground', to: 'ridge' },
       { x: 1670, bottom: 555, top: 350, from: 'ridge', to: 'canopy' },
+      { x: 140, bottom: 760, top: 555, from: 'ground', to: 'fishing-dock' },
     ],
     portals: [{ x: 90, y: 760, target: 'village', label: 'Elderwood Village' }],
     spawns: [
@@ -193,6 +199,7 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  ...WOODS_RESOURCE_ITEMS,
   'elderwood-blade': {
     id: 'elderwood-blade',
     name: 'Elderwood Blade',

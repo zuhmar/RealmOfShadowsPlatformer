@@ -1,0 +1,131 @@
+{
+  "frames": {
+    "iron-ore": {
+      "frame": {
+        "x": 20,
+        "y": 85,
+        "w": 456,
+        "h": 404
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 456,
+        "h": 404
+      },
+      "sourceSize": {
+        "w": 456,
+        "h": 404
+      }
+    },
+    "oak-logs": {
+      "frame": {
+        "x": 508,
+        "y": 80,
+        "w": 502,
+        "h": 416
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 502,
+        "h": 416
+      },
+      "sourceSize": {
+        "w": 502,
+        "h": 416
+      }
+    },
+    "greenleaf": {
+      "frame": {
+        "x": 1020,
+        "y": 53,
+        "w": 500,
+        "h": 434
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 500,
+        "h": 434
+      },
+      "sourceSize": {
+        "w": 500,
+        "h": 434
+      }
+    },
+    "brook-trout": {
+      "frame": {
+        "x": 10,
+        "y": 622,
+        "w": 483,
+        "h": 275
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 483,
+        "h": 275
+      },
+      "sourceSize": {
+        "w": 483,
+        "h": 275
+      }
+    },
+    "silver-minnow": {
+      "frame": {
+        "x": 511,
+        "y": 657,
+        "w": 495,
+        "h": 222
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 495,
+        "h": 222
+      },
+      "sourceSize": {
+        "w": 495,
+        "h": 222
+      }
+    },
+    "golden-carp": {
+      "frame": {
+        "x": 1026,
+        "y": 587,
+        "w": 501,
+        "h": 319
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 501,
+        "h": 319
+      },
+      "sourceSize": {
+        "w": 501,
+        "h": 319
+      }
+    }
+  },
+  "meta": {
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "image": "woods-resources.png"
+  }
+}

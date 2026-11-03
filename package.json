@@ -26,7 +26,8 @@
     "test:browser:village": "node scripts/browser-village.mjs",
     "test:browser:fullscreen": "node scripts/browser-fullscreen.mjs",
     "test:browser:game-layout": "node --env-file-if-exists=apps/server/.env scripts/browser-game-layout.mjs",
-    "test:browser:portals": "node --env-file-if-exists=apps/server/.env scripts/browser-portals.mjs"
+    "test:browser:portals": "node --env-file-if-exists=apps/server/.env scripts/browser-portals.mjs",
+    "test:browser:gathering": "node --env-file-if-exists=apps/server/.env scripts/browser-gathering.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

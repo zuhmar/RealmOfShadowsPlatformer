@@ -17,6 +17,8 @@ import {
   weaponProfile,
   WEAPON_SKILL,
   SKILL_DESCRIPTIONS,
+  GATHERING_SKILLS,
+  gatheringXpNeeded,
   maxHp,
   xpNeeded,
   RULES,
@@ -86,6 +88,16 @@ function App() {
   const trialStatus = p ? questStatus(p) : 'available';
   const closeToMira = !!p && nearNpc(p, map, 'mira');
   const quest = QUESTS['mira-wolves'];
+  const nearbyResource =
+    p &&
+    map.resources?.find(
+      (n) =>
+        p.grounded &&
+        p.platform === n.platform &&
+        Math.abs(p.x - n.x) <= 72 &&
+        Math.abs(p.y - n.y) < 40,
+    );
+  const gatheringNode = p?.gathering && map.resources?.find((n) => n.id === p.gathering?.nodeId);
   const skillCooldown = p
     ? Math.max(
         0,
@@ -629,11 +641,15 @@ function App() {
                   </button>
                 </div>
                 <div className="world-hint">
-                  {map.id === 'village'
-                    ? closeToMira
-                      ? 'E · Talk to Mira'
-                      : 'E · Talk to Mira or use a portal'
-                    : 'W / ↑ to climb · J to attack · K for weapon skill'}
+                  {gatheringNode
+                    ? `${gatheringNode.skill}… ${Math.max(0, Math.ceil(((p.gathering?.finishAt ?? 0) - (snapshot?.time ?? 0)) / 1000))}s • Move to cancel`
+                    : nearbyResource
+                      ? `E • ${nearbyResource.skill} • Lv. ${p.gatheringSkills?.[nearbyResource.skill]?.level ?? 1}`
+                      : map.id === 'village'
+                        ? closeToMira
+                          ? 'E · Talk to Mira'
+                          : 'E · Talk to Mira or use a portal'
+                        : 'W / ↑ to climb · J to attack · K for weapon skill'}
                 </div>
                 <div className="touch-controls">
                   <div className="movement-buttons">
@@ -998,6 +1014,20 @@ function App() {
                       <b>{v}</b>
                     </div>
                   ))}
+                </div>
+                <h3>Gathering skills</h3>
+                <div className="stat-grid">
+                  {GATHERING_SKILLS.map((name) => {
+                    const skill = p.gatheringSkills?.[name] ?? { level: 1, xp: 0 };
+                    return (
+                      <div key={name}>
+                        <span>{name}</span>
+                        <b>
+                          Lv. {skill.level} · {skill.xp}/{gatheringXpNeeded(skill.level)} XP
+                        </b>
+                      </div>
+                    );
+                  })}
                 </div>
                 <p>
                   Knight, Archer, Mage, Rogue and proficiency progression are planned for the

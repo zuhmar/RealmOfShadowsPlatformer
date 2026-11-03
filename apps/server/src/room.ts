@@ -40,6 +40,7 @@ export class MapRoom extends Room {
     this.onMessage('auto', (c, v) => {
       const p = this.player(c);
       if (p && this.rate(c, 100)) {
+        delete p.gathering;
         p.auto = v === true;
         p.targetId = null;
         this.inputs.set(p.id, idleInput());
@@ -88,6 +89,7 @@ export class MapRoom extends Room {
       const p = this.player(c);
       if (!p) return;
       p.auto = false;
+      delete p.gathering;
       this.inputs.set(p.id, idleInput());
       this.world.players.delete(p.id);
       try {
@@ -107,7 +109,17 @@ export class MapRoom extends Room {
         c.send('npc', { id: 'mira' });
       } else if (payload?.npcId === 'mira')
         c.send('notice', 'Walk closer to Mira to speak with her.');
-      else void this.travel(c);
+      else {
+        const node = this.world.map.resources?.find((n) => this.world.nearResource(p, n));
+        if (node) this.world.startGathering(p, node.id, Date.now());
+        else void this.travel(c);
+      }
+    });
+    this.onMessage('gather', (c, nodeId) => {
+      const p = this.player(c);
+      if (!p || !this.rate(c, 100)) return;
+      if (typeof nodeId !== 'string' || !this.world.startGathering(p, nodeId, Date.now()))
+        c.send('notice', 'Stand next to the resource on its platform to gather.');
     });
     this.onMessage('quest', (c, payload) => this.quest(c, payload));
   }
@@ -123,6 +135,7 @@ export class MapRoom extends Room {
     }
     p.auto = false;
     this.inputs.set(p.id, idleInput());
+    delete p.gathering;
     p.mapId = portal.target;
     const m = MAPS[portal.target];
     p.x = m.spawn.x;
@@ -254,6 +267,7 @@ export class MapRoom extends Room {
   onJoin(c: Client, _options: unknown, auth: { id: string; name: string; data: unknown }) {
     const p = auth.data as Player;
     p.auto = false;
+    delete p.gathering;
     p.vx = 0;
     p.vy = 0;
     p.lastAttack = 0;

@@ -14,7 +14,12 @@
       "atlas": "/assets/tilesets/whispering-woods-platforms.json",
       "width": 1536,
       "height": 1024,
-      "frames": ["ground", "platform-wide", "platform-medium", "platform-small"],
+      "frames": [
+        "ground",
+        "platform-wide",
+        "platform-medium",
+        "platform-small"
+      ],
       "alignmentHints": {
         "ground": {
           "surfaceY": 26,
@@ -39,7 +44,10 @@
       "atlas": "/assets/tilesets/whispering-woods-ladders.json",
       "width": 1024,
       "height": 1536,
-      "frames": ["ladder-short", "ladder-tall"],
+      "frames": [
+        "ladder-short",
+        "ladder-tall"
+      ],
       "rungCounts": {
         "ladder-short": 6,
         "ladder-tall": 10
@@ -64,6 +72,35 @@
         "berry-bush",
         "stone-arch"
       ]
+    },
+    "fishing": {
+      "image": "/assets/tilesets/woods-fishing-platform.png",
+      "atlas": "/assets/tilesets/woods-fishing-platform.json",
+      "frames": [
+        "fishing-dock"
+      ],
+      "alignment": "Uses measured deckLeft/deckWidth/surfaceY from its atlas. The collision deck spans x40\u2013400 at y555."
+    },
+    "resourceNodes": {
+      "image": "/assets/props/woods-resource-nodes.png",
+      "atlas": "/assets/props/woods-resource-nodes.json",
+      "frames": [
+        "iron-deposit",
+        "oak-tree",
+        "greenleaf-patch"
+      ]
     }
+  },
+  "resourceIcons": {
+    "image": "/assets/ui/woods-resources.png",
+    "atlas": "/assets/ui/woods-resources.json",
+    "frames": [
+      "iron-ore",
+      "oak-logs",
+      "greenleaf",
+      "brook-trout",
+      "silver-minnow",
+      "golden-carp"
+    ]
   }
 }
