@@ -53,6 +53,7 @@ function App() {
   const [room, setRoom] = useState<Room | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [playerId, setPlayerId] = useState('');
+  const [chatOpen, setChatOpen] = useState(() => window.innerWidth > 700);
   const [panel, setPanel] = useState<string | null>(null);
   const [questPending, setQuestPending] = useState(false);
   const [chat, setChat] = useState<{ name: string; text: string }[]>([
@@ -323,7 +324,7 @@ function App() {
     </div>
   );
   return (
-    <div className="app">
+    <div className={`app ${page === 'game' ? 'playing' : ''}`}>
       <header className="site-header">
         <a className="brand" href="#" onClick={(e) => e.preventDefault()}>
           <span className="brand-mark">✦</span>
@@ -511,31 +512,39 @@ function App() {
       )}
       {page === 'game' && (
         <main className="game-shell">
-          <div className="world-title">
-            <div>
-              <span className="eyebrow">{map.island.toUpperCase()}</span>
-              <h1>
-                {map.name}
-                <span>CH. 01</span>
-              </h1>
-            </div>
-            <div className="world-actions">
-              <FullscreenButton />
-              <span className="connection-dot" /> Shared world{' '}
-              <button onClick={() => setPanel('map')} className="secondary">
-                ⌖ World map
-              </button>
-              <button
-                onClick={leave}
-                disabled={busy}
-                className="icon-button"
-                aria-label="Leave world"
-              >
-                ↪
-              </button>
-            </div>
-          </div>
           <div className="game-stage">
+            <div className="world-title">
+              <div>
+                <span className="eyebrow">{map.island.toUpperCase()}</span>
+                <h1>
+                  {map.name}
+                  <span>CH. 01</span>
+                </h1>
+              </div>
+              <div className="world-actions">
+                <button
+                  className="secondary"
+                  aria-expanded={chatOpen}
+                  aria-controls="world-chat"
+                  onClick={() => setChatOpen((v) => !v)}
+                >
+                  Chat
+                </button>
+                <FullscreenButton />
+                <span className="connection-dot" /> Shared world{' '}
+                <button onClick={() => setPanel('map')} className="secondary">
+                  ⌖ World map
+                </button>
+                <button
+                  onClick={leave}
+                  disabled={busy}
+                  className="icon-button"
+                  aria-label="Leave world"
+                >
+                  ↪
+                </button>
+              </div>
+            </div>
             <div className="phaser-host" ref={host} />
             <div className="stage-vignette" />
             {p && (
@@ -644,121 +653,107 @@ function App() {
                 </div>
               </>
             )}
-          </div>
-          {p && (
-            <>
-              <div className="xp-strip">
-                <i style={{ width: `${(p.xp / xpNeeded(p.level)) * 100}%` }} />
-                <span>
-                  LV. {p.level}{' '}
-                  <b>
-                    {p.xp} / {xpNeeded(p.level)} XP
-                  </b>
-                </span>
-              </div>
-              <div className="game-toolbar">
-                <div className="wallet">
-                  <span>◈</span>
-                  <b>{p.gold.toLocaleString()}</b>
-                  <small>GOLD</small>
+            {p && (
+              <>
+                <div className="xp-strip">
+                  <i style={{ width: `${(p.xp / xpNeeded(p.level)) * 100}%` }} />
+                  <span>
+                    LV. {p.level}{' '}
+                    <b>
+                      {p.xp} / {xpNeeded(p.level)} XP
+                    </b>
+                  </span>
                 </div>
-                <div className="skillbar">
-                  <button className="skill attack" {...hold('attack')}>
-                    <ItemIcon id={p.weapon} />
-                    <small>J</small>
-                    <b>Attack</b>
-                  </button>
-                  <button className="skill" {...hold('skill')}>
-                    <span>✧</span>
-                    <small>K</small>
-                    <b>{weaponProfile(p.weapon).skillName} · 12 MP</b>
-                  </button>
-                  <button className="skill" onClick={() => room?.send('interact', null)}>
-                    <span>⌘</span>
-                    <small>E</small>
-                    <b>Interact</b>
-                  </button>
-                </div>
-                <div className="auto-group">
-                  <button
-                    className={`auto-button ${p.auto ? 'active' : ''}`}
-                    onClick={() => room?.send('auto', !p.auto)}
-                  >
-                    <span>⟳</span> AUTO <b>{p.auto ? 'ON' : 'OFF'}</b>
-                  </button>
-                  <button
-                    className="auto-settings"
-                    onClick={() => setPanel('settings')}
-                    aria-label="Auto settings"
-                  >
-                    ⚙
-                  </button>
-                </div>
-                <div className="menu-buttons">
-                  {[
-                    ['inventory', '▦', 'Bag'],
-                    ['character', '♙', 'Character'],
-                    ['quests', '☷', 'Journal'],
-                  ].map(([id, icon, label]) => (
-                    <button key={id} onClick={() => setPanel(id)}>
-                      <span>{icon}</span>
-                      <small>{label}</small>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="below-world">
-                <section className="chat-box">
-                  <div className="chat-tabs">
-                    <b>WORLD</b>
-                    <span>
-                      Party <small>soon</small>
-                    </span>
-                    <i>● Connected</i>
+                <div className="game-toolbar">
+                  <div className="wallet">
+                    <span>◈</span>
+                    <b>{p.gold.toLocaleString()}</b>
+                    <small>GOLD</small>
                   </div>
-                  <div className="chat-lines" aria-live="polite">
-                    {chat.slice(-3).map((m, i) => (
-                      <p key={i}>
-                        <b>{m.name}</b> {m.text}
-                      </p>
+                  <div className="skillbar">
+                    <button className="skill attack" {...hold('attack')}>
+                      <ItemIcon id={p.weapon} />
+                      <small>J</small>
+                      <b>Attack</b>
+                    </button>
+                    <button className="skill" {...hold('skill')}>
+                      <span>✧</span>
+                      <small>K</small>
+                      <b>{weaponProfile(p.weapon).skillName} · 12 MP</b>
+                    </button>
+                    <button className="skill" onClick={() => room?.send('interact', null)}>
+                      <span>⌘</span>
+                      <small>E</small>
+                      <b>Interact</b>
+                    </button>
+                  </div>
+                  <div className="auto-group">
+                    <button
+                      className={`auto-button ${p.auto ? 'active' : ''}`}
+                      onClick={() => room?.send('auto', !p.auto)}
+                    >
+                      <span>⟳</span> AUTO <b>{p.auto ? 'ON' : 'OFF'}</b>
+                    </button>
+                    <button
+                      className="auto-settings"
+                      onClick={() => setPanel('settings')}
+                      aria-label="Auto settings"
+                    >
+                      ⚙
+                    </button>
+                  </div>
+                  <div className="menu-buttons">
+                    {[
+                      ['inventory', '▦', 'Bag'],
+                      ['character', '♙', 'Character'],
+                      ['quests', '☷', 'Journal'],
+                    ].map(([id, icon, label]) => (
+                      <button key={id} onClick={() => setPanel(id)}>
+                        <span>{icon}</span>
+                        <small>{label}</small>
+                      </button>
                     ))}
                   </div>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (message.trim()) {
-                        room?.send('chat', message);
-                        setMessage('');
-                      }
-                    }}
-                  >
-                    <input
-                      aria-label="World chat"
-                      placeholder="Say something to the world…"
-                      maxLength={180}
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                    />
-                    <button aria-label="Send chat">↵</button>
-                  </form>
-                </section>
-                <section className="adventure-note">
-                  <span>✦</span>
-                  <div>
-                    <h3>A world that grows with you.</h3>
-                    <p>
-                      Take the long way. Climb a little higher.
-                      <br />
-                      There’s always another story beyond the trees.
-                    </p>
-                    <small>
-                      WASD / ARROWS <i>move</i> SPACE <i>jump</i> J <i>attack</i>
-                    </small>
-                  </div>
-                </section>
-              </div>
-            </>
-          )}
+                </div>
+                <div className="below-world" id="world-chat" hidden={!chatOpen}>
+                  <section className="chat-box">
+                    <div className="chat-tabs">
+                      <b>WORLD</b>
+                      <span>
+                        Party <small>soon</small>
+                      </span>
+                      <i>● Connected</i>
+                    </div>
+                    <div className="chat-lines" aria-live="polite">
+                      {chat.slice(-3).map((m, i) => (
+                        <p key={i}>
+                          <b>{m.name}</b> {m.text}
+                        </p>
+                      ))}
+                    </div>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (message.trim()) {
+                          room?.send('chat', message);
+                          setMessage('');
+                        }
+                      }}
+                    >
+                      <input
+                        aria-label="World chat"
+                        placeholder="Say something to the world…"
+                        maxLength={180}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                      />
+                      <button aria-label="Send chat">↵</button>
+                    </form>
+                  </section>
+                </div>
+              </>
+            )}
+          </div>
         </main>
       )}
       <footer>
