@@ -1,3 +1,4 @@
+import { changeWoodsQuest } from './woods-quests.js';
 import { Prisma } from '@prisma/client';
 import { QUESTS, MIRA_WEAPON_KIT_LEDGER } from '@ros/game-data';
 import type { Player } from '@ros/shared';
@@ -7,6 +8,7 @@ export async function changeQuest(
   questId: keyof typeof QUESTS,
   action: 'accept' | 'claim',
 ) {
+  if (questId !== 'mira-wolves') return changeWoodsQuest(snapshot, questId, action);
   const quest = QUESTS[questId];
   const next = structuredClone(snapshot);
   const states = (next.quests ??= {});

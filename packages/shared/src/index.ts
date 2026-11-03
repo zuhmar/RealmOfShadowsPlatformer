@@ -1,3 +1,5 @@
+export * from './woods-progression';
+import { applyWoodsMilestones, attackBonus } from './woods-progression';
 export * from './travel';
 export * from './forging';
 import {
@@ -6,11 +8,12 @@ import {
   BOSS_ATTACK,
   FOREST_BEAR_KEY,
   FOREST_BEAR_KEY_CHANCE,
+  FOREST_BEAR_RING_CHANCE,
   type WoodsMonster,
   MAPS,
   QUESTS,
   INTERACTION,
-  weaponBonus,
+  itemDefinition,
   weaponProfile,
   weaponKind,
   WEAPON_SKILL,
@@ -95,6 +98,9 @@ export type Player = Actor & {
   mapId: string;
   kills: number;
   bossKills?: Record<string, number>;
+  firstClearRewards?: string[];
+  unlockedIslands?: string[];
+  accessory?: string | null;
   targetId: string | null;
 };
 export function activeGatheringTool(
@@ -134,6 +140,7 @@ export type Drop = {
   owner: string;
   gold: number;
   item: ItemId;
+  items?: { item: ItemId; quantity: number }[];
   expires: number;
 };
 export type Projectile = {
@@ -649,7 +656,7 @@ export class World {
       });
       p.lastSkill = now;
     }
-    const hit = damage(p.level, weaponBonus(p.weapon)) * (empowered ? 2 : 1);
+    const hit = damage(p.level, attackBonus(p)) * (empowered ? 2 : 1);
     if (profile.projectile) {
       this.projectiles.push({
         id: `shot-${++this.serial}`,
@@ -679,7 +686,7 @@ export class World {
     if (empowered && weaponKind(p.weapon) === 'dagger') {
       const target = targets[0];
       if (target) {
-        const strike = damage(p.level, weaponBonus(p.weapon));
+        const strike = damage(p.level, attackBonus(p));
         this.hitWolf(p, target, strike, now);
         for (const delay of [110, 220])
           this.flurry.push({
@@ -748,6 +755,14 @@ export class World {
       if (w.monster === 'forest-bear') {
         p.bossKills ??= {};
         p.bossKills['forest-bear'] = (p.bossKills['forest-bear'] ?? 0) + 1;
+        if (applyWoodsMilestones(p))
+          this.events.push({
+            type: 'loot',
+            x: p.x,
+            y: p.y - 130,
+            text: 'First clear! +100 gold · Trophy · Crystal Caverns unlocked',
+            playerId: p.id,
+          });
       }
       const leveled = grantXp(p, stats.xp);
       this.events.push({
@@ -757,13 +772,24 @@ export class World {
         text: leveled ? `Level ${p.level}!` : `+${stats.xp} XP`,
         playerId: p.id,
       });
+      const monster = w.monster ?? 'wolf';
+      const materials = {
+        'thorn-spider': 'thorn-silk',
+        'wild-boar': 'boar-tusk',
+        'forest-bear': 'bear-claw',
+      } as const;
+      const items: { item: ItemId; quantity: number }[] =
+        monster === 'wolf' ? [{ item: 'wolf-pelt', quantity: 1 }] : [];
+      if (monster === 'forest-bear' && Math.random() < FOREST_BEAR_RING_CHANCE)
+        items.push({ item: 'forest-guardian-ring', quantity: 1 });
       this.drops.push({
         id: `drop-${++this.serial}`,
         x: w.x,
         y: w.y,
         owner: p.id,
         gold: stats.gold,
-        item: p.kills % 5 === 0 ? 'sword' : 'fang',
+        item: monster === 'wolf' ? (p.kills % 5 === 0 ? 'sword' : 'fang') : materials[monster],
+        items,
         expires: now + 60000,
       });
     }
@@ -834,12 +860,14 @@ export class World {
     )) {
       p.gold += d.gold;
       p.inventory[d.item] = (p.inventory[d.item] ?? 0) + 1;
+      for (const bonus of d.items ?? [])
+        p.inventory[bonus.item] = (p.inventory[bonus.item] ?? 0) + bonus.quantity;
       this.drops = this.drops.filter((x) => x.id !== d.id);
       this.events.push({
         type: 'loot',
         x: p.x,
         y: p.y - 40,
-        text: `+${d.gold} gold · ${d.item}`,
+        text: `+${d.gold} gold · ${[d.item, ...(d.items ?? []).map((b) => b.item)].map((id) => itemDefinition(id)?.name ?? id).join(' · ')}`,
         playerId: p.id,
       });
     }

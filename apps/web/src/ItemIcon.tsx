@@ -1,9 +1,29 @@
+import loot from '../public/assets/ui/woods-loot.json';
 import resources from '../public/assets/ui/woods-resources.json';
 import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
   const item = itemDefinition(id);
+  if (id && Object.hasOwn(loot.frames, id)) {
+    const { x, y, w, h } = loot.frames[id as keyof typeof loot.frames].frame;
+    return (
+      <svg
+        width="32"
+        height="32"
+        viewBox={`${x} ${y} ${w} ${h}`}
+        role="img"
+        aria-label={item?.name ?? id}
+        style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+      >
+        <image
+          href="/assets/ui/woods-loot.png"
+          width={loot.meta.size.w}
+          height={loot.meta.size.h}
+        />
+      </svg>
+    );
+  }
   if (id === 'forest-bear-key')
     return (
       <img

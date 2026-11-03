@@ -1,3 +1,4 @@
+import { WoodsQuests } from './WoodsQuests';
 import { ForgePanel } from './ForgePanel';
 import { GatheringTools } from './GatheringTools';
 import { ToolIcon } from './ToolIcon';
@@ -13,10 +14,10 @@ import {
   MAPS,
   ITEMS,
   ISLANDS,
+  WOODS_QUESTS,
   QUESTS,
   STORY,
   itemDefinition,
-  weaponBonus,
   weaponProfile,
   WEAPON_SKILL,
   SKILL_DESCRIPTIONS,
@@ -31,6 +32,7 @@ import {
 } from '@ros/game-data';
 import {
   questStatus,
+  attackBonus,
   needsTrialWeapons,
   nearNpc,
   type Player,
@@ -93,6 +95,11 @@ function App() {
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
   const trialStatus = p ? questStatus(p) : 'available';
+  const woodsObjective =
+    p &&
+    Object.values(WOODS_QUESTS).find(
+      (q) => !p.quests?.[q.id]?.claimed && p.quests?.[q.prerequisite]?.claimed,
+    );
   const closeToBram = !!p && map.id === 'village' && nearNpc(p, map, 'bram');
   const closeToMira = !!p && nearNpc(p, map, 'mira');
   const quest = QUESTS['mira-wolves'];
@@ -678,18 +685,22 @@ function App() {
                 <div className="objective">
                   <span className="quest-symbol">!</span>
                   <div>
-                    <small>YOUR FIRST STEPS</small>
-                    <b>{quest.title}</b>
+                    <small>{woodsObjective ? 'WOODS JOURNEY' : 'YOUR FIRST STEPS'}</small>
+                    <b>{woodsObjective?.title ?? quest.title}</b>
                     <span>
-                      {needsTrialWeapons(p)
-                        ? 'Collect your class weapons from Mira'
-                        : trialStatus === 'available'
-                          ? 'Speak to Mira in Elderwood Village.'
-                          : trialStatus === 'ready'
-                            ? 'Return to Mira · reward ready'
-                            : trialStatus === 'claimed'
-                              ? 'First trial complete · onward'
-                              : `Wolves defeated · ${p.quests?.[quest.id]?.progress ?? 0} / ${quest.target.count}`}
+                      {woodsObjective
+                        ? p.quests?.[woodsObjective.id]
+                          ? `${Math.min(p.quests[woodsObjective.id].progress, woodsObjective.target.count)} / ${woodsObjective.target.count} · ${questStatus(p, woodsObjective.id) === 'ready' ? 'Return to Mira' : 'Defeat ' + woodsObjective.target.monsterId.replaceAll('-', ' ')}`
+                          : 'Speak to Mira for your next trial'
+                        : needsTrialWeapons(p)
+                          ? 'Collect your class weapons from Mira'
+                          : trialStatus === 'available'
+                            ? 'Speak to Mira in Elderwood Village.'
+                            : trialStatus === 'ready'
+                              ? 'Return to Mira · reward ready'
+                              : trialStatus === 'claimed'
+                                ? 'First trial complete · onward'
+                                : `Wolves defeated · ${p.quests?.[quest.id]?.progress ?? 0} / ${quest.target.count}`}
                     </span>
                   </div>
                   <button aria-label="Open journal" onClick={() => setPanel('quests')}>
@@ -1046,8 +1057,9 @@ function App() {
                   })}
                 </div>
                 <p>
-                  Loot is collected when you approach it. Every fifth wolf drops a Wayfarer Blade.
-                  Hover or tap an item for details.
+                  Loot is collected when you approach it. Wolves drop pelts, spiders drop silk,
+                  boars drop tusks, and Forest Bear drops claws with a 10% ring chance. Every fifth
+                  wolf still drops a Wayfarer Blade. Hover or tap an item for details.
                 </p>
               </>
             )}
@@ -1064,7 +1076,7 @@ function App() {
                   {[
                     ['Health', `${Math.floor(p.hp)} / ${maxHp(p.level)}`],
                     ['Mana', `${Math.floor(p.mp)} / 50`],
-                    ['Attack', `${RULES.baseDamage + (p.level - 1) * 3 + weaponBonus(p.weapon)}`],
+                    ['Attack', `${RULES.baseDamage + (p.level - 1) * 3 + attackBonus(p)}`],
                     ['Enemies defeated', p.kills],
                     ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
                     ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
@@ -1078,6 +1090,25 @@ function App() {
                     </div>
                   ))}
                 </div>
+                <h3>Accessory</h3>
+                <p>
+                  <ItemIcon id="forest-guardian-ring" /> Forest Guardian Ring · +4 attack ·{' '}
+                  {p.inventory['forest-guardian-ring'] ?? 0} owned
+                </p>
+                <button
+                  className="secondary"
+                  disabled={!(p.inventory['forest-guardian-ring'] > 0)}
+                  onClick={() =>
+                    room?.send(
+                      'equipAccessory',
+                      p.accessory === 'forest-guardian-ring' ? null : 'forest-guardian-ring',
+                    )
+                  }
+                >
+                  {p.accessory === 'forest-guardian-ring'
+                    ? 'Unequip Forest Guardian Ring'
+                    : 'Equip Forest Guardian Ring'}
+                </button>
                 <GatheringTools player={p} onEquip={(id) => room?.send('equipTool', id)} />
                 <details className="tool-tiers">
                   <summary>View tool tiers</summary>
@@ -1127,6 +1158,19 @@ function App() {
                 }}
               />
             )}
+            {(panel === 'quests' || panel === 'mira') && (
+              <WoodsQuests
+                player={p}
+                dialog={panel === 'mira'}
+                pending={questPending}
+                nearMira={closeToMira}
+                onAction={(questId, action) => {
+                  if (questPending) return;
+                  setQuestPending(true);
+                  room?.send('quest', { questId, action });
+                }}
+              />
+            )}
             {(panel === 'bram' || panel === 'quests') && (
               <ForgePanel
                 player={p}
@@ -1151,18 +1195,43 @@ function App() {
                     </div>
                   </article>
                   {ISLANDS.map((island, i) => (
-                    <article key={island.id} className={`island ${island.available ? 'open' : ''}`}>
-                      <span>0{i + 1}</span>
+                    <article
+                      key={island.id}
+                      className={`island ${island.available || p.unlockedIslands?.includes(island.id) ? 'open' : ''}`}
+                    >
+                      <span>
+                        {island.id === 'crystal' && p.unlockedIslands?.includes('crystal') ? (
+                          <img
+                            src="/assets/ui/crystal-unlock.png"
+                            alt="Crystal Caverns access earned"
+                            width="42"
+                            height="42"
+                            style={{ objectFit: 'contain' }}
+                          />
+                        ) : (
+                          <>0{i + 1}</>
+                        )}
+                      </span>
                       <div>
                         <h3>{island.name}</h3>
                         <p>
                           Lv. {island.minLevel}–{island.maxLevel} ·{' '}
-                          {island.available
-                            ? '4 areas · Forest Bear key required'
-                            : 'Coming in an expansion'}
+                          {island.id === 'crystal'
+                            ? p.unlockedIslands?.includes('crystal')
+                              ? 'Access earned · four areas coming next'
+                              : 'Defeat Forest Bear to unlock'
+                            : island.available
+                              ? '4 areas · Forest Bear key required'
+                              : 'Coming in an expansion'}
                         </p>
                       </div>
-                      <b>{island.available ? '◇' : '⌑'}</b>
+                      <b>
+                        {island.available
+                          ? '◇'
+                          : p.unlockedIslands?.includes(island.id)
+                            ? '✓'
+                            : '⌑'}
+                      </b>
                     </article>
                   ))}
                 </div>

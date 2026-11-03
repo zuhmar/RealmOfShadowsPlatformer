@@ -32,7 +32,8 @@
     "test:browser:forge": "node --env-file-if-exists=apps/server/.env scripts/browser-forge.mjs",
     "test:browser:woods-areas": "node --env-file-if-exists=apps/server/.env scripts/browser-woods-areas.mjs",
     "test:browser:boss-props": "node scripts/browser-boss-props.mjs",
-    "test:browser:boss-combat": "node scripts/browser-boss-combat.mjs"
+    "test:browser:boss-combat": "node scripts/browser-boss-combat.mjs",
+    "test:browser:woods-progression": "node --env-file-if-exists=apps/server/.env scripts/browser-woods-progression.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

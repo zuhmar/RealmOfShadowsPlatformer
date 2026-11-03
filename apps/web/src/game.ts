@@ -8,7 +8,7 @@ import { VillageScenery, preloadVillage } from './village';
 import { WoodsScenery, preloadWoods } from './woods';
 import { CharacterVisual, preloadCharacters, registerCharacters } from './character';
 import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
-import { MAPS, WOODS_MONSTERS, weaponKind, type GameMap } from '@ros/game-data';
+import { MAPS, WOODS_MONSTERS, WOODS_QUESTS, weaponKind, type GameMap } from '@ros/game-data';
 import {
   idleInput,
   questStatus,
@@ -252,7 +252,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const alive = new Set<string>();
       const local = s.players.find((p) => p.id === bridge.id);
       if (local && this.miraMarker) {
-        const status = questStatus(local);
+        const nextQuest = Object.values(WOODS_QUESTS).find(
+          (q) => !local.quests?.[q.id]?.claimed && local.quests?.[q.prerequisite]?.claimed,
+        );
+        const status = questStatus(local, nextQuest?.id ?? 'mira-wolves');
         this.miraMarker.setText(
           needsTrialWeapons(local)
             ? '?'

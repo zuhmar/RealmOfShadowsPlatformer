@@ -2952,3 +2952,38 @@ footer {
     justify-self: start;
   }
 }
+.woods-quests {
+  margin-top: 24px;
+}
+.woods-quests > h3 {
+  font:
+    22px Georgia,
+    serif;
+  color: #eed7ff;
+}
+.woods-quests .quest-card {
+  margin: 14px 0;
+  padding: 18px;
+  background: linear-gradient(145deg, #291837, #1a1028);
+  border: 1px solid #684582;
+  border-radius: 10px;
+}
+.woods-quests .quest-card h3 {
+  margin: 0 0 10px;
+  font:
+    22px Georgia,
+    serif;
+  color: #f2dfff;
+}
+.woods-quests .quest-card p {
+  color: #d5bedf;
+}
+.woods-quests .quest-card > b {
+  color: #dcb4fa;
+}
+.woods-quests .quest-rewards {
+  margin: 12px 0;
+  padding: 0;
+  gap: 10px;
+  background: transparent;
+}

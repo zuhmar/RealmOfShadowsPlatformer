@@ -1,4 +1,4 @@
-import { usePortal } from '@ros/shared';
+import { usePortal, applyWoodsMilestones } from '@ros/shared';
 import { changeForge } from './forge.js';
 import { Room, type Client } from '@colyseus/core';
 import {
@@ -80,6 +80,13 @@ export class MapRoom extends Room {
         )
           p.weapon = item;
       }
+    });
+    this.onMessage('equipAccessory', (c, id) => {
+      const p = this.player(c);
+      if (!p || !this.rate(c, 100)) return;
+      if (id === null) p.accessory = null;
+      else if (id === 'forest-guardian-ring' && (p.inventory[id] ?? 0) > 0) p.accessory = id;
+      else c.send('notice', 'You do not own that accessory.');
     });
     this.onMessage('chat', (c, msg) => {
       if (typeof msg !== 'string' || !this.rate(c, 100)) return;
@@ -186,7 +193,8 @@ export class MapRoom extends Room {
     if (!this.rate(c, 100)) return;
     const value = payload as { questId?: unknown; action?: unknown } | null;
     if (
-      value?.questId !== 'mira-wolves' ||
+      typeof value?.questId !== 'string' ||
+      !Object.hasOwn(QUESTS, value.questId) ||
       (value.action !== 'accept' && value.action !== 'claim')
     ) {
       result(false, 'Unknown quest action.');
@@ -197,23 +205,26 @@ export class MapRoom extends Room {
       return;
     }
     const action = value.action;
+    const questId = value.questId as keyof typeof QUESTS;
     p.auto = false;
     this.inputs.set(p.id, idleInput());
     const task = this.saves
       .catch(() => {})
       .then(async () => {
         const wasClaimed = p.quests?.['mira-wolves']?.claimed === true;
-        const next = await changeQuest(structuredClone(p), 'mira-wolves', action);
+        const next = await changeQuest(structuredClone(p), questId, action);
         p.quests = next.quests;
         p.gold = next.gold;
         p.inventory = next.inventory;
         result(
           true,
-          action === 'accept'
-            ? 'Quest accepted: defeat five Wolves in Wolf Hollow, then return to Mira.'
-            : wasClaimed
-              ? 'Training kit collected: bow, staff and dagger.'
-              : 'Quest complete: +75 gold and four class trial weapons.',
+          questId !== 'mira-wolves'
+            ? `${QUESTS[questId].title}: ${action === 'accept' ? 'quest accepted' : 'reward claimed'}.`
+            : action === 'accept'
+              ? 'Quest accepted: defeat five Wolves in Wolf Hollow, then return to Mira.'
+              : wasClaimed
+                ? 'Training kit collected: bow, staff and dagger.'
+                : 'Quest complete: +75 gold and four class trial weapons.',
         );
       });
     this.questTasks.set(p.id, task);
@@ -327,6 +338,8 @@ export class MapRoom extends Room {
           };
           p.forgeQuest.claimed = forgeLedger.claimed;
         } else delete p.forgeQuest;
+        if (applyWoodsMilestones(p))
+          await tx.character.update({ where: { id }, data: { data: json(p) } });
         const activity = await tx.offlineActivity.findUnique({ where: { characterId: id } });
         if (activity) {
           const reward = offlineReward(activity.startedAt.getTime(), Date.now());

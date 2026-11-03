@@ -1,3 +1,5 @@
+export * from './woods-progression';
+import { WOODS_ITEMS, WOODS_QUESTS } from './woods-progression';
 import { WOODS_HUNTING_LAYOUTS } from './hunting-layouts';
 import type { PortalTheme } from './portals';
 export * from './monsters';
@@ -235,6 +237,7 @@ export const STORY = {
 };
 export const MIRA_WEAPON_KIT_LEDGER = 'mira-wolves-weapon-kit-v1';
 export const QUESTS = {
+  ...WOODS_QUESTS,
   'mira-wolves': {
     id: 'mira-wolves',
     title: 'The first trial',
@@ -266,6 +269,7 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  ...WOODS_ITEMS,
   'forest-bear-key': {
     id: 'forest-bear-key',
     name: 'Forest Bear Key',
