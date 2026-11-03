@@ -2097,3 +2097,130 @@ body:has(.app.playing) {
     display: none;
   }
 }
+
+/* Sprite menus beneath the profile; combat buttons float without a dock. */
+.playing .profile-menu {
+  position: absolute;
+  top: 106px;
+  left: 23px;
+  display: flex;
+  gap: 7px;
+  z-index: 5;
+}
+.profile-menu button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 56px;
+  padding: 4px;
+  background: #193127b8;
+  border: 1px solid #b0bf8266;
+  border-radius: 8px;
+  color: #f0e5bc;
+}
+.profile-menu button:hover,
+.profile-menu button:focus-visible {
+  background: #3c563ddd;
+  outline: 2px solid #ddc982;
+}
+.profile-menu svg {
+  display: block;
+  width: 42px;
+  height: 42px;
+}
+.profile-menu small {
+  font-size: 8px;
+}
+.profile-gold {
+  font-size: 10px;
+  color: #ecd58d;
+  padding-top: 4px;
+  text-shadow: 1px 1px 2px #172b20;
+}
+.playing .area-tag {
+  top: 185px;
+}
+.playing .objective {
+  top: 76px;
+}
+.playing .floating-actions {
+  position: absolute;
+  bottom: 28px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 5;
+}
+.floating-actions .auto-group {
+  margin: 0;
+}
+.floating-actions .skillbar {
+  gap: 5px;
+}
+.floating-actions .skill {
+  background: #20392bcc;
+  border-radius: 7px;
+}
+.playing .below-world {
+  bottom: 32px;
+}
+.playing .world-hint {
+  bottom: 92px;
+}
+@media (max-width: 700px) {
+  .playing .profile-menu {
+    top: 138px;
+    left: 12px;
+    gap: 5px;
+  }
+  .profile-menu button {
+    width: 48px;
+  }
+  .profile-menu svg {
+    width: 36px;
+    height: 36px;
+  }
+  .playing .area-tag {
+    top: 207px;
+  }
+  .playing .objective {
+    top: 244px;
+    right: 12px;
+  }
+  .playing .floating-actions {
+    bottom: 96px;
+    right: 12px;
+    gap: 6px;
+  }
+  .floating-actions .skill {
+    min-width: 36px;
+    height: 40px;
+  }
+  .floating-actions .auto-button {
+    padding: 9px 6px;
+  }
+  .playing .touch-controls {
+    bottom: 28px;
+  }
+  .playing .below-world {
+    bottom: 160px;
+  }
+  .playing .world-hint {
+    bottom: 148px;
+  }
+}
+@media (pointer: coarse) and (min-width: 701px) {
+  .playing .floating-actions {
+    bottom: 92px;
+  }
+  .playing .touch-controls {
+    bottom: 28px;
+  }
+}
+@media (max-height: 500px) {
+  .playing .area-tag {
+    display: none;
+  }
+}

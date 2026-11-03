@@ -1,3 +1,4 @@
+import { MenuIcon } from './MenuIcon';
 import { FullscreenButton } from './FullscreenButton';
 import { ItemIcon } from './ItemIcon';
 import React, { useEffect, useRef, useState } from 'react';
@@ -565,32 +566,23 @@ function App() {
                     </div>
                     {statBar('HP', p.hp, maxHp(p.level), 'hp')}
                     {statBar('MP', p.mp, 50, 'mp')}
+                    <div className="profile-gold">◈ {p.gold.toLocaleString()} gold</div>
                   </div>
                 </div>
-                <div className="map-hud">
-                  <span>⌖ {map.name}</span>
-                  <div className="mini-map">
-                    {map.platforms.map((f) => (
-                      <i
-                        key={f.id}
-                        style={{
-                          left: `${(f.x / map.width) * 100}%`,
-                          top: `${(f.y / map.height) * 100}%`,
-                          width: `${(f.width / map.width) * 100}%`,
-                        }}
-                      />
-                    ))}
-                    <b
-                      style={{
-                        left: `${(p.x / map.width) * 100}%`,
-                        top: `${(p.y / map.height) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <small>
-                    {map.spawns.length ? 'LV. 1–10 · HUNTING AREA' : 'SAFE ZONE · ELDERWOOD'}
-                  </small>
-                </div>
+                <nav className="profile-menu" aria-label="Player menus">
+                  {(
+                    [
+                      ['inventory', 'bag', 'Bag'],
+                      ['character', 'character', 'Character'],
+                      ['quests', 'journal', 'Journal'],
+                    ] as const
+                  ).map(([id, icon, label]) => (
+                    <button key={id} onClick={() => setPanel(id)} aria-label={label}>
+                      <MenuIcon name={icon} />
+                      <small>{label}</small>
+                    </button>
+                  ))}
+                </nav>
                 <div className="area-tag">
                   <i />{' '}
                   {p.auto
@@ -664,12 +656,7 @@ function App() {
                     </b>
                   </span>
                 </div>
-                <div className="game-toolbar">
-                  <div className="wallet">
-                    <span>◈</span>
-                    <b>{p.gold.toLocaleString()}</b>
-                    <small>GOLD</small>
-                  </div>
+                <div className="floating-actions" role="group" aria-label="Combat controls">
                   <div className="skillbar">
                     <button className="skill attack" {...hold('attack')}>
                       <ItemIcon id={p.weapon} />
@@ -701,18 +688,6 @@ function App() {
                     >
                       ⚙
                     </button>
-                  </div>
-                  <div className="menu-buttons">
-                    {[
-                      ['inventory', '▦', 'Bag'],
-                      ['character', '♙', 'Character'],
-                      ['quests', '☷', 'Journal'],
-                    ].map(([id, icon, label]) => (
-                      <button key={id} onClick={() => setPanel(id)}>
-                        <span>{icon}</span>
-                        <small>{label}</small>
-                      </button>
-                    ))}
                   </div>
                 </div>
                 <div className="below-world" id="world-chat" hidden={!chatOpen}>

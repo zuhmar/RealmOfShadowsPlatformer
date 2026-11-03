@@ -54,13 +54,19 @@ try {
     expect(geometry.h).toBe(height);
     await expect(page.locator('.site-header')).not.toBeVisible();
     await expect(page.locator('footer')).not.toBeVisible();
-    for (const sel of ['.world-actions', '.game-toolbar']) {
+    for (const sel of ['.world-actions', '.profile-menu', '.floating-actions']) {
       const b = await page.locator(sel).boundingBox();
       expect(b.x).toBeGreaterThanOrEqual(0);
       expect(b.y).toBeGreaterThanOrEqual(0);
       expect(b.x + b.width).toBeLessThanOrEqual(width + 1);
       expect(b.y + b.height).toBeLessThanOrEqual(height + 1);
     }
+    await expect(page.locator('.game-toolbar, .mini-map, .map-hud')).toHaveCount(0);
+    const profile = await page.locator('.player-hud').boundingBox();
+    const menus = await page.locator('.profile-menu').boundingBox();
+    expect(menus.y).toBeGreaterThanOrEqual(profile.y + profile.height);
+    expect(menus.x).toBeLessThan(30);
+    await expect(page.locator('.profile-menu svg image')).toHaveCount(3);
     await page.screenshot({ path: `artifacts/full-page-game-${label}.png` });
   }
   await page.setViewportSize({ width: 390, height: 844 });
@@ -74,6 +80,11 @@ try {
   await page.getByRole('button', { name: /Bag/ }).click();
   await expect(page.getByRole('heading', { name: 'Your satchel.' })).toBeVisible();
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  for (const label of ['Character', 'Journal']) {
+    await page.getByRole('button', { name: label, exact: true }).click();
+    await expect(page.locator('.modal-backdrop')).toBeVisible();
+    await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  }
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   await expect(page.locator('.site-header')).toBeVisible();
   await expect(page.locator('.game-stage')).toHaveCount(0);
