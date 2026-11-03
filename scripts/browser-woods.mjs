@@ -81,13 +81,19 @@ try {
       'canopy',
       'ridge',
       'fishing-dock',
+      'oak-terrace',
+      'herb-garden',
+      'mining-ledge',
     ]);
     for (const p of s.platforms)
-      expect(p.surface).toBeCloseTo(p.id === 'ground' ? 760 : p.id === 'canopy' ? 350 : 555, 5);
+      expect(p.surface).toBeCloseTo(
+        p.id === 'ground' ? 760 : ['canopy', 'herb-garden'].includes(p.id) ? 350 : 555,
+        5,
+      );
     expect(s.resourceFrames).toEqual(['iron-deposit', 'oak-tree', 'greenleaf-patch']);
-    expect(s.ladders).toBe(4);
+    expect(s.ladders).toBe(7);
     expect(s.props.length).toBe(12);
-    expect(s.bodies).toBe(5);
+    expect(s.bodies).toBe(8);
     expect(s.b.x).toBeLessThanOrEqual(s.v.x);
     expect(s.b.right).toBeGreaterThanOrEqual(s.v.right);
     expect(s.b.y).toBeLessThanOrEqual(s.v.y);
@@ -111,7 +117,7 @@ try {
   expect(mobile.soilBottom).toBeGreaterThan(mobile.v.bottom);
   expect(errors).toEqual([]);
   console.log(
-    'PASS: all woods artwork loads; five collision-aligned platforms, four ladders, twelve prop types; background covers map edges, canopy and mobile zoom without stretching.',
+    'PASS: all woods artwork loads; eight collision-aligned platforms, seven ladders, twelve prop types; background covers map edges, canopy and mobile zoom without stretching.',
   );
 } finally {
   await browser.close();

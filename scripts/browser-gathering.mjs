@@ -50,14 +50,20 @@ try {
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await expect(page.locator('.world-hint')).toContainText('Fishing…');
   await page.screenshot({ path: 'artifacts/fishing-active-desktop.png' });
-  await page.waitForTimeout(4300);
+  await page.waitForTimeout(8300);
+  await expect(page.locator('.world-hint')).toContainText('Fishing…');
+  // One start produces two catches. Moving cancels the next cycle.
+  await page.keyboard.down('d');
+  await page.waitForTimeout(120);
+  await page.keyboard.up('d');
+  await expect(page.locator('.world-hint')).not.toContainText('Fishing…');
   await page.getByRole('button', { name: 'Bag', exact: true }).click();
   await expect(page.getByRole('img', { name: 'Brook Trout', exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/fishing-inventory.png' });
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.getByRole('button', { name: 'Character', exact: true }).click();
   await expect(page.locator('.stat-grid').filter({ hasText: 'Fishing' })).toContainText(
-    'Lv. 1 · 10/20 XP',
+    'Lv. 2 · 0/40 XP',
   );
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -66,11 +72,11 @@ try {
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   await expect(page.locator('.site-header')).toBeVisible();
   const saved = await db.character.findUnique({ where: { id: characterId } });
-  expect(saved.data.inventory['brook-trout']).toBe(1);
-  expect(saved.data.gatheringSkills.Fishing.xp).toBe(10);
+  expect(saved.data.inventory['brook-trout']).toBe(2);
+  expect(saved.data.gatheringSkills.Fishing.xp).toBe(0);
   expect(errors).toEqual([]);
   console.log(
-    'PASS: player climbs to fishing dock, catches a trout, sees resource sprite and skill XP, mobile pond renders, inventory/skills save on logout.',
+    'PASS: player climbs to fishing dock, repeats two catches from one start, stops on movement, sees resource sprite and skill XP, mobile pond renders, inventory/skills save on logout.',
   );
 } finally {
   await browser.close();

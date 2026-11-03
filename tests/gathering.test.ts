@@ -19,7 +19,7 @@ test('fishing has a reachable dock and fish rarity requires its separate skill l
   assert.equal(fishingCatch(10, 0), 'golden-carp');
   assert.equal(fishingCatch(10, 0.7), 'brook-trout');
 });
-test('resource gathering is timed and awards exactly one stack item and skill XP', () => {
+test('gathering repeats timed cycles without duplicate or catch-up rewards', () => {
   for (const node of WOODS_RESOURCE_NODES) {
     const { w, p } = setup(node.id);
     assert.ok(w.startGathering(p, node.id, 10000));
@@ -30,11 +30,19 @@ test('resource gathering is timed and awards exactly one stack item and skill XP
     w.stepGathering(p, idleInput(), 10000 + node.duration);
     assert.equal(p.inventory[node.item ?? 'brook-trout'], 1);
     assert.equal(p.gatheringSkills?.[node.skill]?.xp, 10);
-    w.stepGathering(p, idleInput(), 20000);
+    const nextFinish = p.gathering!.finishAt;
+    w.stepGathering(p, idleInput(), nextFinish - 1);
+    assert.equal(p.inventory[node.item ?? 'brook-trout'], 1);
+    w.stepGathering(p, idleInput(), nextFinish);
+    assert.equal(p.inventory[node.item ?? 'brook-trout'], 2);
+    w.stepGathering(p, idleInput(), nextFinish);
+    assert.equal(p.inventory[node.item ?? 'brook-trout'], 2);
+    w.stepGathering(p, idleInput(), 100000);
     assert.equal(
       Object.values(p.inventory).reduce((a, b) => a + b, 0),
-      1,
+      3,
     );
+    assert.equal(p.gathering!.finishAt, 100000 + node.duration);
   }
 });
 test('wrong map, platform, distance and airborne requests cannot award resources', () => {
@@ -84,5 +92,23 @@ test('wooden starter tools are selected by the server for every gathering skill'
     const { w, p } = setup(node.id);
     w.startGathering(p, node.id, 10000);
     assert.ok(p.gathering?.toolId?.startsWith('wood-'));
+  }
+});
+
+test('each node owns a reachable, separate platform with no monster spawns', () => {
+  const ids = new Set<string>();
+  for (const node of WOODS_RESOURCE_NODES) {
+    const platform = MAPS.woods.platforms.find((p) => p.id === node.platform)!;
+    assert.ok(platform.oneWay);
+    assert.ok(!ids.has(platform.id));
+    ids.add(platform.id);
+    assert.equal(node.y, platform.y);
+    assert.ok(node.x >= platform.x && node.x <= platform.x + platform.width);
+    assert.ok(platformRoute(MAPS.woods, 'ground', platform.id).length);
+    assert.ok(!MAPS.woods.spawns.some((s) => s.platform === platform.id));
+    const { w, p } = setup(node.id);
+    p.y = 760;
+    p.platform = 'ground';
+    assert.equal(w.startGathering(p, node.id, 10000), false);
   }
 });

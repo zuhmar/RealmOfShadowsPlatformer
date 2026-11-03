@@ -98,6 +98,28 @@ try {
       ),
     )
     .toBe(true);
+  await page.evaluate(() => {
+    const s = window.villageTest.game.scene.getScene('realm');
+    const bram = s.children.getByName('bram-npc');
+    if (bram?.texture.key !== 'bram') throw new Error('Bram sprite not loaded');
+    const feet = bram.y + (1240 / 1254 - bram.originY) * bram.displayHeight;
+    if (Math.abs(feet - 650) > 0.01) throw new Error('Bram feet do not meet village ground');
+    s.cameras.main.centerOn(900, 560);
+  });
+  await page.waitForTimeout(150);
+  const bramPos = await page.evaluate(() => {
+    const c = window.villageTest.game.scene.getScene('realm').cameras.main;
+    return { x: (900 - c.worldView.x) * c.zoom, y: (610 - c.worldView.y) * c.zoom };
+  });
+  await page.mouse.click(bramPos.x, bramPos.y);
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.villageTest.sent.some((e) => e.type === 'interact' && e.data.npcId === 'bram'),
+      ),
+    )
+    .toBe(true);
+  await page.screenshot({ path: 'artifacts/bram-village.png' });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(200);
   await page.evaluate(() => {
@@ -107,7 +129,7 @@ try {
   await page.screenshot({ path: 'artifacts/elderwood-village-mobile.png' });
   expect(errors).toEqual([]);
   console.log(
-    'PASS: village artwork, two unchanged platform bodies and aligned surfaces, ladder, parallax coverage, Mira interaction, desktop/mobile and asset loading.',
+    'PASS: village artwork, two unchanged platform bodies and aligned surfaces, ladder, parallax coverage, Mira and Bram interaction, Bram sprite/feet alignment, desktop/mobile and asset loading.',
   );
 } finally {
   await browser.close();

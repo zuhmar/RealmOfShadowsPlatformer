@@ -437,7 +437,12 @@ export class World {
       skill.xp -= gatheringXpNeeded(skill.level);
       skill.level++;
     }
-    delete p.gathering;
+    // Start a fresh timed cycle; a delayed tick never grants catch-up rewards.
+    active.startedAt = now;
+    active.finishAt =
+      now +
+      node.duration *
+        (activeGatheringTool(p, node.skill).material === 'iron' ? IRON_TOOL_DURATION : 1);
     this.events.push({
       type: 'loot',
       x: p.x,

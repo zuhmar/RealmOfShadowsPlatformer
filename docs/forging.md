@@ -9,3 +9,5 @@ Only wooden starters are automatic. Forging adds an Iron tool to owned tools wit
 Ownership, equipment, Blacksmithing progression, recipe materials and quest counters persist in character JSON; no database migration is required. The server validates proximity and ownership. Forge transactions lock the character row and compare a persisted revision to reject stale or duplicate material spends. Quest claims also use the durable quest ledger to prevent duplicate rewards.
 
 Validation: direct forging unit tests, database concurrency/duplicate-claim integration test, full browser quest-to-craft-to-manual-equip/save flow, and live mining with the Iron pickaxe.
+
+Bram uses an original transparent1254×1254 blacksmith sprite at `/assets/characters/bram.png`, with a measured boot baseline and90px visible height. His existing interaction zone and forge UI remain in place.

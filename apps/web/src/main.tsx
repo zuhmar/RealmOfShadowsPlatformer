@@ -678,7 +678,7 @@ function App() {
                 </div>
                 <div className="world-hint">
                   {gatheringNode
-                    ? `${gatheringNode.skill}… ${Math.max(0, Math.ceil(((p.gathering?.finishAt ?? 0) - (snapshot?.time ?? 0)) / 1000))}s • Move to cancel`
+                    ? `${gatheringNode.skill}… ${Math.max(0, Math.ceil(((p.gathering?.finishAt ?? 0) - (snapshot?.time ?? 0)) / 1000))}s • Repeats · Move to stop`
                     : nearbyResource
                       ? `E • ${nearbyResource.skill} • Lv. ${p.gatheringSkills?.[nearbyResource.skill]?.level ?? 1}`
                       : map.id === 'village'

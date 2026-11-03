@@ -80,12 +80,18 @@ export const MAPS: Record<string, GameMap> = {
       { id: 'canopy', x: 1160, y: 350, width: 570, oneWay: true },
       { id: 'ridge', x: 1550, y: 555, width: 590, oneWay: true },
       { id: 'fishing-dock', x: 40, y: 555, width: 360, oneWay: true },
+      { id: 'oak-terrace', x: 1090, y: 555, width: 360, oneWay: true },
+      { id: 'herb-garden', x: 1780, y: 350, width: 340, oneWay: true },
+      { id: 'mining-ledge', x: 2180, y: 555, width: 210, oneWay: true },
     ],
     ladders: [
       { x: 530, bottom: 760, top: 555, from: 'ground', to: 'moss' },
       { x: 1640, bottom: 760, top: 555, from: 'ground', to: 'ridge' },
       { x: 1670, bottom: 555, top: 350, from: 'ridge', to: 'canopy' },
       { x: 140, bottom: 760, top: 555, from: 'ground', to: 'fishing-dock' },
+      { x: 1190, bottom: 760, top: 555, from: 'ground', to: 'oak-terrace' },
+      { x: 1850, bottom: 555, top: 350, from: 'ridge', to: 'herb-garden' },
+      { x: 2220, bottom: 760, top: 555, from: 'ground', to: 'mining-ledge' },
     ],
     portals: [{ x: 90, y: 760, target: 'village', label: 'Elderwood Village' }],
     spawns: [

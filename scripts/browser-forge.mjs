@@ -78,7 +78,14 @@ try {
   await db.character.update({
     where: { id: characterId },
     data: {
-      data: { ...saved.data, mapId: 'woods', x: 2250, y: 760, platform: 'ground', grounded: true },
+      data: {
+        ...saved.data,
+        mapId: 'woods',
+        x: 2250,
+        y: 555,
+        platform: 'mining-ledge',
+        grounded: true,
+      },
     },
   });
   await page.reload();

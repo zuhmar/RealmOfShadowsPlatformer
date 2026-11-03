@@ -4,6 +4,9 @@ export const WOODS_PLATFORM_FRAMES: Record<string, string> = {
   moss: 'platform-wide',
   canopy: 'platform-medium',
   ridge: 'platform-small',
+  'oak-terrace': 'platform-wide',
+  'herb-garden': 'platform-wide',
+  'mining-ledge': 'platform-wide',
 };
 export const WOODS_PROPS = [
   { frame: 'trail-sign', platform: 'ground', offset: 300, height: 52 },

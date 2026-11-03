@@ -43,6 +43,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     preload() {
       preloadCharacters(this);
+      this.load.image('bram', '/assets/characters/bram.png');
       this.load.atlas(
         'purple-portal',
         '/assets/effects/purple-portal.png',
@@ -151,9 +152,15 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
                 .setOrigin(0.5, 700 / 768)
                 .setScale(0.11)
                 .play('mira-idle')
-            : this.character(npc.x, npc.y, 'sage', true);
+            : npc.id === 'bram'
+              ? this.add
+                  .image(npc.x, npc.y, 'bram')
+                  .setOrigin(618 / 1254, 1240 / 1254)
+                  .setScale(90 / 1221)
+                  .setName('bram-npc')
+              : this.character(npc.x, npc.y, 'sage', true);
         this.add
-          .text(npc.x, npc.y - 80, `${npc.name}\n${npc.role}`, {
+          .text(npc.x, npc.y - (npc.id === 'bram' ? 112 : 80), `${npc.name}\n${npc.role}`, {
             fontFamily: 'Georgia',
             fontSize: '14px',
             color: '#f6e9b6',
