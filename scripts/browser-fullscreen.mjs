@@ -15,6 +15,7 @@ try {
     } = await import('/node_modules/.vite/deps/react-dom_client.js');
     const { FullscreenButton } = await import('/src/FullscreenButton.tsx');
     const root = document.createElement('div');
+    root.className = 'app playing';
     document.body.replaceChildren(root);
     createRoot(root).render(
       React.createElement(

@@ -2224,3 +2224,63 @@ body:has(.app.playing) {
     display: none;
   }
 }
+
+.playing .world-actions .utility-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 5px;
+  border-radius: 7px;
+}
+.utility-button svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.utility-button:focus-visible {
+  outline: 2px solid #ddc982;
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  .playing .player-hud {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(8px, env(safe-area-inset-left));
+  }
+  .playing .profile-menu {
+    top: calc(max(8px, env(safe-area-inset-top)) + 80px);
+    left: max(8px, env(safe-area-inset-left));
+  }
+  .playing .area-tag {
+    top: calc(max(8px, env(safe-area-inset-top)) + 148px);
+    left: max(8px, env(safe-area-inset-left));
+  }
+  .playing .world-title {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    padding: 0;
+    background: transparent;
+  }
+  .playing .world-actions {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .playing .world-actions .utility-button {
+    width: 38px;
+    height: 38px;
+  }
+  .playing .objective {
+    top: calc(max(8px, env(safe-area-inset-top)) + 185px);
+  }
+}
+
+@media (pointer: coarse) and (min-width: 701px) {
+  .playing .player-hud {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(8px, env(safe-area-inset-left));
+  }
+  .playing .profile-menu {
+    top: calc(max(8px, env(safe-area-inset-top)) + 90px);
+    left: max(8px, env(safe-area-inset-left));
+  }
+}

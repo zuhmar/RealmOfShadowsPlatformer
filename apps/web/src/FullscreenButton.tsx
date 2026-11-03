@@ -1,3 +1,4 @@
+import { ActionIcon } from './ActionIcon';
 import { useEffect, useRef, useState } from 'react';
 
 export function FullscreenButton() {
@@ -45,13 +46,13 @@ export function FullscreenButton() {
   }
   return (
     <button
-      className="icon-button fullscreen-button"
+      className="icon-button utility-button fullscreen-button"
       onClick={() => void toggle()}
       aria-label={expanded ? 'Exit full screen' : 'Enter full screen'}
       aria-pressed={expanded}
       title={expanded ? 'Exit full screen (Esc)' : 'Full screen'}
     >
-      {expanded ? '⊡' : '⛶'}
+      <ActionIcon name="fullscreen" />
     </button>
   );
 }

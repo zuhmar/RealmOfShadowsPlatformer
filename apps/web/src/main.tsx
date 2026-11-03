@@ -1,3 +1,4 @@
+import { ActionIcon } from './ActionIcon';
 import { MenuIcon } from './MenuIcon';
 import { FullscreenButton } from './FullscreenButton';
 import { ItemIcon } from './ItemIcon';
@@ -524,25 +525,33 @@ function App() {
               </div>
               <div className="world-actions">
                 <button
-                  className="secondary"
+                  className="icon-button utility-button"
+                  aria-label="Chat"
+                  title="Chat"
                   aria-expanded={chatOpen}
                   aria-controls="world-chat"
                   onClick={() => setChatOpen((v) => !v)}
                 >
-                  Chat
+                  <ActionIcon name="chat" />
                 </button>
                 <FullscreenButton />
                 <span className="connection-dot" /> Shared world{' '}
-                <button onClick={() => setPanel('map')} className="secondary">
-                  ⌖ World map
+                <button
+                  onClick={() => setPanel('map')}
+                  className="icon-button utility-button"
+                  aria-label="World map"
+                  title="World map"
+                >
+                  <ActionIcon name="world-map" />
                 </button>
                 <button
                   onClick={leave}
                   disabled={busy}
-                  className="icon-button"
+                  className="icon-button utility-button"
+                  title="Back to characters"
                   aria-label="Leave world"
                 >
-                  ↪
+                  <ActionIcon name="back" />
                 </button>
               </div>
             </div>

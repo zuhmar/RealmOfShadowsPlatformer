@@ -66,6 +66,11 @@ try {
     const menus = await page.locator('.profile-menu').boundingBox();
     expect(menus.y).toBeGreaterThanOrEqual(profile.y + profile.height);
     expect(menus.x).toBeLessThan(30);
+    if (width <= 700) {
+      expect(profile.x).toBeLessThanOrEqual(8);
+      expect(profile.y).toBeLessThanOrEqual(8);
+    }
+    await expect(page.locator('.world-actions svg image')).toHaveCount(4);
     await expect(page.locator('.profile-menu svg image')).toHaveCount(3);
     await page.screenshot({ path: `artifacts/full-page-game-${label}.png` });
   }
@@ -77,6 +82,9 @@ try {
   await expect(page.locator('.chat-lines')).toContainText('HUD test message');
   await page.getByRole('button', { name: 'Chat', exact: true }).click();
   await expect(page.getByLabel('World chat', { exact: true })).not.toBeVisible();
+  await page.getByRole('button', { name: 'World map', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Beyond the Elderwood.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.getByRole('button', { name: /Bag/ }).click();
   await expect(page.getByRole('heading', { name: 'Your satchel.' })).toBeVisible();
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
