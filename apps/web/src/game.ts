@@ -392,5 +392,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     render: { antialias: true },
     audio: { noAudio: true },
   });
+  const resize = new ResizeObserver(() => {
+    if (parent.clientWidth && parent.clientHeight)
+      game.scale.resize(parent.clientWidth, parent.clientHeight);
+  });
+  resize.observe(parent);
+  game.events.once(Phaser.Core.Events.DESTROY, () => resize.disconnect());
   return game;
 }

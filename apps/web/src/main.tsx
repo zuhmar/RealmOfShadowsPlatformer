@@ -1,3 +1,4 @@
+import { FullscreenButton } from './FullscreenButton';
 import { ItemIcon } from './ItemIcon';
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -519,6 +520,7 @@ function App() {
               </h1>
             </div>
             <div className="world-actions">
+              <FullscreenButton />
               <span className="connection-dot" /> Shared world{' '}
               <button onClick={() => setPanel('map')} className="secondary">
                 ⌖ World map
