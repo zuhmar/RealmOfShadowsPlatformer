@@ -1,3 +1,4 @@
+export * from './portals';
 export * from './forging';
 export * from './tools';
 import { WOODS_RESOURCE_ITEMS, WOODS_RESOURCE_NODES, type ResourceNode } from './gathering';

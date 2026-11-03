@@ -1,3 +1,4 @@
+import { preloadPortals, registerPortals, addPortal } from './portals';
 import { skillEffect } from './combat-effects';
 import Phaser from 'phaser';
 import { VillageScenery, preloadVillage } from './village';
@@ -44,12 +45,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     preload() {
       preloadCharacters(this);
       this.load.image('bram', '/assets/characters/bram.png');
-      this.load.atlas(
-        'purple-portal',
-        '/assets/effects/purple-portal.png',
-        '/assets/effects/purple-portal.json',
-      );
-      this.load.json('purple-portal-animation', '/assets/effects/purple-portal-animation.json');
+      preloadPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
       if (bridge.snapshot?.mapId === 'woods') preloadWoods(this);
       else preloadVillage(this);
       this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
@@ -61,19 +57,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     create() {
       registerWolfAnimations(this);
       registerCharacters(this);
-      const portal = this.cache.json.get('purple-portal-animation') as {
-        key: string;
-        frames: string[];
-        frameRate: number;
-        repeat: number;
-        origin: { x: number; y: number };
-      };
-      this.anims.create({
-        key: portal.key,
-        frames: portal.frames.map((frame) => ({ key: 'purple-portal', frame })),
-        frameRate: portal.frameRate,
-        repeat: portal.repeat,
-      });
+      registerPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
       const id = bridge.snapshot?.mapId ?? 'village';
       this.map = MAPS[id];
       this.cameras.main.setBackgroundColor(id === 'woods' ? '#b6c9b2' : '#c1d6c5');
@@ -124,15 +108,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.floor.add(body);
       }
       for (const p of m.portals) {
-        const portal = this.cache.json.get('purple-portal-animation');
-        this.add
-          .sprite(p.x, p.y, 'purple-portal', 'idle-0')
-          .setOrigin(portal.origin.x, portal.origin.y)
-          .setScale(0.32)
-          .setDepth(6)
-          .setName('travel-portal')
-          .setData('target', p.target)
-          .play(portal.key);
+        addPortal(this, m.id, p);
         this.add
           .text(p.x, p.y - 164, p.label, {
             fontSize: '14px',
