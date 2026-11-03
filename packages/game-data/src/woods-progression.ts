@@ -73,9 +73,9 @@ export const WOODS_QUESTS = {
     title: 'Silk and shadows',
     prerequisite: 'mira-wolves',
     npcId: 'mira',
-    target: { monsterId: 'thorn-spider', mapId: 'woods-2', count: 10 },
+    target: { monsterId: 'thorn-spider', mapId: 'woods-2', count: 30 },
     description:
-      'Defeat 10 Thorn Spiders in Silkshade Glade after accepting this quest, then return to Mira.',
+      'Defeat 30 Thorn Spiders in Silkshade Glade after accepting this quest, then return to Mira.',
     reward: { gold: 100, items: [{ itemId: 'greenleaf', quantity: 5 }] },
   },
   'mira-boars': {
@@ -83,9 +83,9 @@ export const WOODS_QUESTS = {
     title: 'Break the bramble line',
     prerequisite: 'mira-spiders',
     npcId: 'mira',
-    target: { monsterId: 'wild-boar', mapId: 'woods-3', count: 20 },
+    target: { monsterId: 'wild-boar', mapId: 'woods-3', count: 60 },
     description:
-      'Defeat 20 Wild Boars in Brambleboar Run after accepting this quest, then return to Mira. Earn a guaranteed boss key.',
+      'Defeat 60 Wild Boars in Brambleboar Run after accepting this quest, then return to Mira. Earn a guaranteed boss key.',
     reward: { gold: 200, items: [{ itemId: 'forest-bear-key', quantity: 1 }] },
   },
   'mira-bear': {
@@ -93,9 +93,9 @@ export const WOODS_QUESTS = {
     title: 'The guardian of the woods',
     prerequisite: 'mira-boars',
     npcId: 'mira',
-    target: { monsterId: 'forest-bear', mapId: 'woods-boss', count: 1 },
+    target: { monsterId: 'forest-bear', mapId: 'woods-boss', count: 3 },
     description:
-      'Use a key at the totem high above Brambleboar Run. Defeat Forest Bear, dodge its Ground Slam, then return to Mira.',
+      'Use a key at the totem high above Brambleboar Run. Defeat Forest Bear 3 times, dodge its Ground Slam, then return to Mira.',
     reward: { gold: 500, items: [] },
   },
 } as const;

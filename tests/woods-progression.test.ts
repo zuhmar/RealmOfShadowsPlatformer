@@ -8,8 +8,9 @@ test('Woods requirements and rewards ramp through the accepted quest chain', () 
       QUESTS['mira-wolves'].target.count,
       WOODS_QUESTS['mira-spiders'].target.count,
       WOODS_QUESTS['mira-boars'].target.count,
+      WOODS_QUESTS['mira-bear'].target.count,
     ],
-    [5, 10, 20],
+    [15, 30, 60, 3],
   );
   assert.deepEqual(
     Object.values(WOODS_QUESTS).map((q) => q.reward.gold),
@@ -21,8 +22,8 @@ test('Woods requirements and rewards ramp through the accepted quest chain', () 
   p.quests = { 'mira-spiders': { progress: 0, claimed: false } };
   advanceQuests(p, 'thorn-spider', 'woods');
   assert.equal(p.quests['mira-spiders'].progress, 0);
-  for (let n = 0; n < 30; n++) advanceQuests(p, 'thorn-spider', 'woods-2');
-  assert.equal(p.quests['mira-spiders'].progress, 10);
+  for (let n = 0; n < 90; n++) advanceQuests(p, 'thorn-spider', 'woods-2');
+  assert.equal(p.quests['mira-spiders'].progress, 30);
 });
 test('species loot is collectible once and a rare ring only drops on a successful roll', (t) => {
   const roll = t.mock.method(Math, 'random', () => 0.099);

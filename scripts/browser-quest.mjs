@@ -55,7 +55,7 @@ try {
   await ready();
   await page.getByRole('button', { name: /AUTO OFF/ }).click();
   await expect(page.locator('.objective')).toContainText('Return to Mira · reward ready', {
-    timeout: 45000,
+    timeout: 120000,
   });
   await page.getByRole('button', { name: /AUTO ON/ }).click();
   await expect(page.getByRole('button', { name: /AUTO OFF/ })).toBeVisible();
@@ -115,7 +115,7 @@ try {
   await page.getByRole('button', { name: 'Leave world' }).click();
   expect(errors).toEqual([]);
   console.log(
-    'PASS: storyline, live Mira dialogue/acceptance, real portal travel, five AUTO Wolf kills, return trip, single reward, all four weapons equipped, saved completion and mobile journal.',
+    'PASS: storyline, live Mira dialogue/acceptance, real portal travel, fifteen AUTO Wolf kills, return trip, single reward, all four weapons equipped, saved completion and mobile journal.',
   );
 } catch (e) {
   await page.screenshot({ path: 'artifacts/quest-browser-failure.png', fullPage: true });

@@ -67,7 +67,10 @@ test('every trial weapon hunts across platforms and retrieves owner loot in AUTO
     for (let t = 0; t < 30 * 70; t++) w.step(1 / 30, 10000 + (t * 1000) / 30, new Map());
     assert.ok(p.kills >= 5, `${id} only defeated ${p.kills}`);
     assert.ok(p.gold >= 25, `${id} did not retrieve loot`);
-    assert.equal(p.quests['mira-wolves'].progress, 5);
+    assert.equal(
+      p.quests['mira-wolves'].progress,
+      Math.min(p.kills, QUESTS['mira-wolves'].target.count),
+    );
   }
 });
 test('projectiles cannot duplicate a kill or award rewards after their owner leaves', () => {

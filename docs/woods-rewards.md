@@ -4,12 +4,12 @@ The quest chain grows harder through both counts and monster strength. Mira offe
 
 | Quest | Objective | Reward |
 | --- | --- | --- |
-| The first trial |5 Wolves | Existing75 gold and four class weapons |
-| Silk and shadows |10 Thorn Spiders |100 gold,5 Greenleaf |
-| Break the bramble line |20 Wild Boars |200 gold, one guaranteed Forest Bear Key |
-| The guardian of the woods | One Forest Bear |500 gold |
+| The first trial |15 Wolves | Existing75 gold and four class weapons |
+| Silk and shadows |30 Thorn Spiders |100 gold,5 Greenleaf |
+| Break the bramble line |60 Wild Boars |200 gold, one guaranteed Forest Bear Key |
+| The guardian of the woods |3 Forest Bears |500 gold |
 
-The boss objective uses one mechanically harder fight rather than another large kill count: its doubled size, basic attack, heavy dodge attack and key requirement remain in place. Later island quest chains should continue increasing workload and monster challenge when those islands are built.
+The boss objective requires three mechanically harder fights: its doubled size, basic attack, heavy dodge attack and key requirement remain in place. Later island quest chains should continue increasing workload and monster challenge when those islands are built.
 
 Unique collectible loot: Wolves add Wolf Pelts to their existing loot bundle; spiders drop Thorn Silk; boars drop Boar Tusks (their20% direct key roll is unchanged); Forest Bear drops a claw and has a10% chance to include a Forest Guardian Ring. Ground loot remains owner-only and expires after60 seconds. Collecting a bundle grants all its items once.
 
@@ -22,3 +22,5 @@ All six loot/reward sprites are original transparent RGBA artwork in `ui/woods-l
 Quest transactions lock the character row, check durable prerequisites and progress, conditionally claim once, and save reward inventory and gold atomically. The original Mira weapon-kit migration applies only to the first quest. Room serialization blocks overlapping actions during turn-in. No schema migration is needed.
 
 Validation covers increasing requirements/rewards, acceptance and map gates, loot/rare roll boundaries and collection, first-clear idempotence, all weapon paths with a manually equipped ring, durable prerequisite checks, parallel claim rejection, full-chain turn-ins, and live desktop/mobile sprite, journal, ring and unlock UI/save behavior.
+
+Kill objectives were tripled to15/30/60/3. Existing accepted progress is retained; already claimed quests stay completed. Rewards, loot chances, first-clear rewards, and one-key-per-entry costs are unchanged. Legacy weapon-kit claims remain eligible under their previously completed wolf objective.

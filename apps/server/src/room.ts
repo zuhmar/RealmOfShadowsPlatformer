@@ -221,7 +221,7 @@ export class MapRoom extends Room {
           questId !== 'mira-wolves'
             ? `${QUESTS[questId].title}: ${action === 'accept' ? 'quest accepted' : 'reward claimed'}.`
             : action === 'accept'
-              ? 'Quest accepted: defeat five Wolves in Wolf Hollow, then return to Mira.'
+              ? 'Quest accepted: defeat 15 Wolves in Wolf Hollow, then return to Mira.'
               : wasClaimed
                 ? 'Training kit collected: bow, staff and dagger.'
                 : 'Quest complete: +75 gold and four class trial weapons.',

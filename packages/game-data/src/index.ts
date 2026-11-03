@@ -245,13 +245,13 @@ export const QUESTS = {
     npcId: 'mira',
     npcName: 'Mira',
     mapId: 'village',
-    target: { monsterId: 'wolf', mapId: 'woods', count: 5 },
+    target: { monsterId: 'wolf', mapId: 'woods', count: 15 },
     description:
-      'Speak with Mira, defeat five Wolves in Wolf Hollow, then return to her. Only Wolves defeated after accepting this quest count.',
+      'Speak with Mira, defeat 15 Wolves in Wolf Hollow, then return to her. Only Wolves defeated after accepting this quest count.',
     offer:
-      'The Shadow Dragon took your hometown and everyone in it. You alone survived. You have trained for years for this journey. Before you follow its shadow, show me what that training has made of you: defeat five Wolves in Wolf Hollow, then return to me.',
+      'The Shadow Dragon took your hometown and everyone in it. You alone survived. You have trained for years for this journey. Before you follow its shadow, show me what that training has made of you: defeat 15 Wolves in Wolf Hollow, then return to me.',
     active:
-      'Your training has brought you this far. Face five Wolves in Wolf Hollow, then return. The road to the Shadow Dragon begins with this first trial.',
+      'Your training has brought you this far. Face 15 Wolves in Wolf Hollow, then return. The road to the Shadow Dragon begins with this first trial.',
     ready:
       'Your training has served you well. Take a sword for the Knight’s path, a bow for the Archer’s, a staff for the Mage’s, and a dagger for the Rogue’s. Try each before choosing your path. There are greater trials between you and the Shadow Dragon, but today your journey truly begins.',
     completed:

@@ -108,13 +108,13 @@ test(
         room.send('input', idleInput());
       }
       assert.equal(
-        (await quest(client, 'accept', { progress: 5, gold: 999999, characterId: 'other' })).ok,
+        (await quest(client, 'accept', { progress: 15, gold: 999999, characterId: 'other' })).ok,
         true,
       );
       await until(() => !!client.me().quests?.['mira-wolves']);
       assert.equal(client.me().quests!['mira-wolves'].progress, 0);
       assert.equal(client.me().gold, 0);
-      assert.equal((await quest(client, 'claim', { progress: 5 })).ok, false);
+      assert.equal((await quest(client, 'claim', { progress: 15 })).ok, false);
       assert.equal((await quest(client, 'accept')).ok, false);
       await leave(room);
       await position(c.id, 'woods', 600, 760);
@@ -122,7 +122,7 @@ test(
       room = client.room;
       assert.equal((await quest(client, 'claim')).ok, false);
       room.send('auto', true);
-      await until(() => client.me().quests?.['mira-wolves']?.progress === 5, 40000);
+      await until(() => client.me().quests?.['mira-wolves']?.progress === 15, 120000);
       room.send('auto', false);
       room.send('input', idleInput());
       await wait(100);
@@ -130,7 +130,7 @@ test(
       const progress = await db.questProgress.findUniqueOrThrow({
         where: { characterId_questId: { characterId: c.id, questId: 'mira-wolves' } },
       });
-      assert.equal(progress.progress, 5);
+      assert.equal(progress.progress, 15);
       assert.equal(progress.claimed, false);
       await position(c.id, 'village', 480, 650);
       client = await join(guest.token, c.id, 'village');

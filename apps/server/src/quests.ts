@@ -40,10 +40,10 @@ export async function changeQuest(
       });
       if (row.claimed && kit?.claimed) throw new Error('You have already claimed this reward.');
       if (
-        row.progress < quest.target.count ||
-        (states[questId]?.progress ?? 0) < quest.target.count
+        !row.claimed &&
+        (row.progress < quest.target.count || (states[questId]?.progress ?? 0) < quest.target.count)
       )
-        throw new Error('Defeat five Wolves after accepting the quest, then return to Mira.');
+        throw new Error('Defeat 15 Wolves after accepting the quest, then return to Mira.');
       const legacy = row.claimed;
       if (!legacy) {
         const claimed = await tx.questProgress.updateMany({

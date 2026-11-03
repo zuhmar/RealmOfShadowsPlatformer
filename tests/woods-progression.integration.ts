@@ -30,7 +30,7 @@ test('progressive quest gates and exactly-once turn-ins survive saves', async ()
     await save(p);
     await assert.rejects(() => changeQuest(p, 'mira-boars', 'accept'), /previous/);
     p = await changeQuest(p, 'mira-spiders', 'accept');
-    for (let i = 0; i < 9; i++) advanceQuests(p, 'thorn-spider', 'woods-2');
+    for (let i = 0; i < 29; i++) advanceQuests(p, 'thorn-spider', 'woods-2');
     await save(p);
     await assert.rejects(() => changeQuest(p, 'mira-spiders', 'claim'), /Finish/);
     advanceQuests(p, 'thorn-spider', 'woods-2');
@@ -44,14 +44,16 @@ test('progressive quest gates and exactly-once turn-ins survive saves', async ()
     assert.equal(p.gold, 100);
     assert.equal(p.inventory.greenleaf, 5);
     p = await changeQuest(p, 'mira-boars', 'accept');
-    for (let i = 0; i < 20; i++) advanceQuests(p, 'wild-boar', 'woods-3');
+    for (let i = 0; i < 60; i++) advanceQuests(p, 'wild-boar', 'woods-3');
     await save(p);
     p = await changeQuest(p, 'mira-boars', 'claim');
     assert.equal(p.gold, 300);
     assert.equal(p.inventory['forest-bear-key'], 1);
     p = await changeQuest(p, 'mira-bear', 'accept');
-    const world = new World(MAPS['woods-boss']);
-    world.hitWolf(p, world.wolves[0], 10000, 10000);
+    for (let i = 0; i < 3; i++) {
+      const world = new World(MAPS['woods-boss']);
+      world.hitWolf(p, world.wolves[0], 10000, 10000 + i);
+    }
     await save(p);
     p = await changeQuest(p, 'mira-bear', 'claim');
     assert.equal(p.gold, 900);

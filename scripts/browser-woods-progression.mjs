@@ -102,7 +102,7 @@ try {
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await page.getByRole('button', { name: 'Accept Silk and shadows', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Whispering Woods quest chain' })).toContainText(
-    '0 / 10',
+    '0 / 30',
   );
   await expect(
     page.getByRole('button', { name: 'Accept Break the bramble line', exact: true }),
@@ -117,14 +117,14 @@ try {
   expect(saved.data.accessory).toBe('forest-guardian-ring');
   await db.questProgress.update({
     where: { characterId_questId: { characterId: id, questId: 'mira-spiders' } },
-    data: { progress: 10 },
+    data: { progress: 30 },
   });
   await enter();
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await page.getByRole('button', { name: 'Claim Silk and shadows', exact: true }).click();
   await page.getByRole('button', { name: 'Accept Break the bramble line', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Whispering Woods quest chain' })).toContainText(
-    '0 / 20',
+    '0 / 60',
   );
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await leave();
@@ -135,7 +135,7 @@ try {
   expect(saved.data.quests['mira-boars'].progress).toBe(0);
   expect(errors).toEqual([]);
   console.log(
-    'PASS: six loot sprites, legacy first-clear award exactly once, Crystal unlock display, ring equip/attack/save, gated 10→20 quest progression and durable turn-in.',
+    'PASS: six loot sprites, legacy first-clear award exactly once, Crystal unlock display, ring equip/attack/save, gated 30→60 quest progression and durable turn-in.',
   );
 } finally {
   await browser.close();

@@ -15,12 +15,12 @@ test('Mira requires acceptance and counts only eligible online kills after accep
   advanceQuests(p, 'wolf', 'woods');
   assert.equal(p.quests[id].progress, 1);
   assert.equal(questStatus(p), 'active');
-  for (let i = 0; i < 10; i++) advanceQuests(p, 'wolf', 'woods');
-  assert.equal(p.quests[id].progress, 5);
+  for (let i = 0; i < 30; i++) advanceQuests(p, 'wolf', 'woods');
+  assert.equal(p.quests[id].progress, 15);
   assert.equal(questStatus(p), 'ready');
   p.quests[id].claimed = true;
   advanceQuests(p, 'wolf', 'woods');
-  assert.equal(p.quests[id].progress, 5);
+  assert.equal(p.quests[id].progress, 15);
   assert.equal(questStatus(p), 'claimed');
 });
 test('only the character landing the killing blow gets quest credit and dead wolves cannot count again', () => {
@@ -42,15 +42,15 @@ test('only the character landing the killing blow gets quest credit and dead wol
   world.attack(q, false, 2100);
   assert.equal(q.quests![id].progress, 1);
 });
-test('AUTO combat advances an accepted quest and caps at five', () => {
+test('AUTO combat advances an accepted quest and caps at fifteen', () => {
   const world = new World(MAPS.woods);
   const p = createPlayer('p', 'Auto');
   p.quests = { [id]: { progress: 0, claimed: false } };
   p.auto = true;
   world.players.set(p.id, p);
-  for (let t = 0; t < 30 * 100; t++) world.step(1 / 30, 10000 + (t * 1000) / 30, new Map());
-  assert.ok(p.kills >= 5);
-  assert.equal(p.quests[id].progress, 5);
+  for (let t = 0; t < 30 * 300; t++) world.step(1 / 30, 10000 + (t * 1000) / 30, new Map());
+  assert.ok(p.kills >= 15);
+  assert.equal(p.quests[id].progress, 15);
 });
 test('Mira interaction requires the correct map, horizontal range and floor', () => {
   const p = createPlayer('p', 'Hero', 'village');
