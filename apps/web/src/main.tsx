@@ -330,10 +330,11 @@ function App() {
     <div className={`app ${page === 'game' ? 'playing' : ''}`}>
       <header className="site-header">
         <a className="brand" href="#" onClick={(e) => e.preventDefault()}>
-          <span className="brand-mark">✦</span>
-          <span>
-            REALM <small>OF</small> SHADOWS<em>A WORLD WAITING TO BE DISCOVERED</em>
-          </span>
+          <img
+            src="/assets/ui/realm-of-shadows-logo.png"
+            alt="Realm of Shadows"
+            className="brand-logo"
+          />
         </a>
         <nav>
           <span className="build-badge">
@@ -360,16 +361,13 @@ function App() {
       )}
       {page === 'landing' && (
         <main className="landing">
-          <div className="landing-art">
-            <div className="moon" />
-            <div className="tree t1" />
-            <div className="tree t2" />
-            <div className="tree t3" />
-            <div className="tree t4" />
-            <div className="portal-art">✦</div>
-            <div className="ground-art" />
-          </div>
+          <div className="landing-art" aria-hidden="true" />
           <section className="hero">
+            <img
+              className="hero-logo"
+              src="/assets/ui/realm-of-shadows-logo.png"
+              alt="Realm of Shadows"
+            />
             <div className="eyebrow">THE LAST SURVIVOR · YOUR JOURNEY BEGINS</div>
             <h1>
               A little light.
@@ -385,7 +383,7 @@ function App() {
               </button>
             </div>
             <button className="text-button" onClick={() => setAuth('login')}>
-              Already a traveler? Log in ↗
+              Already a traveler? Log in
             </button>
             <div className="hero-features">
               <span>
@@ -400,7 +398,7 @@ function App() {
             </div>
           </section>
           <div className="art-caption">
-            <span>01 / THE ELDERWOOD</span>
+            <span>01 / THE JOURNEY BEGINS</span>
             <b>Every legend begins with a first step.</b>
           </div>
         </main>
@@ -751,7 +749,7 @@ function App() {
       <footer>
         <span>© {new Date().getFullYear()} REALM OF SHADOWS</span>
         <span>
-          Made for the journey. <i>✦</i> First playable · original placeholder art
+          Made for the journey. <i>✦</i> Your journey begins in Elderwood.
         </span>
       </footer>
       {auth && (
@@ -760,6 +758,11 @@ function App() {
             <button className="close" aria-label="Close" onClick={() => setAuth(null)}>
               <ControlIcon name="close" />
             </button>
+            <img
+              className="login-logo"
+              src="/assets/ui/realm-of-shadows-logo.png"
+              alt="Realm of Shadows"
+            />
             <span className="eyebrow">A PLACE TO CALL YOUR OWN</span>
             <h2>
               {auth === 'login'

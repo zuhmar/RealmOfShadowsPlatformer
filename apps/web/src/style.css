@@ -2488,3 +2488,268 @@ body:has(.app.playing) {
   width: 28px;
   height: 28px;
 }
+
+/* Realm of Shadows brand: glossy amethyst, lilac light and midnight plum. */
+:root {
+  color: #e5dcf1;
+  background: #100a1c;
+  --gold: #d8b4ff;
+  --muted: #a99bbd;
+  --border: #4c3567;
+  --cream: #f6eaff;
+  --panel: #21142f;
+}
+.site-header {
+  background: #110a20e8;
+  border-color: #573777;
+  height: 80px;
+}
+.brand-logo {
+  width: 150px;
+  height: 76px;
+  object-fit: contain;
+}
+.brand {
+  letter-spacing: 0;
+}
+.build-badge,
+.online {
+  color: #cab4e0;
+  border-color: #61447a;
+}
+.landing {
+  min-height: calc(100dvh - 80px);
+  background: #11091c;
+}
+.landing-art {
+  inset: 0;
+  background:
+    linear-gradient(90deg, #10091ce6 0%, #10091c60 47%, #10091c14 100%),
+    url('/assets/backgrounds/shadow-realm-login.png') center / cover;
+  mask-image: none;
+}
+.hero {
+  padding: 24px 5% 40px;
+  max-width: 690px;
+}
+.hero-logo {
+  display: block;
+  width: min(440px, 100%);
+  height: auto;
+  margin: 0 0 8px;
+}
+.hero h1 {
+  font-size: 36px;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+  margin: 14px 0;
+}
+.hero h1 em {
+  color: #d4a0ff;
+}
+.hero p {
+  color: #d3c5e0;
+  line-height: 1.7;
+  text-shadow: 0 1px 3px #10091c;
+}
+.hero-actions {
+  margin-top: 20px;
+}
+.hero-features {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-color: #69418b80;
+  gap: 20px;
+}
+.hero-features span,
+.hero-features b {
+  color: #d5c4e7;
+}
+.art-caption {
+  color: #d8bee9;
+}
+.login-logo {
+  display: block;
+  width: 190px;
+  max-width: 100%;
+  margin: -15px auto 8px;
+}
+.app:not(.playing) .primary {
+  background: linear-gradient(#ae55e8, #6622ab);
+  color: #fff2ff;
+  border-color: #e4b5ff;
+  box-shadow:
+    inset 0 1px 0 #f2d7ff88,
+    0 4px 20px #7d2dbb40;
+}
+.app:not(.playing) .secondary {
+  background: #28153fe6;
+  border-color: #8458a1;
+  color: #e9d6fc;
+}
+.text-button {
+  color: #d0b1ea;
+}
+.selection,
+.modal {
+  color: #e8dcf4;
+}
+.character-card,
+.empty-slot,
+.modal,
+.npc-dialog {
+  background: linear-gradient(145deg, #29183c, #180f27);
+  border-color: #78539a;
+  box-shadow:
+    0 14px 50px #08041188,
+    inset 0 1px #d6a7ff18;
+}
+.modal-backdrop {
+  background: #0e0619d9;
+}
+.modal label,
+.modal > p,
+.modal form > p,
+.selection-top p {
+  color: #c3b2d4;
+}
+.modal input:not([type='checkbox']):not([type='range']),
+.modal select {
+  background: #160c25;
+  color: #f3e8ff;
+  border-color: #654582;
+}
+.playing .portrait {
+  background: linear-gradient(#563272, #211331);
+  border-color: #d7a9f4;
+}
+.playing .portrait b {
+  background: #c6a1e6;
+  border-color: #714b93;
+  color: #21112f;
+}
+.playing .player-name,
+.playing .profile-gold {
+  color: #f3dcff;
+  text-shadow: 0 1px 3px #190b28;
+}
+.playing .player-name span,
+.playing .bar {
+  background: #21112ee0;
+  border-color: #9a6bb9;
+}
+.playing .bar.mp i,
+.playing .xp-strip i {
+  background: linear-gradient(90deg, #6f2bae, #db9aff);
+}
+.playing .xp-strip {
+  background: #1b1028e8;
+  border-color: #744294;
+  color: #e9d3fa;
+}
+.playing .objective,
+.playing .area-tag,
+.playing .chat-box,
+.playing .world-hint {
+  background: #231233dc;
+  border-color: #ad75ca77;
+  color: #f0e0fc;
+}
+.playing .objective small,
+.playing .objective div > span,
+.playing .area-tag,
+.playing .chat-lines p,
+.playing .chat-tabs,
+.playing .chat-tabs i {
+  color: #d4bee6;
+}
+.playing .quest-symbol {
+  color: #e5b4ff;
+  border-color: #a568c4;
+}
+.playing .chat-tabs,
+.playing .chat-box form {
+  border-color: #80579a70;
+}
+.playing .chat-tabs b,
+.playing .chat-lines b,
+.playing .chat-box input {
+  color: #eed2ff;
+}
+.playing .chat-box input::placeholder {
+  color: #b5a1c5;
+}
+.playing .area-tag i {
+  background: #e0a3ff;
+}
+.app.playing button:focus-visible {
+  outline-color: #e4b1ff;
+}
+.app.playing .auto-button.active .control-icon {
+  filter: drop-shadow(0 0 5px #d591ff);
+}
+.toast {
+  background: #332047;
+  border-color: #a571cb;
+  color: #f7eaff;
+}
+.inventory-cell,
+.stat-card,
+.quest-rewards {
+  background-color: #1a1029;
+  border-color: #63427c;
+}
+footer {
+  color: #9d88b3;
+  border-color: #49325f;
+}
+@media (max-width: 700px) {
+  .site-header {
+    height: 66px;
+    padding: 0 4%;
+  }
+  .brand-logo {
+    width: 125px;
+    height: 62px;
+  }
+  .landing {
+    min-height: calc(100dvh - 66px);
+  }
+  .landing-art {
+    background-position: 65% center;
+    background-image:
+      linear-gradient(#10091c48, #10091cd9), url('/assets/backgrounds/shadow-realm-login.png');
+  }
+  .hero {
+    padding: 16px 6% 35px;
+    max-width: 100%;
+  }
+  .hero-logo {
+    width: min(340px, 100%);
+    margin: 0 auto 12px;
+  }
+  .hero h1 {
+    font-size: 29px;
+  }
+  .hero p {
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  .hero-features {
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .hero-features span {
+    min-width: 0;
+    flex: 1;
+  }
+  .hero-features b {
+    font-size: 10px;
+  }
+  .hero-features span {
+    font-size: 8px;
+  }
+  .art-caption {
+    display: none;
+  }
+}
