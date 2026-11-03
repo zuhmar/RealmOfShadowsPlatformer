@@ -18,7 +18,7 @@ export function WoodsQuests({
     <section className="woods-quests" aria-label="Whispering Woods quest chain">
       <h3>Deeper into Whispering Woods</h3>
       <p>
-        15 Wolves → 30 Thorn Spiders → 60 Wild Boars → 3 Forest Bears. Each step requires the
+        15 Wolves → 30 Thorn Spiders → 60 Wild Boars → 1 Forest Bear. Each step requires the
         previous turn-in. Kills count after acceptance.
       </p>
       {Object.values(WOODS_QUESTS).map((q) => {

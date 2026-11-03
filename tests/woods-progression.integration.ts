@@ -50,7 +50,7 @@ test('progressive quest gates and exactly-once turn-ins survive saves', async ()
     assert.equal(p.gold, 300);
     assert.equal(p.inventory['forest-bear-key'], 1);
     p = await changeQuest(p, 'mira-bear', 'accept');
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < QUESTS['mira-bear'].target.count; i++) {
       const world = new World(MAPS['woods-boss']);
       world.hitWolf(p, world.wolves[0], 10000, 10000 + i);
     }

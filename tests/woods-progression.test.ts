@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAPS, WOODS_QUESTS, QUESTS, weaponBonus } from '@ros/game-data';
+import { MAPS, WOODS_QUESTS, QUESTS, ISLAND_AREAS, weaponBonus } from '@ros/game-data';
 import { World, createPlayer, applyWoodsMilestones, attackBonus, advanceQuests } from '@ros/shared';
-test('Woods requirements and rewards ramp through the accepted quest chain', () => {
+test('Woods requirements ramp while boss objectives always require one kill', () => {
+  assert.ok(ISLAND_AREAS.every((island) => island.bossKillCount === 1));
   assert.deepEqual(
     [
       QUESTS['mira-wolves'].target.count,
@@ -10,7 +11,7 @@ test('Woods requirements and rewards ramp through the accepted quest chain', () 
       WOODS_QUESTS['mira-boars'].target.count,
       WOODS_QUESTS['mira-bear'].target.count,
     ],
-    [15, 30, 60, 3],
+    [15, 30, 60, 1],
   );
   assert.deepEqual(
     Object.values(WOODS_QUESTS).map((q) => q.reward.gold),

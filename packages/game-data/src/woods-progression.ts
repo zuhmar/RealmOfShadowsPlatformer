@@ -1,3 +1,4 @@
+import { BOSS_QUEST_KILLS } from './monsters';
 export const WOODS_ITEMS = {
   'wolf-pelt': {
     id: 'wolf-pelt',
@@ -93,9 +94,9 @@ export const WOODS_QUESTS = {
     title: 'The guardian of the woods',
     prerequisite: 'mira-boars',
     npcId: 'mira',
-    target: { monsterId: 'forest-bear', mapId: 'woods-boss', count: 3 },
+    target: { monsterId: 'forest-bear', mapId: 'woods-boss', count: BOSS_QUEST_KILLS },
     description:
-      'Use a key at the totem high above Brambleboar Run. Defeat Forest Bear 3 times, dodge its Ground Slam, then return to Mira.',
+      'Use a key at the totem high above Brambleboar Run. Defeat Forest Bear once, dodge its Ground Slam, then return to Mira.',
     reward: { gold: 500, items: [] },
   },
 } as const;

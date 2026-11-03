@@ -3,7 +3,7 @@ import { WOODS_ITEMS, WOODS_QUESTS } from './woods-progression';
 import { WOODS_HUNTING_LAYOUTS } from './hunting-layouts';
 import type { PortalTheme } from './portals';
 export * from './monsters';
-import type { WoodsMonster } from './monsters';
+import { BOSS_QUEST_KILLS, type WoodsMonster } from './monsters';
 export * from './portals';
 export * from './forging';
 export * from './tools';
@@ -188,6 +188,7 @@ export const ISLAND_AREAS = ISLANDS.map((island) => ({
   areas: [island.id, `${island.id}-2`, `${island.id}-3`, `${island.id}-boss`],
   monsters: [...island.monsters, island.boss],
   bossEntranceTheme: island.id as PortalTheme,
+  bossKillCount: BOSS_QUEST_KILLS,
   bossKey: island.id === 'woods' ? 'forest-bear-key' : `${island.id}-boss-key`,
 }));
 for (const [stage, name, monster, background] of [

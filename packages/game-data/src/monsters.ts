@@ -1,3 +1,4 @@
+export const BOSS_QUEST_KILLS = 1;
 export const WOODS_MONSTERS = {
   wolf: {
     name: 'Wolf',
