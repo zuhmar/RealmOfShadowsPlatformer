@@ -182,6 +182,21 @@
           "y": 72
         }
       ]
+    },
+    "village": {
+      "image": "village.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "safeHub": true,
+      "source": "exec-c7b8eed4-ad9b-41e4-b380-5b7f2e877b54.png",
+      "fullyTransparentFraction": 0.2278,
+      "locations": [
+        {
+          "x": 50,
+          "y": 58
+        }
+      ]
     }
   }
 }

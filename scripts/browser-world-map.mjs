@@ -26,6 +26,12 @@ const leave = async () => {
   await expect(page.locator('.site-header')).toBeVisible();
 };
 const teleport = async (name, map) => {
+  await page
+    .getByRole('button', {
+      name: map === 'village' ? 'Explore Elderwood Village' : 'Explore Whispering Woods',
+      exact: true,
+    })
+    .click();
   await page.locator(`[data-area-id="${map}"]`).click();
   await expect
     .poll(async () => (await db.character.findUnique({ where: { id } })).data.mapId)
@@ -59,14 +65,26 @@ try {
   await enter();
   await open();
   await expect(page.locator('.map-crystals')).toContainText('3 Teleport Crystals');
-  await expect(page.locator('.map-carousel-dot')).toHaveCount(7);
+  await expect(page.locator('.map-carousel-dot')).toHaveCount(8);
+  await expect(
+    page.getByRole('heading', { name: 'Elderwood Village', level: 2, exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.map-area-list .map-destination')).toHaveCount(1);
+  await expect(page.locator('[data-area-id="village"]')).toHaveCount(1);
+  await expect(page.locator('[data-area-id="village"]')).toBeDisabled();
+  await expect(page.locator('.world-map-chart > img')).toHaveAttribute('src', /village.png$/);
+  await page.locator('.world-map-chart > img').evaluate((img) => img.decode());
+  await page.screenshot({ path: 'artifacts/village-island-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: 'artifacts/village-island-mobile.png' });
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole('button', { name: 'Previous island', exact: true }).click();
   await expect(page.locator('.island-carousel-heading')).toContainText('Shadow Fortress');
   await page.getByRole('button', { name: 'Next island', exact: true }).click();
-  await expect(page.locator('.island-carousel-heading')).toContainText('Whispering Woods');
+  await expect(page.locator('.island-carousel-heading')).toContainText('Elderwood Village');
   await page.getByRole('region', { name: 'Island maps', exact: true }).focus();
   await page.keyboard.press('ArrowRight');
-  await expect(page.locator('.island-carousel-heading')).toContainText('Crystal Caverns');
+  await expect(page.locator('.island-carousel-heading')).toContainText('Whispering Woods');
 
   for (const island of [
     'Whispering Woods',
@@ -198,6 +216,8 @@ try {
   expect(saved.inventory['forest-bear-key']).toBeUndefined();
   await teleport('Elderwood Village', 'village');
   await expect(page.locator('.map-crystals')).toContainText('0 Teleport Crystals');
+  await expect(page.locator('.map-area-list .map-destination')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Explore Whispering Woods', exact: true }).click();
   await expect(page.locator('[data-area-id="woods-2"]')).toBeDisabled();
   await close();
   await leave();
@@ -212,7 +232,7 @@ try {
   expect(saved.mapId).toBe('village');
   expect(errors).toEqual([]);
   console.log(
-    'PASS: panel-free single-island view, monster names above generated round teleport buttons, arrows/keyboard/swipe, mobile bounds, discovery locks, crystal/key charges and saved travel.',
+    'PASS: Elderwood safe-hub island plus seven hunting islands, panel-free view, monster labels and round teleport buttons, arrows/keyboard/swipe, mobile bounds, discovery locks, crystal/key charges and saved travel.',
   );
 } finally {
   await browser.close();

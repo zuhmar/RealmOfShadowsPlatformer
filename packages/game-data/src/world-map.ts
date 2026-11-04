@@ -109,3 +109,14 @@ export const WORLD_MAP_ISLANDS = [
     ],
   },
 ] as const;
+
+/** Safe hub artwork; deliberately separate from the seven hunting islands. */
+export const WORLD_MAP_VILLAGE = {
+  id: 'village',
+  name: 'Elderwood Village',
+  image: '/assets/backgrounds/island-maps/village.png',
+  width: 1254,
+  height: 1254,
+  locations: [{ x: 50, y: 58 }],
+  areas: ['Elderwood Village'],
+} as const;

@@ -3,11 +3,24 @@ import {
   ISLANDS,
   MAPS,
   WORLD_MAP_ISLANDS,
+  WORLD_MAP_VILLAGE,
   TELEPORT_CRYSTAL,
   TELEPORT_CRYSTAL_PRICE,
 } from '@ros/game-data';
 import { teleportBlock, teleportKey, nearNpc, type Player } from '@ros/shared';
 import { ItemIcon } from './ItemIcon';
+const MAP_SLIDES = [
+  {
+    ...WORLD_MAP_VILLAGE,
+    minLevel: 1,
+    maxLevel: 1,
+    available: true,
+    monsters: [] as string[],
+    boss: '',
+  },
+  ...ISLANDS,
+];
+
 export function WorldMapPanel({
   player: p,
   onTeleport,
@@ -18,7 +31,8 @@ export function WorldMapPanel({
   onBuy: () => void;
 }) {
   const [selected, setSelected] = useState(
-    () => ISLANDS.find((i) => p.mapId === i.id || p.mapId.startsWith(`${i.id}-`))?.id ?? 'woods',
+    () =>
+      MAP_SLIDES.find((i) => p.mapId === i.id || p.mapId.startsWith(`${i.id}-`))?.id ?? 'village',
   );
   const swipe = useRef<{ x: number; y: number } | null>(null),
     ignoreClickUntil = useRef(0),
@@ -26,11 +40,12 @@ export function WorldMapPanel({
   useEffect(() => {
     carousel.current?.focus();
   }, []);
-  const index = ISLANDS.findIndex((i) => i.id === selected),
-    island = ISLANDS[index],
-    chart = WORLD_MAP_ISLANDS.find((i) => i.id === selected)!;
+  const index = MAP_SLIDES.findIndex((i) => i.id === selected),
+    island = MAP_SLIDES[index],
+    isVillage = selected === 'village',
+    chart = isVillage ? WORLD_MAP_VILLAGE : WORLD_MAP_ISLANDS.find((i) => i.id === selected)!;
   const move = (direction: number) =>
-    setSelected(ISLANDS[(index + direction + ISLANDS.length) % ISLANDS.length].id);
+    setSelected(MAP_SLIDES[(index + direction + MAP_SLIDES.length) % MAP_SLIDES.length].id);
   const crystals = p.inventory[TELEPORT_CRYSTAL] ?? 0,
     atBram = p.mapId === 'village' && nearNpc(p, MAPS.village, 'bram');
   const location = (id: string, label: string, point?: { x: number; y: number }, boss = false) => {
@@ -95,7 +110,8 @@ export function WorldMapPanel({
           <div aria-live="polite">
             <h2>{island.name}</h2>
             <small>
-              Lv. {island.minLevel}–{island.maxLevel} · {index + 1} / {ISLANDS.length}
+              {isVillage ? 'Safe hub' : `Lv. ${island.minLevel}–${island.maxLevel}`} · {index + 1} /{' '}
+              {MAP_SLIDES.length}
             </small>
             {!island.available && (
               <p className="map-island-availability">
@@ -155,26 +171,32 @@ export function WorldMapPanel({
           <img
             key={chart.id}
             src={chart.image}
-            alt={`${island.name} island map with four hunting locations`}
+            alt={
+              isVillage
+                ? 'Elderwood Village floating island with green-roofed cottages, a forge, market and village square'
+                : `${island.name} island map with four hunting locations`
+            }
             draggable={false}
           />
           <div className="map-area-list">
-            {chart.areas.map((_, areaIndex) => {
-              const id =
-                areaIndex === 0
-                  ? island.id
-                  : `${island.id}-${areaIndex === 3 ? 'boss' : areaIndex + 1}`;
-              return location(
-                id,
-                areaIndex === 3 ? island.boss : island.monsters[areaIndex],
-                chart.locations[areaIndex],
-                areaIndex === 3,
-              );
-            })}
+            {isVillage
+              ? location('village', 'Elderwood Village', WORLD_MAP_VILLAGE.locations[0])
+              : chart.areas.map((_, areaIndex) => {
+                  const id =
+                    areaIndex === 0
+                      ? island.id
+                      : `${island.id}-${areaIndex === 3 ? 'boss' : areaIndex + 1}`;
+                  return location(
+                    id,
+                    areaIndex === 3 ? island.boss : island.monsters[areaIndex],
+                    chart.locations[areaIndex],
+                    areaIndex === 3,
+                  );
+                })}
           </div>
         </div>
         <nav className="map-carousel-pagination" aria-label="Choose island">
-          {ISLANDS.map((entry, i) => (
+          {MAP_SLIDES.map((entry, i) => (
             <button
               className={`map-carousel-dot ${selected === entry.id ? 'selected' : ''}`}
               key={entry.id}
@@ -194,7 +216,7 @@ export function WorldMapPanel({
             {crystals} Teleport Crystal{crystals === 1 ? '' : 's'}
           </strong>
         </div>
-        {location('village', 'Elderwood Village')}
+        {!isVillage && location('village', 'Elderwood Village')}
         <button
           className="map-crystal-buy"
           disabled={!atBram || p.gold < TELEPORT_CRYSTAL_PRICE}
