@@ -39,7 +39,8 @@
     "test:browser:equipment-management": "node --env-file-if-exists=apps/server/.env scripts/browser-equipment-management.mjs",
     "test:browser:loot": "node scripts/browser-loot-feedback.mjs",
     "balance:woods": "node --import tsx scripts/balance-woods.ts",
-    "test:browser:world-map": "node --env-file-if-exists=apps/server/.env scripts/browser-world-map.mjs"
+    "test:browser:world-map": "node --env-file-if-exists=apps/server/.env scripts/browser-world-map.mjs",
+    "test:browser:island-weapons": "node scripts/browser-island-weapons.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

@@ -54,7 +54,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       super('realm');
     }
     preload() {
-      preloadCharacters(this);
+      preloadCharacters(this, bridge.snapshot?.players ?? []);
       this.load.image('bram', '/assets/characters/bram.png');
 
       preloadPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);

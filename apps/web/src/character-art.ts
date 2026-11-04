@@ -45,6 +45,7 @@ export function recolorOutfit(
   width: number,
   height: number,
   outfit: Outfit,
+  clothReference?: CanvasImageSource,
 ) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -53,8 +54,26 @@ export function recolorOutfit(
   if (!ctx) throw new Error('Cannot prepare character artwork');
   ctx.drawImage(source, 0, 0);
   const pixels = ctx.getImageData(0, 0, width, height);
+  let cloth: Uint8ClampedArray | undefined;
+  if (clothReference) {
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(clothReference, 0, 0, width, height);
+    cloth = ctx.getImageData(0, 0, width, height).data;
+  }
   for (let i = 0; i < pixels.data.length; i += 4) {
     if (pixels.data[i + 3] < 32) continue;
+    if (cloth) {
+      const maskColor = outfitPixel(cloth[i], cloth[i + 1], cloth[i + 2], cloth[i + 3], outfit);
+      // Keep new green weapon details intact: recolor only pixels still matching the original tunic.
+      if (
+        maskColor.every((value, channel) => value === cloth![i + channel]) ||
+        Math.abs(pixels.data[i] - cloth[i]) +
+          Math.abs(pixels.data[i + 1] - cloth[i + 1]) +
+          Math.abs(pixels.data[i + 2] - cloth[i + 2]) >
+          70
+      )
+        continue;
+    }
     const [r, g, b] = outfitPixel(
       pixels.data[i],
       pixels.data[i + 1],

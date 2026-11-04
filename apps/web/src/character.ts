@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { islandArmedKey, preloadIslandArmed } from './island-armed';
 import type { Player } from '@ros/shared';
 import { weaponKind, type WeaponKind, type GameMap } from '@ros/game-data';
 import {
@@ -25,7 +26,8 @@ const armedKey = (appearance: string, outfit: string, weapon: string) =>
 type Clips = {
   animations: Record<string, { frames: string[]; frameRate: number; repeat: number }>;
 };
-export function preloadCharacters(scene: Phaser.Scene) {
+export function preloadCharacters(scene: Phaser.Scene, players: Player[] = []) {
+  preloadIslandArmed(scene, players);
   scene.load.atlas(
     'woods-equipment',
     '/assets/equipment/islands/woods.png',
@@ -185,7 +187,7 @@ export class CharacterVisual {
     const key = gathering
       ? gatheringKey(p.appearance, p.outfit, gatheringMaterial)
       : armed
-        ? armedKey(p.appearance, p.outfit, kind)
+        ? (islandArmedKey(this.scene, p) ?? armedKey(p.appearance, p.outfit, kind))
         : characterKey(p.appearance, p.outfit);
     this.drawnWeapon = armed ? kind : 'unarmed';
     if (key !== this.key) {
@@ -260,7 +262,8 @@ export class CharacterVisual {
     const key =
       kind === 'unarmed'
         ? characterKey(this.player.appearance, this.player.outfit)
-        : armedKey(this.player.appearance, this.player.outfit, kind);
+        : (islandArmedKey(this.scene, this.player) ??
+          armedKey(this.player.appearance, this.player.outfit, kind));
     const corpse = this.scene.add
       .sprite(x, y, key, 'death-0')
       .setOrigin(0.5, 224 / 256)

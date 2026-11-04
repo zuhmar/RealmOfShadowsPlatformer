@@ -1,0 +1,518 @@
+{
+  "version": 1,
+  "integrated": true,
+  "facing": "right",
+  "unarmedClimbing": true,
+  "sourceFrame": {
+    "width": 384,
+    "height": 384,
+    "baseline": 336
+  },
+  "animations": "../manifest.json",
+  "sheets": [
+    {
+      "tier": "woods",
+      "appearance": "male",
+      "weaponKind": "sword",
+      "equipmentId": "woods-sword",
+      "image": "/assets/characters/armed/islands/woods/citizen-male-sword.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-male-sword.json",
+      "sourceGeneration": "exec-a7a02481-d61b-4ade-89a0-ce0d97898a76.png"
+    },
+    {
+      "tier": "woods",
+      "appearance": "male",
+      "weaponKind": "bow",
+      "equipmentId": "woods-bow",
+      "image": "/assets/characters/armed/islands/woods/citizen-male-bow.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-male-bow.json",
+      "sourceGeneration": "exec-f9287c80-d9ef-4105-b5d4-91f624b0c2c1.png"
+    },
+    {
+      "tier": "woods",
+      "appearance": "male",
+      "weaponKind": "staff",
+      "equipmentId": "woods-staff",
+      "image": "/assets/characters/armed/islands/woods/citizen-male-staff.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-male-staff.json",
+      "sourceGeneration": "exec-e8848c88-b6c4-4401-9bae-30abd24c7809.png"
+    },
+    {
+      "tier": "woods",
+      "appearance": "male",
+      "weaponKind": "dagger",
+      "equipmentId": "woods-dagger",
+      "image": "/assets/characters/armed/islands/woods/citizen-male-dagger.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-male-dagger.json",
+      "sourceGeneration": "exec-797550fe-6718-437d-a306-0c2fb30f6995.png"
+    },
+    {
+      "tier": "woods",
+      "appearance": "female",
+      "weaponKind": "sword",
+      "equipmentId": "woods-sword",
+      "image": "/assets/characters/armed/islands/woods/citizen-female-sword.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-female-sword.json",
+      "sourceGeneration": "exec-cbc8f7c2-d6a8-4214-8ce4-d1fc80c383d1.png"
+    },
+    {
+      "tier": "woods",
+      "appearance": "female",
+      "weaponKind": "bow",
+      "equipmentId": "woods-bow",
+      "image": "/assets/characters/armed/islands/woods/citizen-female-bow.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-female-bow.json",
+      "sourceGeneration": "exec-8ae228a7-fd7d-437c-b01b-0f1606c0faeb.png"
+    },
+    {
+      "tier": "woods",
+      "appearance": "female",
+      "weaponKind": "staff",
+      "equipmentId": "woods-staff",
+      "image": "/assets/characters/armed/islands/woods/citizen-female-staff.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-female-staff.json",
+      "sourceGeneration": "exec-4a964a8b-7932-44a8-bc8c-7a2898e8cd19.png"
+    },
+    {
+      "tier": "woods",
+      "appearance": "female",
+      "weaponKind": "dagger",
+      "equipmentId": "woods-dagger",
+      "image": "/assets/characters/armed/islands/woods/citizen-female-dagger.png",
+      "atlas": "/assets/characters/armed/islands/woods/citizen-female-dagger.json",
+      "sourceGeneration": "exec-f8b600dc-9855-4a68-aaed-2e59a9309d78.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "male",
+      "weaponKind": "sword",
+      "equipmentId": "crystal-sword",
+      "image": "/assets/characters/armed/islands/crystal/citizen-male-sword.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-male-sword.json",
+      "sourceGeneration": "exec-eacc2984-2f8b-41e4-b5a5-8e5f7a8f03b4.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "male",
+      "weaponKind": "bow",
+      "equipmentId": "crystal-bow",
+      "image": "/assets/characters/armed/islands/crystal/citizen-male-bow.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-male-bow.json",
+      "sourceGeneration": "exec-d73f40ce-d396-47e8-bae2-4a9cfae20256.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "male",
+      "weaponKind": "staff",
+      "equipmentId": "crystal-staff",
+      "image": "/assets/characters/armed/islands/crystal/citizen-male-staff.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-male-staff.json",
+      "sourceGeneration": "exec-ac102f97-b688-40a2-8a81-e41fcb5a2f31.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "male",
+      "weaponKind": "dagger",
+      "equipmentId": "crystal-dagger",
+      "image": "/assets/characters/armed/islands/crystal/citizen-male-dagger.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-male-dagger.json",
+      "sourceGeneration": "exec-91ba96c8-b5f9-4fc5-b79d-46b4cc9a2b72.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "female",
+      "weaponKind": "sword",
+      "equipmentId": "crystal-sword",
+      "image": "/assets/characters/armed/islands/crystal/citizen-female-sword.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-female-sword.json",
+      "sourceGeneration": "exec-ce83d629-43e1-42aa-9000-d85d711c7394.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "female",
+      "weaponKind": "bow",
+      "equipmentId": "crystal-bow",
+      "image": "/assets/characters/armed/islands/crystal/citizen-female-bow.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-female-bow.json",
+      "sourceGeneration": "exec-3738b71d-7573-4b76-b542-2fe853f4ce46.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "female",
+      "weaponKind": "staff",
+      "equipmentId": "crystal-staff",
+      "image": "/assets/characters/armed/islands/crystal/citizen-female-staff.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-female-staff.json",
+      "sourceGeneration": "exec-d31a19f0-6c3c-4345-9375-fef46ff4191d.png"
+    },
+    {
+      "tier": "crystal",
+      "appearance": "female",
+      "weaponKind": "dagger",
+      "equipmentId": "crystal-dagger",
+      "image": "/assets/characters/armed/islands/crystal/citizen-female-dagger.png",
+      "atlas": "/assets/characters/armed/islands/crystal/citizen-female-dagger.json",
+      "sourceGeneration": "exec-8a0deba7-3125-4823-ab60-a33a4b34debd.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "male",
+      "weaponKind": "sword",
+      "equipmentId": "swamp-sword",
+      "image": "/assets/characters/armed/islands/swamp/citizen-male-sword.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-male-sword.json",
+      "sourceGeneration": "exec-d33a13ab-628a-4723-b50e-c17acce468d2.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "male",
+      "weaponKind": "bow",
+      "equipmentId": "swamp-bow",
+      "image": "/assets/characters/armed/islands/swamp/citizen-male-bow.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-male-bow.json",
+      "sourceGeneration": "exec-5e19e2ff-2b71-4e92-b7c4-328109929762.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "male",
+      "weaponKind": "staff",
+      "equipmentId": "swamp-staff",
+      "image": "/assets/characters/armed/islands/swamp/citizen-male-staff.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-male-staff.json",
+      "sourceGeneration": "exec-4e287fc7-12f7-4cf4-841b-e78042bf145c.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "male",
+      "weaponKind": "dagger",
+      "equipmentId": "swamp-dagger",
+      "image": "/assets/characters/armed/islands/swamp/citizen-male-dagger.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-male-dagger.json",
+      "sourceGeneration": "exec-982e8cc6-32bd-4408-ac8a-dc4f0bc77e2e.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "female",
+      "weaponKind": "sword",
+      "equipmentId": "swamp-sword",
+      "image": "/assets/characters/armed/islands/swamp/citizen-female-sword.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-female-sword.json",
+      "sourceGeneration": "exec-6823085b-0568-4f4a-a28c-6dffc63479f3.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "female",
+      "weaponKind": "bow",
+      "equipmentId": "swamp-bow",
+      "image": "/assets/characters/armed/islands/swamp/citizen-female-bow.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-female-bow.json",
+      "sourceGeneration": "exec-c006130f-7321-4290-a065-750d16a613de.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "female",
+      "weaponKind": "staff",
+      "equipmentId": "swamp-staff",
+      "image": "/assets/characters/armed/islands/swamp/citizen-female-staff.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-female-staff.json",
+      "sourceGeneration": "exec-67a3a945-f763-47a4-a934-264f5fda6e0d.png"
+    },
+    {
+      "tier": "swamp",
+      "appearance": "female",
+      "weaponKind": "dagger",
+      "equipmentId": "swamp-dagger",
+      "image": "/assets/characters/armed/islands/swamp/citizen-female-dagger.png",
+      "atlas": "/assets/characters/armed/islands/swamp/citizen-female-dagger.json",
+      "sourceGeneration": "exec-7affb081-e746-40ef-849a-1c938cad0fd7.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "male",
+      "weaponKind": "sword",
+      "equipmentId": "frost-sword",
+      "image": "/assets/characters/armed/islands/frost/citizen-male-sword.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-male-sword.json",
+      "sourceGeneration": "exec-0d0719ad-59ca-46ff-a25a-d81fea1b7d0f.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "male",
+      "weaponKind": "bow",
+      "equipmentId": "frost-bow",
+      "image": "/assets/characters/armed/islands/frost/citizen-male-bow.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-male-bow.json",
+      "sourceGeneration": "exec-8a50c218-aa6b-46b0-ae4b-8697e25d7f82.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "male",
+      "weaponKind": "staff",
+      "equipmentId": "frost-staff",
+      "image": "/assets/characters/armed/islands/frost/citizen-male-staff.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-male-staff.json",
+      "sourceGeneration": "exec-5c1dcbb8-c207-485c-917f-7e29c9f9e053.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "male",
+      "weaponKind": "dagger",
+      "equipmentId": "frost-dagger",
+      "image": "/assets/characters/armed/islands/frost/citizen-male-dagger.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-male-dagger.json",
+      "sourceGeneration": "exec-4bf0eb3e-096d-40c2-b98c-9125f0849c34.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "female",
+      "weaponKind": "sword",
+      "equipmentId": "frost-sword",
+      "image": "/assets/characters/armed/islands/frost/citizen-female-sword.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-female-sword.json",
+      "sourceGeneration": "exec-26fb106a-49ed-4815-834a-982fa4234fe3.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "female",
+      "weaponKind": "bow",
+      "equipmentId": "frost-bow",
+      "image": "/assets/characters/armed/islands/frost/citizen-female-bow.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-female-bow.json",
+      "sourceGeneration": "exec-e2537140-c95f-4210-a3fc-2c90aaeb327b.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "female",
+      "weaponKind": "staff",
+      "equipmentId": "frost-staff",
+      "image": "/assets/characters/armed/islands/frost/citizen-female-staff.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-female-staff.json",
+      "sourceGeneration": "exec-a3daeda3-3e85-4338-b671-7c5d517e1e5f.png"
+    },
+    {
+      "tier": "frost",
+      "appearance": "female",
+      "weaponKind": "dagger",
+      "equipmentId": "frost-dagger",
+      "image": "/assets/characters/armed/islands/frost/citizen-female-dagger.png",
+      "atlas": "/assets/characters/armed/islands/frost/citizen-female-dagger.json",
+      "sourceGeneration": "exec-432ae8e2-5486-4888-94e4-79186a2761c9.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "male",
+      "weaponKind": "sword",
+      "equipmentId": "ember-sword",
+      "image": "/assets/characters/armed/islands/ember/citizen-male-sword.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-male-sword.json",
+      "sourceGeneration": "exec-cabb634d-e219-4de9-a8e0-760b54516574.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "male",
+      "weaponKind": "bow",
+      "equipmentId": "ember-bow",
+      "image": "/assets/characters/armed/islands/ember/citizen-male-bow.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-male-bow.json",
+      "sourceGeneration": "exec-2a35e070-6694-440a-84c2-009344b91edb.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "male",
+      "weaponKind": "staff",
+      "equipmentId": "ember-staff",
+      "image": "/assets/characters/armed/islands/ember/citizen-male-staff.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-male-staff.json",
+      "sourceGeneration": "exec-c63a145a-1bed-4413-a3ca-1fce0cb0ed02.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "male",
+      "weaponKind": "dagger",
+      "equipmentId": "ember-dagger",
+      "image": "/assets/characters/armed/islands/ember/citizen-male-dagger.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-male-dagger.json",
+      "sourceGeneration": "exec-c4d00ab5-428e-4f4c-bd3e-8d4f5aa85b9c.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "female",
+      "weaponKind": "sword",
+      "equipmentId": "ember-sword",
+      "image": "/assets/characters/armed/islands/ember/citizen-female-sword.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-female-sword.json",
+      "sourceGeneration": "exec-bd3ea457-27e7-45ec-8c44-d964306e852a.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "female",
+      "weaponKind": "bow",
+      "equipmentId": "ember-bow",
+      "image": "/assets/characters/armed/islands/ember/citizen-female-bow.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-female-bow.json",
+      "sourceGeneration": "exec-01ec369a-b45d-4816-98c1-5e890386e020.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "female",
+      "weaponKind": "staff",
+      "equipmentId": "ember-staff",
+      "image": "/assets/characters/armed/islands/ember/citizen-female-staff.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-female-staff.json",
+      "sourceGeneration": "exec-4f8b56bf-7773-41a7-9d9e-960ae61717b3.png"
+    },
+    {
+      "tier": "ember",
+      "appearance": "female",
+      "weaponKind": "dagger",
+      "equipmentId": "ember-dagger",
+      "image": "/assets/characters/armed/islands/ember/citizen-female-dagger.png",
+      "atlas": "/assets/characters/armed/islands/ember/citizen-female-dagger.json",
+      "sourceGeneration": "exec-0c16a2a9-33c0-40a3-bab2-4906371f0952.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "male",
+      "weaponKind": "sword",
+      "equipmentId": "celestial-sword",
+      "image": "/assets/characters/armed/islands/celestial/citizen-male-sword.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-male-sword.json",
+      "sourceGeneration": "exec-8ab5f46d-8adf-452a-935a-10b3b4c62a9d.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "male",
+      "weaponKind": "bow",
+      "equipmentId": "celestial-bow",
+      "image": "/assets/characters/armed/islands/celestial/citizen-male-bow.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-male-bow.json",
+      "sourceGeneration": "exec-01b71b40-e1aa-4dfc-bddb-db6e20fd43d6.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "male",
+      "weaponKind": "staff",
+      "equipmentId": "celestial-staff",
+      "image": "/assets/characters/armed/islands/celestial/citizen-male-staff.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-male-staff.json",
+      "sourceGeneration": "exec-0c46a567-1e99-4b76-be76-b03c06596794.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "male",
+      "weaponKind": "dagger",
+      "equipmentId": "celestial-dagger",
+      "image": "/assets/characters/armed/islands/celestial/citizen-male-dagger.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-male-dagger.json",
+      "sourceGeneration": "exec-71ef586f-7c7e-4d41-bff6-1934546b8fb0.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "female",
+      "weaponKind": "sword",
+      "equipmentId": "celestial-sword",
+      "image": "/assets/characters/armed/islands/celestial/citizen-female-sword.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-female-sword.json",
+      "sourceGeneration": "exec-a259c561-0a2b-4397-8658-3ee8f0cd0e24.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "female",
+      "weaponKind": "bow",
+      "equipmentId": "celestial-bow",
+      "image": "/assets/characters/armed/islands/celestial/citizen-female-bow.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-female-bow.json",
+      "sourceGeneration": "exec-cd840fd3-b131-4497-9a94-16e107e99441.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "female",
+      "weaponKind": "staff",
+      "equipmentId": "celestial-staff",
+      "image": "/assets/characters/armed/islands/celestial/citizen-female-staff.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-female-staff.json",
+      "sourceGeneration": "exec-1e08ca80-e4c0-4f3f-bddb-6002f09e623e.png"
+    },
+    {
+      "tier": "celestial",
+      "appearance": "female",
+      "weaponKind": "dagger",
+      "equipmentId": "celestial-dagger",
+      "image": "/assets/characters/armed/islands/celestial/citizen-female-dagger.png",
+      "atlas": "/assets/characters/armed/islands/celestial/citizen-female-dagger.json",
+      "sourceGeneration": "exec-0d423bba-caed-4045-ba08-583e683b1b25.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "male",
+      "weaponKind": "sword",
+      "equipmentId": "shadow-sword",
+      "image": "/assets/characters/armed/islands/shadow/citizen-male-sword.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-male-sword.json",
+      "sourceGeneration": "exec-292d6400-d662-469c-a4e3-cb13ff3090f2.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "male",
+      "weaponKind": "bow",
+      "equipmentId": "shadow-bow",
+      "image": "/assets/characters/armed/islands/shadow/citizen-male-bow.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-male-bow.json",
+      "sourceGeneration": "exec-cbd3668e-6d2f-4083-b85f-3bbd325ea41a.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "male",
+      "weaponKind": "staff",
+      "equipmentId": "shadow-staff",
+      "image": "/assets/characters/armed/islands/shadow/citizen-male-staff.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-male-staff.json",
+      "sourceGeneration": "exec-3f56a96a-4988-4416-b538-ee1171b56fdc.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "male",
+      "weaponKind": "dagger",
+      "equipmentId": "shadow-dagger",
+      "image": "/assets/characters/armed/islands/shadow/citizen-male-dagger.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-male-dagger.json",
+      "sourceGeneration": "exec-8ef028cf-edf6-42e9-b02c-8130007a47cf.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "female",
+      "weaponKind": "sword",
+      "equipmentId": "shadow-sword",
+      "image": "/assets/characters/armed/islands/shadow/citizen-female-sword.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-female-sword.json",
+      "sourceGeneration": "exec-861ffade-74da-408d-ba3c-2b98ffdf6b0e.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "female",
+      "weaponKind": "bow",
+      "equipmentId": "shadow-bow",
+      "image": "/assets/characters/armed/islands/shadow/citizen-female-bow.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-female-bow.json",
+      "sourceGeneration": "exec-cf84d0c8-3bff-4325-a471-626770047dac.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "female",
+      "weaponKind": "staff",
+      "equipmentId": "shadow-staff",
+      "image": "/assets/characters/armed/islands/shadow/citizen-female-staff.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-female-staff.json",
+      "sourceGeneration": "exec-a3e9c1ae-50e4-4c1f-b6fa-7c81793bfc18.png"
+    },
+    {
+      "tier": "shadow",
+      "appearance": "female",
+      "weaponKind": "dagger",
+      "equipmentId": "shadow-dagger",
+      "image": "/assets/characters/armed/islands/shadow/citizen-female-dagger.png",
+      "atlas": "/assets/characters/armed/islands/shadow/citizen-female-dagger.json",
+      "sourceGeneration": "exec-825f2dda-e8fa-41df-936f-07991f62f9c9.png"
+    }
+  ]
+}

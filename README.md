@@ -159,7 +159,9 @@ Only ready, owned, level-eligible and equipped gear grants its attributes. Craft
 
 ### Island equipment and mining recipes
 
-Seven coordinated sets contain 56 inventory sprites: Ironwood (Woods), Crystal, Mireguard (Murkmire), Frostforged, Emberforged, Astral (Celestial), and Shadowforged. Each set includes sword/bow/staff/dagger plus helmet/chestplate/leggings/boots. The seven transparent 1774×887 atlases use four columns and two rows, with manifests for UI and Woods loot rendering. Existing held-weapon/character animations continue to use their class artwork.
+Seven coordinated sets contain 56 inventory sprites: Ironwood (Woods), Crystal, Mireguard (Murkmire), Frostforged, Emberforged, Astral (Celestial), and Shadowforged. Each set includes sword/bow/staff/dagger plus helmet/chestplate/leggings/boots. The seven transparent 1774×887 atlases use four columns and two rows, with manifests for UI and Woods loot rendering.
+
+All 28 island weapons also have integrated male and female player animation sheets: 56 transparent sheets with six frames each for idle, walking, jumping, attack and death. Equipment IDs select the actual held design, while starter weapons retain their original art. Ladders always use unarmed sprites and gathering uses tool sprites. Sheets load only for equipped weapons; outfit variants are prepared on demand, preserving the weapon colors. Inactive sheets are evicted when the cache exceeds twelve entries, with a grace period and protection for sprites still in use. Run `npm run test:browser:island-weapons` to check every weapon and both appearances.
 
 Bram’s forge has an island selector, 56 equipment recipes and all seven bar types. Every bar costs 20 matching ore. Equipment costs 5/10/20/35/55/80/120 bars per piece across the seven tiers; character and Blacksmithing requirements are 1/11/21/31/41/51/61. Existing Iron tools still cost 5 Iron Bars and 20 Oak Logs and require manual equipment. Only Iron smelts and tool crafts advance Bram’s original quest.
 
