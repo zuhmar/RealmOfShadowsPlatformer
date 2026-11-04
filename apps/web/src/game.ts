@@ -1,3 +1,4 @@
+import { GEAR_RARITY_COLORS } from '@ros/shared';
 import { BossWarnings, bossImpact } from './boss-attacks';
 import { preloadBossEntrance, addBossEntrance } from './boss-entrances';
 import { WoodsMonsterVisual, preloadWoodsMonster, registerWoodsMonster } from './woods-monsters';
@@ -88,6 +89,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         false,
       ) as typeof this.keys;
       this.events.on('float', (e: Event) => {
+        if (e.gear && e.playerId !== bridge.id) return;
         if (e.type === 'bossAttack') {
           bossImpact(this, e);
           return;
@@ -101,8 +103,14 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         const t = this.add
           .text(e.x, e.y, e.text, {
             fontFamily: 'Georgia',
-            fontSize: e.type === 'level' ? '25px' : '18px',
-            color: e.critical ? '#ffc85f' : e.type === 'hit' ? '#fff4d5' : '#ffe69b',
+            fontSize: e.type === 'level' ? '25px' : e.gear ? '20px' : '18px',
+            color: e.gear
+              ? GEAR_RARITY_COLORS[e.gear.rarity]
+              : e.critical
+                ? '#ffc85f'
+                : e.type === 'hit'
+                  ? '#fff4d5'
+                  : '#ffe69b',
             stroke: '#243b32',
             strokeThickness: 4,
           })
@@ -112,7 +120,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           targets: t,
           y: e.y - 65,
           alpha: 0,
-          duration: 1300,
+          duration: e.gear ? 2200 : 1300,
           onComplete: () => t.destroy(),
         });
       });
@@ -399,6 +407,27 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           const c = this.add.container(d.x, d.y - 12);
           const kind = weaponKind(d.item);
           const gear = equipmentDefinition(d.gear?.base);
+          if (d.gear && d.owner === bridge.id) {
+            const color = GEAR_RARITY_COLORS[d.gear.rarity];
+            c.add(
+              this.add
+                .circle(0, 0, 23, Phaser.Display.Color.HexStringToColor(color).color, 0.14)
+                .setStrokeStyle(2, Phaser.Display.Color.HexStringToColor(color).color),
+            );
+            c.add(
+              this.add
+                .text(0, -43, `${d.gear.rarity} ${d.gear.name}`, {
+                  fontFamily: 'Georgia',
+                  fontSize: '13px',
+                  color,
+                  stroke: '#160d24',
+                  strokeThickness: 3,
+                  align: 'center',
+                  wordWrap: { width: 180 },
+                })
+                .setOrigin(0.5),
+            );
+          }
           if (gear?.tier === 'woods') {
             const icon = this.add.image(0, 0, 'woods-equipment', gear.part);
             icon.setScale(36 / Math.max(icon.width, icon.height));

@@ -101,6 +101,7 @@ export class MapRoom extends Room {
       }
     });
     this.onMessage('identify', (c, id) => this.identify(c, id));
+    this.onMessage('sellGear', (c, id) => this.identify(c, id, 'sell'));
     this.onMessage('equipAccessory', (c, id) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
@@ -310,11 +311,11 @@ export class MapRoom extends Room {
       )
       .finally(() => this.questTasks.delete(p.id));
   }
-  identify(c: Client, id: unknown) {
+  identify(c: Client, id: unknown, action: 'identify' | 'sell' = 'identify') {
     const p = this.player(c);
     if (!p || typeof id !== 'string' || !this.rate(c, 100)) return;
     if (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'bram')) {
-      c.send('notice', 'Bring unidentified gear to Bram in Elderwood Village.');
+      c.send('notice', 'Visit Bram in Elderwood Village to identify or sell equipment.');
       return;
     }
     p.auto = false;
@@ -324,13 +325,18 @@ export class MapRoom extends Room {
       .catch(() => {})
       .then(async () => {
         if (!nearNpc(p, this.world.map, 'bram'))
-          throw new Error('Stand near Bram to identify gear.');
-        const next = await changeEquipment(structuredClone(p), id);
+          throw new Error('Stand near Bram to identify or sell gear.');
+        const next = await changeEquipment(structuredClone(p), id, action);
         p.gear = next.gear;
         p.gold = next.gold;
         p.equipmentRevision = next.equipmentRevision;
         if (this.clients.includes(c))
-          c.send('notice', 'Equipment identified! Open your Bag to view its attributes.');
+          c.send(
+            'notice',
+            action === 'sell'
+              ? 'Equipment sold to Bram. Gold added to your Bag.'
+              : 'Equipment identified! Open your Bag to view its attributes.',
+          );
       });
     this.questTasks.set(p.id, task);
     this.saves = task.catch(() => {});

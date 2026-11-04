@@ -72,7 +72,7 @@ try {
     const card = page.locator(`.gear-card[data-rarity="${rarity}"]`);
     await card.getByRole('button', { name: /Identify/ }).click();
     await expect(card).toContainText('Identified');
-    await expect(card.locator('li')).toHaveCount(
+    await expect(card.locator(':scope > ul > li')).toHaveCount(
       ['Uncommon', 'Rare', 'Epic', 'Legendary'].indexOf(rarity) + 1,
     );
   }

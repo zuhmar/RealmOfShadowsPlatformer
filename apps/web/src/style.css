@@ -3057,3 +3057,60 @@ footer {
   max-width: 100%;
   white-space: normal;
 }
+.equipped-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.equipped-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.3rem;
+  border: 1px solid #6e4487;
+  border-radius: 0.6rem;
+  background: #251333;
+  text-align: center;
+  min-width: 0;
+}
+.equipped-slot strong {
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+.equipped-slot small {
+  color: #d6b9ee;
+}
+.gear-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.gear-filter select {
+  min-width: 0;
+  flex: 1;
+}
+.gear-comparison {
+  border-top: 1px solid #613e78;
+  padding-top: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+.gear-comparison .stat-gain {
+  color: #8fea9b;
+}
+.gear-comparison .stat-loss {
+  color: #ffaaaa;
+}
+.gear-equipped {
+  box-shadow: inset 0 0 0 1px #e2b4ff;
+}
+.gear-sale {
+  border-top: 1px solid #613e78;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}

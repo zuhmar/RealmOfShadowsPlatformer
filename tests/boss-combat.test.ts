@@ -93,7 +93,7 @@ test('larger boss hitbox accepts melee at the visible edge and projectiles throu
   p.facing = 1;
   p.weapon = 'elderwood-blade';
   w.attack(p, false, 10000);
-  assert.ok(boss.hp < 450);
+  assert.ok(boss.hp < WOODS_MONSTERS['forest-bear'].hp);
   const t = setup();
   t.w.projectiles.push({
     id: 'shot',
@@ -108,5 +108,5 @@ test('larger boss hitbox accepts melee at the visible edge and projectiles throu
     empowered: false,
   });
   t.w.stepProjectiles(0.2, 10000);
-  assert.equal(t.boss.hp, 440);
+  assert.equal(t.boss.hp, WOODS_MONSTERS['forest-bear'].hp - 10);
 });

@@ -157,3 +157,29 @@ export function islandGearDrop(island: string, level: number, random = Math.rand
   const base = pool[Math.floor(random() * pool.length)];
   return createGear(base.id, Math.max(tier.level, level), random);
 }
+
+export const GEAR_RARITY_COLORS: Record<GearRarity, string> = {
+  Common: '#d7c9e5',
+  Uncommon: '#72d77c',
+  Rare: '#65adff',
+  Epic: '#c879ff',
+  Legendary: '#f4bf55',
+};
+export function gearSellValue(g: Gear) {
+  const base = { Common: 4, Uncommon: 8, Rare: 20, Epic: 50, Legendary: 125 }[g.rarity];
+  return Math.floor(
+    base *
+      Math.max(1, Math.ceil(g.level / 10)) *
+      (g.identified && g.source !== 'crafted' ? 1.25 : 1),
+  );
+}
+export function sellGear(p: Player, id: string) {
+  const gear = p.gear?.find((g) => g.id === id);
+  if (!gear) throw new Error('You do not own that equipment.');
+  if (Object.values(p.equippedGear ?? {}).includes(id))
+    throw new Error('Unequip that item before selling it.');
+  const gold = gearSellValue(gear);
+  p.gear = p.gear!.filter((g) => g.id !== id);
+  p.gold += gold;
+  return { gear, gold };
+}

@@ -36,7 +36,7 @@ export const WOODS_MONSTERS = {
   'forest-bear': {
     name: 'Forest Bear',
     boss: true,
-    hp: 450,
+    hp: 1100,
     damage: 22,
     xp: 180,
     gold: 75,

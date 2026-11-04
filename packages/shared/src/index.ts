@@ -1,3 +1,4 @@
+export * from './equipment-comparison';
 export * from './equipment';
 import { islandGearDrop, type Gear } from './equipment';
 export * from './combat-skills';
@@ -180,6 +181,8 @@ export type Event = {
   type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn' | 'skill' | 'bossAttack';
   radius?: number;
   critical?: boolean;
+  gear?: Pick<Gear, 'name' | 'rarity'>;
+  lootStage?: 'drop' | 'pickup';
   skill?: WeaponKind;
   facing?: number;
   phase?: 'cast' | 'impact';
@@ -866,6 +869,17 @@ export class World {
         items,
         expires: now + 60000,
       });
+      const droppedGear = this.drops[this.drops.length - 1].gear;
+      if (droppedGear)
+        this.events.push({
+          type: 'loot',
+          x: w.x,
+          y: w.y - 90,
+          text: `${droppedGear.rarity} ${droppedGear.name} dropped!`,
+          playerId: p.id,
+          gear: { name: droppedGear.name, rarity: droppedGear.rarity },
+          lootStage: 'drop',
+        });
     }
   }
   stepProjectiles(dt: number, now: number) {
@@ -941,7 +955,18 @@ export class World {
     for (const d of this.drops.filter(
       (d) => d.owner === p.id && Math.abs(d.x - p.x) < 110 && Math.abs(d.y - p.y) < 55,
     )) {
-      if (d.gear) (p.gear ??= []).push(d.gear);
+      if (d.gear) {
+        (p.gear ??= []).push(d.gear);
+        this.events.push({
+          type: 'loot',
+          x: p.x,
+          y: p.y - 110,
+          text: `Collected ${d.gear.rarity} ${d.gear.name}`,
+          playerId: p.id,
+          gear: { name: d.gear.name, rarity: d.gear.rarity },
+          lootStage: 'pickup',
+        });
+      }
       p.gold += d.gold;
       p.inventory[d.item] = (p.inventory[d.item] ?? 0) + 1;
       for (const bonus of d.items ?? [])
