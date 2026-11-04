@@ -93,6 +93,7 @@ try {
   await page.screenshot({ path: 'artifacts/guardian-ring-equipped.png' });
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.getByRole('button', { name: 'World map', exact: true }).click();
+  await page.getByRole('button', { name: 'Explore Crystal Caverns', exact: true }).click();
   await expect(page.getByRole('img', { name: 'Crystal Caverns access earned' })).toBeVisible();
   await expect(
     page.getByText('Access earned · four areas coming next', { exact: false }),

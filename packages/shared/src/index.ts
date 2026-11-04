@@ -1,3 +1,5 @@
+import { TELEPORT_CRYSTAL_DROP_CHANCE } from '@ros/game-data';
+export * from './teleport';
 export * from './equipment-comparison';
 export * from './equipment';
 import { islandGearDrop, type Gear } from './equipment';
@@ -75,6 +77,8 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  visitedAreas?: string[];
+  teleportStarterGranted?: boolean;
   gear?: Gear[];
   equippedGear?: Partial<Record<import('@ros/game-data').EquipmentSlot, string>>;
   equipmentRevision?: number;
@@ -869,6 +873,8 @@ export class World {
         items,
         expires: now + 60000,
       });
+      if (Math.random() < TELEPORT_CRYSTAL_DROP_CHANCE)
+        items.push({ item: 'teleport-crystal', quantity: 1 });
       const droppedGear = this.drops[this.drops.length - 1].gear;
       if (droppedGear)
         this.events.push({

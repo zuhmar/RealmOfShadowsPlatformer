@@ -1,3 +1,4 @@
+import { visitArea } from './teleport';
 import { MAPS, itemDefinition, type GameMap } from '@ros/game-data';
 import type { Player } from './index';
 /** Validate everything before consuming a boss key or changing any player state. */
@@ -16,6 +17,8 @@ export function usePortal(p: Player, source: GameMap) {
     if (!p.inventory[portal.key]) delete p.inventory[portal.key];
   }
   const arrival = target.portals.find((q) => q.target === source.id);
+  visitArea(p, source.id);
+  visitArea(p, target.id);
   p.mapId = target.id;
   p.x = arrival && arrival.x > target.width / 2 ? arrival.x - 100 : target.spawn.x;
   p.y = arrival?.y ?? target.spawn.y;

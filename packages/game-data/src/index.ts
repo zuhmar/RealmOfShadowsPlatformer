@@ -1,3 +1,4 @@
+export * from './world-map';
 export * from './island-equipment';
 import { EQUIPMENT_ITEMS, TIER_MINING_ITEMS } from './island-equipment';
 export * from './combat-skills';
@@ -273,6 +274,18 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  'teleport-crystal': {
+    id: 'teleport-crystal',
+    name: 'Teleport Crystal',
+    rarity: 'Uncommon',
+    type: 'resource' as const,
+    description:
+      'Spend one on the World Map to teleport to a visited area. Buy from Bram for 25 gold or find on monsters.',
+    sellValue: 0,
+    level: 1,
+    bonus: 0,
+    icon: '◆',
+  },
   ...EQUIPMENT_ITEMS,
   ...TIER_MINING_ITEMS,
   ...WOODS_ITEMS,

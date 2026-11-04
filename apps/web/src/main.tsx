@@ -1,3 +1,4 @@
+import { WorldMapPanel } from './WorldMapPanel';
 import { EquipmentPanel } from './EquipmentPanel';
 import { SkillsPanel } from './SkillsPanel';
 import { WoodsQuests } from './WoodsQuests';
@@ -997,7 +998,7 @@ function App() {
       )}
       {panel && p && (
         <div className="modal-backdrop">
-          <section className="modal wide">
+          <section className={`modal wide ${panel === 'map' ? 'world-map-modal' : ''}`}>
             <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
               <ControlIcon name="close" />
             </button>
@@ -1191,63 +1192,14 @@ function App() {
               />
             )}
             {panel === 'map' && (
-              <>
-                <div className="island-list">
-                  <article className="island open">
-                    <span>⌂</span>
-                    <div>
-                      <h3>Elderwood Village</h3>
-                      <p>Safe haven · portal hub · open</p>
-                    </div>
-                  </article>
-                  {ISLANDS.map((island, i) => (
-                    <article
-                      key={island.id}
-                      className={`island ${island.available || p.unlockedIslands?.includes(island.id) ? 'open' : ''}`}
-                    >
-                      <span>
-                        {island.id === 'crystal' && p.unlockedIslands?.includes('crystal') ? (
-                          <img
-                            src="/assets/ui/crystal-unlock.png"
-                            alt="Crystal Caverns access earned"
-                            width="42"
-                            height="42"
-                            style={{ objectFit: 'contain' }}
-                          />
-                        ) : (
-                          <>0{i + 1}</>
-                        )}
-                      </span>
-                      <div>
-                        <h3>{island.name}</h3>
-                        <p>
-                          Lv. {island.minLevel}–{island.maxLevel} ·{' '}
-                          {island.id === 'crystal'
-                            ? p.unlockedIslands?.includes('crystal')
-                              ? 'Access earned · four areas coming next'
-                              : 'Defeat Forest Bear to unlock'
-                            : island.available
-                              ? '4 areas · Forest Bear key required'
-                              : 'Coming in an expansion'}
-                        </p>
-                      </div>
-                      <b>
-                        {island.available
-                          ? '◇'
-                          : p.unlockedIslands?.includes(island.id)
-                            ? '✓'
-                            : '⌑'}
-                      </b>
-                    </article>
-                  ))}
-                </div>
-                <p>
-                  Whispering Woods: Wolf Hollow → Silkshade Glade → Brambleboar Run → Forest Bear
-                  Den. Wild Boars have a 20% chance to drop a Forest Bear Key; entering the den
-                  consumes one key. Later islands are planned content; the journey ends in Shadow
-                  Fortress with the Shadow Dragon at levels 61–100.
-                </p>
-              </>
+              <WorldMapPanel
+                player={p}
+                onTeleport={(id) => {
+                  room?.send('teleport', id);
+                  setPanel(null);
+                }}
+                onBuy={() => room?.send('buyTeleportCrystal')}
+              />
             )}
             {panel === 'settings' && (
               <>

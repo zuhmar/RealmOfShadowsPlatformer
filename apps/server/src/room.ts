@@ -1,3 +1,4 @@
+import { useTeleport, initializeTeleport } from '@ros/shared';
 import { changeEquipment } from './equipment.js';
 import { equipGear } from '@ros/shared';
 import { usePortal, applyWoodsMilestones } from '@ros/shared';
@@ -139,6 +140,10 @@ export class MapRoom extends Room {
       }
     });
     this.onMessage('travel', (c) => this.travel(c));
+    this.onMessage('teleport', (c, target) => {
+      if (typeof target === 'string') void this.travel(c, target);
+    });
+    this.onMessage('buyTeleportCrystal', (c) => this.identify(c, '', 'buyCrystal'));
     this.onMessage('interact', (c, payload) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
@@ -181,12 +186,13 @@ export class MapRoom extends Room {
     });
     this.onMessage('quest', (c, payload) => this.quest(c, payload));
   }
-  async travel(c: Client) {
+  async travel(c: Client, destination?: string) {
     const p = this.player(c);
     if (!p || !this.rate(c, 100)) return;
     let target: string;
     try {
-      target = usePortal(p, this.world.map);
+      target =
+        destination !== undefined ? useTeleport(p, destination) : usePortal(p, this.world.map);
     } catch (error) {
       c.send('notice', error instanceof Error ? error.message : 'Could not travel.');
       return;
@@ -311,11 +317,14 @@ export class MapRoom extends Room {
       )
       .finally(() => this.questTasks.delete(p.id));
   }
-  identify(c: Client, id: unknown, action: 'identify' | 'sell' = 'identify') {
+  identify(c: Client, id: unknown, action: 'identify' | 'sell' | 'buyCrystal' = 'identify') {
     const p = this.player(c);
     if (!p || typeof id !== 'string' || !this.rate(c, 100)) return;
     if (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'bram')) {
-      c.send('notice', 'Visit Bram in Elderwood Village to identify or sell equipment.');
+      c.send(
+        'notice',
+        'Visit Bram in Elderwood Village for equipment services and Teleport Crystals.',
+      );
       return;
     }
     p.auto = false;
@@ -328,14 +337,17 @@ export class MapRoom extends Room {
           throw new Error('Stand near Bram to identify or sell gear.');
         const next = await changeEquipment(structuredClone(p), id, action);
         p.gear = next.gear;
+        p.inventory = next.inventory;
         p.gold = next.gold;
         p.equipmentRevision = next.equipmentRevision;
         if (this.clients.includes(c))
           c.send(
             'notice',
-            action === 'sell'
-              ? 'Equipment sold to Bram. Gold added to your Bag.'
-              : 'Equipment identified! Open your Bag to view its attributes.',
+            action === 'buyCrystal'
+              ? 'Teleport Crystal purchased! Open your World Map to travel.'
+              : action === 'sell'
+                ? 'Equipment sold to Bram. Gold added to your Bag.'
+                : 'Equipment identified! Open your Bag to view its attributes.',
           );
       });
     this.questTasks.set(p.id, task);
@@ -396,6 +408,8 @@ export class MapRoom extends Room {
           };
           p.forgeQuest.claimed = forgeLedger.claimed;
         } else delete p.forgeQuest;
+        if (initializeTeleport(p))
+          await tx.character.update({ where: { id }, data: { data: json(p) } });
         if (applyWoodsMilestones(p))
           await tx.character.update({ where: { id }, data: { data: json(p) } });
         const activity = await tx.offlineActivity.findUnique({ where: { characterId: id } });

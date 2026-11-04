@@ -6,6 +6,17 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  if (id === 'teleport-crystal')
+    return (
+      <img
+        src="/assets/ui/teleport-crystal.png"
+        alt="Teleport Crystal"
+        draggable={false}
+        width="40"
+        height="40"
+        style={{ objectFit: 'contain', verticalAlign: 'middle' }}
+      />
+    );
   const item = itemDefinition(id),
     gear = equipmentDefinition(id);
   if (gear) {
