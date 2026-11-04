@@ -23,6 +23,7 @@ test('class mapping and training only increase base damage, never attributes', (
   );
   const p = createPlayer('p', 'Tester');
   p.weapon = 'elderwood-blade';
+  p.classId = 'knight';
   const before = playerAttributes(p),
     power = attackPower(p);
   for (const skill of ['Melee', 'Defense', 'Evasion', 'Vitality', 'Focus'] as const)
@@ -45,6 +46,16 @@ test('hits train the correct skill; civilians, misses, dead targets do not; Focu
     const w = new World(MAPS.woods),
       p = createPlayer('p', 'Tester');
     p.weapon = weapon;
+    p.classId =
+      weapon === 'elderwood-blade'
+        ? 'knight'
+        : weapon === 'elderwood-dagger'
+          ? 'rogue'
+          : weapon === 'elderwood-bow'
+            ? 'archer'
+            : weapon === 'elderwood-staff'
+              ? 'mage'
+              : undefined;
     p.x = -1000;
     w.attack(p, false, 10000);
     assert.equal(Boolean(p.combatSkills), false);
@@ -65,6 +76,7 @@ test('projectiles retain originating training after a weapon swap', () => {
   const w = new World(MAPS.woods),
     p = createPlayer('p', 'Tester');
   p.weapon = 'elderwood-bow';
+  p.classId = 'archer';
   p.x = 480;
   p.y = 760;
   w.players.set(p.id, p);

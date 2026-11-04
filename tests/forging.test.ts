@@ -4,9 +4,9 @@ import { BRAM_QUEST, FORGE_RECIPES, MAPS, WOODS_RESOURCE_NODES } from '@ros/game
 import { createPlayer, forgeAction, activeGatheringTool, World } from '@ros/shared';
 test('forge recipes use starter Iron material costs and never grant an automatic upgrade', () => {
   assert.deepEqual(FORGE_RECIPES[0].cost, { 'iron-ore': 20 });
-  for (const recipe of FORGE_RECIPES.filter((r) => r.kind === 'tool'))
+  for (const recipe of FORGE_RECIPES.filter((r) => r.kind === 'tool' && r.id.startsWith('iron-')))
     assert.deepEqual(recipe.cost, { 'iron-bar': 5, 'oak-logs': 20 });
-  for (const recipe of FORGE_RECIPES.filter((r) => r.kind === 'tool')) {
+  for (const recipe of FORGE_RECIPES.filter((r) => r.kind === 'tool' && r.id.startsWith('iron-'))) {
     const p = createPlayer('p', 'Smith', 'village');
     forgeAction(p, 'accept');
     p.inventory = { 'iron-bar': 5, 'oak-logs': 20 };

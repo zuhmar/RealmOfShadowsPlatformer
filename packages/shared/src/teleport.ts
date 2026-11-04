@@ -32,6 +32,12 @@ export function teleportKey(target: string) {
 export function teleportBlock(p: Player, id: string): string | null {
   const target = Object.hasOwn(MAPS, id) ? MAPS[id] : undefined;
   if (!target) return 'This area is coming in a future island update.';
+  if (
+    target.island === 'Crystal Caverns' &&
+    !p.unlockedIslands?.includes('crystal') &&
+    !p.bossKills?.['forest-bear']
+  )
+    return 'Defeat Forest Bear to unlock Crystal Caverns.';
   if (p.mapId === id) return 'You are here.';
   if (p.level < target.requiredLevel) return `Requires level ${target.requiredLevel}.`;
   if (!p.visitedAreas?.includes(id)) return 'Visit this area through its portal first.';

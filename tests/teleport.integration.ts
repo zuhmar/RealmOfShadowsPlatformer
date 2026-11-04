@@ -57,7 +57,7 @@ test('teleport RPC rejects forged targets, charges once under duplicate travel, 
     assert.match(notices[1], /portal/);
     r.send('teleport', 'crystal');
     await until(() => notices.length === 3);
-    assert.match(notices[2], /future/);
+    assert.match(notices[2], /Forest Bear/);
     r.send('teleport', { target: 'woods', cost: 0 });
     await pause(100);
     assert.equal(destination, '');

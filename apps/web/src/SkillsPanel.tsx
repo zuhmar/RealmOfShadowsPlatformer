@@ -6,7 +6,7 @@ import {
   weaponProfile,
   type CombatSkill,
 } from '@ros/game-data';
-import { playerAttributes, attackPower, type Player } from '@ros/shared';
+import { playerAttributes, attackPower, playerClassName, type Player } from '@ros/shared';
 const percent = (n: number) => `${(n * 100).toFixed(1)}%`;
 export function SkillsPanel({ player: p }: { player: Player }) {
   const stats = playerAttributes(p),
@@ -27,13 +27,13 @@ export function SkillsPanel({ player: p }: { player: Player }) {
   return (
     <section className="skills-panel">
       <h3>
-        {weaponProfile(p.weapon).className}
+        {playerClassName(p)}
         {active ? ` · ${active} training` : ' · No class combat skill'}
       </h3>
       <p>
         {active
           ? 'Land hits to train your weapon skill and increase base damage.'
-          : 'Equip a class weapon to train combat skills. Civilian attacks do not train Melee, Magic or Distance.'}{' '}
+          : 'Civilians do not train combat skills. Complete the Crystal Caverns class quest, choose a class, and equip its weapon to begin.'}{' '}
         Saved training stays when you switch weapons.
       </p>
       <div className="stat-grid" aria-label="Combat attributes">

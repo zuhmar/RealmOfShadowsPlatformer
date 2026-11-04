@@ -1,11 +1,11 @@
-import { BOSS_ATTACK } from '@ros/game-data';
+import { BOSS_ATTACK, WOODS_MONSTERS } from '@ros/game-data';
 import type { Wolf } from '@ros/shared';
 /** Use authoritative snapshot time, so poses cannot hit before server damage. */
 export function groundSlamFrame(
   monster: Pick<Wolf, 'monster' | 'hp' | 'special' | 'lastSlamAt'>,
   now: number,
 ): number | null {
-  if (monster.monster !== 'forest-bear' || monster.hp <= 0) return null;
+  if (!monster.monster || !WOODS_MONSTERS[monster.monster].boss || monster.hp <= 0) return null;
   if (monster.special) {
     const cast = monster.special,
       span = Math.max(1, cast.impactAt - cast.startedAt);

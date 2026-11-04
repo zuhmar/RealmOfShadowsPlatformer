@@ -2,7 +2,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { type Player } from '@ros/shared';
-import { QUESTS } from '@ros/game-data';
+import { QUESTS, CLASS_PATHS } from '@ros/game-data';
 export const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
@@ -36,7 +36,10 @@ export const json = (p: Player) => JSON.parse(JSON.stringify(p)) as Prisma.Input
 // acceptance/progress/claim ledger; room serialization keeps these writes ordered.
 export async function save(p: Player) {
   await db.$transaction(async (tx) => {
-    await tx.character.update({ where: { id: p.id }, data: { data: json(p) } });
+    await tx.character.update({
+      where: { id: p.id },
+      data: { data: json(p), class: p.classId ? CLASS_PATHS[p.classId].name : 'Citizen' },
+    });
     for (const [id, state] of Object.entries(p.quests ?? {})) {
       const quest = QUESTS[id as keyof typeof QUESTS];
       if (!quest) continue;

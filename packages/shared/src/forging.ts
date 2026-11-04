@@ -46,7 +46,7 @@ export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', rec
   } else {
     p.ownedTools ??= [];
     p.ownedTools.push(recipe.id);
-    quest.toolsCrafted++;
+    if (recipe.id.startsWith('iron-')) quest.toolsCrafted++;
   }
   xp(recipe.xp);
   return `${recipe.name} ${recipe.kind === 'material' ? 'smelted' : recipe.kind === 'equipment' ? 'forged — equip it in Bag' : 'forged — equip it in Character'}! +${recipe.xp} Blacksmithing XP.`;

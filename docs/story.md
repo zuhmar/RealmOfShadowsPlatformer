@@ -12,16 +12,16 @@ The opening and quest dialogue are defined in `packages/game-data/src/index.ts` 
 
 The confirmed island roster and level ranges are:
 
-| Island | Levels | Monsters | Boss |
-| --- | --- | --- | --- |
-| Whispering Woods | 1–10 | Wolf, Thorn Spider, Wild Boar | Forest Bear |
-| Crystal Caverns | 11–20 | Cave Bat, Crystal Golem, Shard Scorpion | Crystal Wyrm |
-| Murkmire Swamp | 21–30 | Bog Slime, Swamp Lurker, Venom Toad | Hydra |
-| Frostfall Tundra | 31–40 | Frost Wolf, Ice Troll, Frozen Wraith | Frost Giant |
-| Ember Peaks | 41–50 | Fire Imp, Magma Golem, Ember Salamander | Infernal Drake |
-| Celestial Realm | 51–60 | Fallen Sprite, Celestial Sentinel, Astral Wisp | Fallen Seraph |
-| Shadow Fortress | 61–100 | Shadow Knight, Shadow Lich, Void Stalker | Shadow Dragon |
+| Island           | Levels | Monsters                                       | Boss           |
+| ---------------- | ------ | ---------------------------------------------- | -------------- |
+| Whispering Woods | 1–10   | Wolf, Thorn Spider, Wild Boar                  | Forest Bear    |
+| Crystal Caverns  | 11–20  | Cave Bat, Crystal Golem, Shard Scorpion        | Crystal Wyrm   |
+| Murkmire Swamp   | 21–30  | Bog Slime, Swamp Lurker, Venom Toad            | Hydra          |
+| Frostfall Tundra | 31–40  | Frost Wolf, Ice Troll, Frozen Wraith           | Frost Giant    |
+| Ember Peaks      | 41–50  | Fire Imp, Magma Golem, Ember Salamander        | Infernal Drake |
+| Celestial Realm  | 51–60  | Fallen Sprite, Celestial Sentinel, Astral Wisp | Fallen Seraph  |
+| Shadow Fortress  | 61–100 | Shadow Knight, Shadow Lich, Void Stalker       | Shadow Dragon  |
 
-This roster is stored in `ISLANDS` and shown in the world map. It is a content plan, not a declaration that all areas, enemies, or bosses are implemented. Elderwood Village and Wolf Hollow remain the playable maps. Build the rest of Whispering Woods next: Thorn Spider, Wild Boar, then Forest Bear and the quest progression leading to it. Bram's quest should support that roster rather than introducing a different first boss.
+Elderwood Village, all four Whispering Woods areas and all four Crystal Caverns areas are playable. The remaining five islands are planned. Players remain Civilian during Mira’s weapon trials; the Cavern Mentor’s Crystal Caverns quest unlocks class selection. The protagonist’s years of training remain part of the story regardless of the gameplay class gate.
 
 The island ordering and bands follow the approved resource-proposal revision: Ember Peaks precedes Celestial Realm and the final island spans 61–100. The resource roster itself remains proposed; see `docs/resources.md`.

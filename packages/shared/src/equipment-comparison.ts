@@ -1,3 +1,4 @@
+import { canUseClassWeapon } from './classes';
 import { attackPower, playerAttributes } from './combat-skills';
 import { equipGear, type Gear } from './equipment';
 import type { Player } from './index';
@@ -14,6 +15,7 @@ export const COMPARISON_STATS = {
   manaRegen: 'Mana regen',
 } as const;
 export function compareGear(p: Player, gear: Gear) {
+  if (gear.slot === 'weapon' && !canUseClassWeapon(p, gear.base)) return [];
   if (!gear.identified || p.level < gear.level || p.equippedGear?.[gear.slot] === gear.id)
     return [];
   const trial = { ...p, equippedGear: { ...p.equippedGear } };

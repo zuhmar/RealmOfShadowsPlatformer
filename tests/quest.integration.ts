@@ -32,12 +32,15 @@ async function api(path: string, token?: string, body?: unknown) {
   if (!r.ok) throw new Error(d.error);
   return d;
 }
-async function join(token: string, id: string, mapId: string) {
-  const room = await new Client(URL.replace('http', 'ws')).joinOrCreate('map', {
-    token,
-    characterId: id,
-    mapId,
-  });
+async function join(token: string, id: string, mapId: string, reconnectToken?: string) {
+  const sdk = new Client(URL.replace('http', 'ws'));
+  const room = reconnectToken
+    ? await sdk.reconnect(reconnectToken)
+    : await sdk.joinOrCreate('map', {
+        token,
+        characterId: id,
+        mapId,
+      });
   const state: { snapshot: Snapshot | null; results: { ok: boolean; message: string }[] } = {
     snapshot: null,
     results: [],
@@ -159,6 +162,7 @@ test(
       room.send('quest', { questId: 'mira-wolves', action: 'claim' });
       room.send('quest', { questId: 'mira-wolves', action: 'claim' });
       await wait(120);
+      const reconnectToken = room.reconnectionToken;
       room.connection.close();
       room = undefined;
       await wait(100);
@@ -169,7 +173,7 @@ test(
         async () => !!(await db.questProgress.findUnique({ where: { id: progress.id } }))?.claimed,
       );
       await wait(350);
-      client = await join(guest.token, c.id, 'village');
+      client = await join(guest.token, c.id, 'village', reconnectToken);
       room = client.room;
       assert.equal(client.me().gold, before + 75);
       assert.equal(client.me().inventory['elderwood-blade'], blades + 1);

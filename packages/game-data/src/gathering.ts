@@ -1,6 +1,8 @@
 export const GATHERING_SKILLS = ['Mining', 'Woodcutting', 'Fishing', 'Herbalism'] as const;
 export type GatheringSkill = (typeof GATHERING_SKILLS)[number];
 export type ResourceNode = {
+  level?: number;
+  fish?: readonly { id: string; name: string; level: number; rarity: string }[];
   id: string;
   skill: GatheringSkill;
   frame: string;
@@ -62,10 +64,14 @@ export const WOODS_FISH = [
   { id: 'silver-minnow', name: 'Silver Minnow', level: 5, rarity: 'Uncommon' },
   { id: 'golden-carp', name: 'Golden Carp', level: 10, rarity: 'Rare' },
 ] as const;
-export function fishingCatch(level: number, roll: number) {
-  if (level >= 10 && roll < 0.08) return WOODS_FISH[2].id;
-  if (level >= 5 && roll < 0.33) return WOODS_FISH[1].id;
-  return WOODS_FISH[0].id;
+export function fishingCatch(
+  level: number,
+  roll: number,
+  fish: readonly { id: string; level: number }[] = WOODS_FISH,
+) {
+  if (level >= fish[2].level && roll < 0.08) return fish[2].id;
+  if (level >= fish[1].level && roll < 0.33) return fish[1].id;
+  return fish[0].id;
 }
 export const gatheringXpNeeded = (level: number) => level * 20;
 export const WOODS_RESOURCE_ITEMS = Object.fromEntries(

@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAPS, QUESTS, weaponProfile, weaponBonus } from '@ros/game-data';
+import {
+  MAPS,
+  QUESTS,
+  weaponProfile,
+  weaponBonus,
+  WEAPON_DAMAGE_SCALE,
+  weaponKind,
+} from '@ros/game-data';
 import { World, createPlayer, idleInput, needsTrialWeapons, autoInput } from '@ros/shared';
 const ids = ['elderwood-blade', 'elderwood-bow', 'elderwood-staff', 'elderwood-dagger'];
 test('first quest grants one weapon for each of the four class paths', () => {
@@ -29,7 +36,10 @@ test('ranged damage is delayed until a server projectile actually hits and respe
     world.stepProjectiles(0.05, 10050);
     assert.equal(world.wolves[0].hp, 48);
     for (let t = 0; t < 20; t++) world.stepProjectiles(0.05, 10100 + t * 50);
-    assert.equal(world.wolves[0].hp, 48 - 14 - weaponBonus(id));
+    assert.equal(
+      world.wolves[0].hp,
+      48 - Math.round((14 + weaponBonus(id)) * WEAPON_DAMAGE_SCALE[weaponKind(id)]),
+    );
     assert.equal(world.projectiles.length, 0);
     world.wolves[0].hp = 48;
     p.x = world.wolves[0].x - weaponProfile(id).range - 100;
@@ -157,7 +167,7 @@ test('Power Shot pierces three targets in travel order with no repeat hits or sp
   for (let i = 0; i < 50; i++) w.stepProjectiles(0.02, 10020 + i * 20);
   assert.deepEqual(
     w.wolves.map((t) => t.hp),
-    [160, 160, 160, 200, 200],
+    [156, 156, 156, 200, 200],
   );
   assert.equal(w.projectiles.length, 0);
 });
@@ -184,7 +194,7 @@ test('Arcane Burst explodes on impact and catches nearby enemies outside its fli
   w.stepProjectiles(0.3, 10300);
   assert.deepEqual(
     w.wolves.map((t) => t.hp),
-    [156, 156, 200, 200],
+    [148, 148, 200, 200],
   );
   assert.ok(
     w.events.some((e) => e.type === 'skill' && e.skill === 'staff' && e.phase === 'impact'),
@@ -200,19 +210,19 @@ test('Flurry deals three timed hits to one target and cancels remaining hits aft
   w.players.set(p.id, p);
   w.wolves = [{ ...w.wolves[0], x: 660, hp: 200 }];
   w.attack(p, true, 10000);
-  assert.equal(w.wolves[0].hp, 182);
+  assert.equal(w.wolves[0].hp, 187);
   w.stepFlurry(10100);
-  assert.equal(w.wolves[0].hp, 182);
+  assert.equal(w.wolves[0].hp, 187);
   w.stepFlurry(10110);
-  assert.equal(w.wolves[0].hp, 164);
+  assert.equal(w.wolves[0].hp, 174);
   w.stepFlurry(10220);
-  assert.equal(w.wolves[0].hp, 146);
+  assert.equal(w.wolves[0].hp, 161);
   assert.equal(p.mp, 38);
   w.attack(p, true, 16000);
   assert.equal(w.flurry.length, 2);
   p.weapon = 'elderwood-blade';
   w.stepFlurry(16300);
-  assert.equal(w.wolves[0].hp, 128);
+  assert.equal(w.wolves[0].hp, 148);
   assert.equal(w.flurry.length, 0);
 });
 

@@ -6,10 +6,22 @@ import { wolfAnimation, wolfFacing, type WolfVisualState } from './wolf-animatio
 type Clips = {
   origins: { x: number; y: number }[];
   scale: number;
+  height?: number;
   animations: Record<string, { frames: string[]; frameRate: number; repeat: number }>;
 };
 export function preloadWoodsMonster(scene: Phaser.Scene, monster?: WoodsMonster) {
   if (!monster || monster === 'wolf') return;
+  if (monster === 'crystal-wyrm') {
+    scene.load.atlas(
+      'crystal-wyrm-special',
+      '/assets/monsters/crystal-wyrm-special.png',
+      '/assets/monsters/crystal-wyrm-special.json',
+    );
+    scene.load.json(
+      'crystal-wyrm-special-clips',
+      '/assets/monsters/crystal-wyrm-special-clips.json',
+    );
+  }
   if (monster === 'forest-bear') {
     scene.load.atlas(
       'forest-bear-slam',
@@ -46,7 +58,11 @@ export class WoodsMonsterVisual {
   ) {
     this.monster = wolf.monster!;
     const clips = scene.cache.json.get(`${this.monster}-clips`) as Clips;
-    this.labelOffset = WOODS_MONSTERS[this.monster].boss ? 285 : 78;
+    this.labelOffset = clips.height
+      ? clips.height * (WOODS_MONSTERS[this.monster].boss ? 2 : 1) + 20
+      : WOODS_MONSTERS[this.monster].boss
+        ? 285
+        : 78;
     this.baseScale = clips.scale * (WOODS_MONSTERS[this.monster].boss ? BOSS_ATTACK.scale : 1);
     this.container = scene.add.container(wolf.x, wolf.y).setDepth(9);
     this.sprite = new Phaser.GameObjects.Sprite(scene, 0, 0, this.monster, 'idle-0').setScale(
@@ -84,21 +100,28 @@ export class WoodsMonsterVisual {
       });
     }
     const slam = groundSlamFrame(wolf, serverTime);
+    const specialKey =
+      this.monster === 'crystal-wyrm' ? 'crystal-wyrm-special' : 'forest-bear-slam';
     if (slam !== null) {
-      const config = this.scene.cache.json.get('forest-bear-slam-clips') as {
+      const config = this.scene.cache.json.get(`${specialKey}-clips`) as {
         origins: { x: number; y: number }[];
         scaleRatio: number;
         silhouetteHeights: number[];
       };
       this.sprite.anims.stop();
       this.sprite
-        .setTexture('forest-bear-slam', `slam-${slam}`)
+        .setTexture(specialKey, `slam-${slam}`)
         .setOrigin(config.origins[slam].x, config.origins[slam].y)
         .setScale(this.baseScale * config.scaleRatio);
       this.labelOffset = config.silhouetteHeights[slam] * this.sprite.scaleY + 20;
       this.sprite.setFlipX(wolf.slamFacing === -1);
     } else {
-      this.labelOffset = WOODS_MONSTERS[this.monster].boss ? 285 : 78;
+      const body = this.scene.cache.json.get(`${this.monster}-clips`) as Clips;
+      this.labelOffset = body.height
+        ? body.height * (WOODS_MONSTERS[this.monster].boss ? 2 : 1) + 20
+        : WOODS_MONSTERS[this.monster].boss
+          ? 285
+          : 78;
       if (this.sprite.texture.key !== this.monster) {
         this.sprite.setTexture(this.monster, 'idle-0').setScale(this.baseScale);
       }

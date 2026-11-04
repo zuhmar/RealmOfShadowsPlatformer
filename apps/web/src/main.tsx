@@ -1,3 +1,8 @@
+import { AudioSettings } from './AudioSettings';
+import { realmAudio } from './audio';
+import { CrystalQuests } from './CrystalQuests';
+import { ClassPanel } from './ClassPanel';
+import { OfflineActivities, activitySummary } from './OfflineActivities';
 import { WorldMapPanel } from './WorldMapPanel';
 import { EquipmentPanel } from './EquipmentPanel';
 import { SkillsPanel } from './SkillsPanel';
@@ -34,6 +39,8 @@ import {
   RULES,
 } from '@ros/game-data';
 import {
+  classSkillCooldown,
+  playerClassName,
   questStatus,
   attackPower,
   playerAttributes,
@@ -44,9 +51,11 @@ import {
   type Event,
   type Input,
   type AutoSettings,
+  type ActivityReward,
 } from '@ros/shared';
 import type { Bridge } from './game';
 import './style.css';
+import './polish.css';
 import { Avatar } from './Avatar';
 import { QuestPanel } from './QuestPanel';
 const SERVER = import.meta.env.VITE_SERVER_URL ?? `${location.protocol}//${location.hostname}:2567`;
@@ -57,8 +66,9 @@ type Character = {
   appearance: string;
   outfit: string;
   data: Player;
-  offline: unknown;
-  offlineReward: { seconds: number; xp: number; gold: number } | null;
+  offline: { kind: string } | null;
+  offlineActivities?: { id: string; label: string }[];
+  offlineReward: ActivityReward | null;
 };
 function App() {
   const [token, setToken] = useState(localStorage.getItem('ros-session') ?? '');
@@ -69,6 +79,8 @@ function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [connectionStatus, setConnectionStatus] = useState('');
+  const recoveryEpoch = useRef(0);
   const [room, setRoom] = useState<Room | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [playerId, setPlayerId] = useState('');
@@ -96,6 +108,10 @@ function App() {
     send: (t, d) => roomRef.current?.send(t, d),
   });
   const snapshotRef = useRef<Snapshot | null>(null);
+  useEffect(() => realmAudio.bind(), []);
+  useEffect(() => {
+    realmAudio.setBiome(page === 'game' ? (snapshot?.mapId ?? null) : null);
+  }, [page, snapshot?.mapId]);
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
   const trialStatus = p ? questStatus(p) : 'available';
@@ -123,7 +139,7 @@ function App() {
   const skillCooldown = p
     ? Math.max(
         0,
-        Math.ceil((WEAPON_SKILL.cooldown - ((snapshot?.time ?? Date.now()) - p.lastSkill)) / 1000),
+        Math.ceil((classSkillCooldown(p) - ((snapshot?.time ?? Date.now()) - p.lastSkill)) / 1000),
       )
     : 0;
   async function api(path: string, method = 'GET', body?: unknown, override?: string) {
@@ -193,15 +209,22 @@ function App() {
       await refresh();
     });
   }
-  async function join(c: Character, mapId = c.data.mapId) {
+  async function join(c: Character, mapId = c.data.mapId, reconnectToken?: string, epoch?: number) {
     const client = new Client(SERVER.replace(/^http/, 'ws'));
-    const next = await client.joinOrCreate('map', { token, characterId: c.id, mapId });
+    const next = reconnectToken
+      ? await client.reconnect(reconnectToken)
+      : await client.joinOrCreate('map', { token, characterId: c.id, mapId });
+    if (epoch !== undefined && epoch !== recoveryEpoch.current) {
+      await next.leave();
+      return false;
+    }
     roomRef.current = next;
     next.onMessage('welcome', (w: { id: string }) => {
       setPlayerId(w.id);
       bridge.current.id = w.id;
     });
     next.onMessage('snapshot', (s: Snapshot) => {
+      if (roomRef.current !== next) return;
       bridge.current.snapshot = s;
       snapshotRef.current = s;
       setSnapshot(s);
@@ -211,8 +234,10 @@ function App() {
       setPage('game');
     });
     next.onMessage('events', (events: Event[]) => {
-      for (const event of events)
+      for (const event of events) {
+        realmAudio.event(event, c.id);
         game.current?.scene.getScene('realm')?.events.emit('float', event);
+      }
     });
     next.onMessage('chat', (m: { name: string; text: string }) =>
       setChat((old) => [...old.slice(-39), m]),
@@ -221,6 +246,7 @@ function App() {
     next.onMessage('npc', (npc: { id: string }) => {
       if (npc.id === 'mira') setPanel('mira');
       if (npc.id === 'bram') setPanel('bram');
+      if (npc.id === 'mentor') setPanel('crystal-quests');
     });
     next.onMessage('forgeResult', (result: { ok: boolean; message: string }) => {
       setForgePending(false);
@@ -234,8 +260,8 @@ function App() {
     });
     next.onMessage('travel', (target: string) => {
       void run(async () => {
-        await next.leave();
         roomRef.current = null;
+        await next.leave();
         setRoom(null);
         setSnapshot(null);
         bridge.current.snapshot = null;
@@ -247,32 +273,59 @@ function App() {
       setForgePending(false);
       setError(text ?? 'Connection error');
     });
-    next.onLeave((code) => {
-      if (roomRef.current === next) {
-        roomRef.current = null;
-        setRoom(null);
-        setQuestPending(false);
-        setForgePending(false);
-        setPanel(null);
+    next.onLeave(() => {
+      if (roomRef.current !== next) return;
+      roomRef.current = null;
+      setRoom(null);
+      setQuestPending(false);
+      setForgePending(false);
+      setPanel(null);
+      bridge.current.held = {};
+      bridge.current.blocked = true;
+      const attempt = ++recoveryEpoch.current;
+      setConnectionStatus('Connection interrupted. Reconnecting…');
+      void (async () => {
+        for (const delay of [250, 750, 1500, 2500, 4000, 4000, 4000, 4000, 4000]) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          if (attempt !== recoveryEpoch.current) return;
+          try {
+            const connected = await join(
+              c,
+              bridge.current.snapshot?.mapId ?? mapId,
+              next.reconnectionToken,
+              attempt,
+            );
+            if (connected && attempt === recoveryEpoch.current) {
+              setConnectionStatus('');
+              setError('');
+              setNotice('Connection restored. Resume movement or AUTO when ready.');
+            }
+            return;
+          } catch {}
+        }
+        if (attempt !== recoveryEpoch.current) return;
+        setConnectionStatus('');
         setPage('characters');
-        setNotice(
-          code > 1000
-            ? 'Disconnected. Your last saved progress is safe. Re-enter to reconnect.'
-            : 'Left the world.',
-        );
-        void refresh().catch((e) => setError(e.message));
-      }
+        setSnapshot(null);
+        bridge.current.snapshot = null;
+        setNotice('Could not restore the connection. Re-enter using your last confirmed save.');
+        await refresh().catch((e) => setError(e.message));
+      })();
     });
+    return true;
   }
+
   async function play(c: Character) {
     await run(async () => {
       const reward = await api(`/characters/${c.id}/claim`, 'POST', {});
-      if (reward.xp || reward.gold)
-        setNotice(`Training complete: +${reward.xp} XP · +${reward.gold} gold`);
+      if (reward.xp || reward.gold || reward.skillXp)
+        setNotice(`Activity complete: ${activitySummary(reward)}`);
       await join(c);
     });
   }
   async function leave() {
+    recoveryEpoch.current++;
+    setConnectionStatus('');
     await run(async () => {
       const current = roomRef.current;
       if (current) {
@@ -325,7 +378,7 @@ function App() {
       game.current?.destroy(true);
       game.current = null;
     };
-  }, [room, page]);
+  }, [page, snapshot?.mapId]);
   useEffect(() => {
     const prevent = (e: KeyboardEvent) => {
       if (
@@ -344,9 +397,11 @@ function App() {
     return () => clearTimeout(t);
   }, [notice]);
   useEffect(() => {
-    bridge.current.blocked = panel === 'mira' || panel === 'bram';
-    if (panel === 'mira' || panel === 'bram') bridge.current.held = {};
-  }, [panel]);
+    bridge.current.blocked =
+      !!connectionStatus || panel === 'mira' || panel === 'bram' || panel === 'crystal-quests';
+    if (panel === 'mira' || panel === 'bram' || panel === 'crystal-quests')
+      bridge.current.held = {};
+  }, [panel, connectionStatus]);
   function isolateControlInput(e: React.SyntheticEvent) {
     if (page === 'game' && (e.target as Element).closest('button,input,textarea,select,.modal'))
       e.stopPropagation();
@@ -526,47 +581,36 @@ function App() {
                   </div>
                   <h2>{c.name}</h2>
                   <div className="character-class">
-                    LEVEL {c.data.level} · {c.class.toUpperCase()}
+                    LEVEL {c.data.level} ·{' '}
+                    {(c.class === 'Citizen' ? 'Civilian' : c.class).toUpperCase()}
                   </div>
                   <p>⌖ {MAPS[c.data.mapId]?.name}</p>
                   <div className="character-summary">
                     <span>◈ {c.data.gold} gold</span>
                     <span>⚔ {c.data.kills} wolves</span>
                   </div>
-                  {c.offlineReward && (
-                    <div className="offline-reward">
-                      ✧ Training rewards: {c.offlineReward.xp} XP · {c.offlineReward.gold} gold{' '}
-                      <small>Claim now, or enter the world to collect.</small>
-                      <button
-                        className="text-button"
-                        disabled={busy}
-                        onClick={() =>
-                          run(async () => {
-                            const reward = await api(`/characters/${c.id}/claim`, 'POST', {});
-                            await refresh();
-                            setNotice(`Training complete: +${reward.xp} XP · +${reward.gold} gold`);
-                          })
-                        }
-                      >
-                        Claim rewards →
-                      </button>
-                    </div>
-                  )}
-                  <button className="primary" disabled={busy} onClick={() => play(c)}>
-                    {busy ? 'Connecting…' : 'Enter world →'}
-                  </button>
-                  <button
-                    className="text-button"
-                    disabled={busy || !!c.offline}
-                    onClick={() =>
-                      run(async () => {
-                        await api(`/characters/${c.id}/offline`, 'POST', { kind: 'training' });
+                  <OfflineActivities
+                    active={!!c.offline}
+                    reward={c.offlineReward}
+                    choices={c.offlineActivities ?? [{ id: 'training', label: 'General training' }]}
+                    busy={busy}
+                    assign={(kind) =>
+                      void run(async () => {
+                        await api(`/characters/${c.id}/offline`, 'POST', { kind });
                         await refresh();
-                        setNotice('Training assigned. Earn up to 8 hours of offline rewards.');
+                        setNotice('Offline activity assigned.');
                       })
                     }
-                  >
-                    {c.offline ? 'Training while away' : 'Assign offline training'}
+                    claim={() =>
+                      void run(async () => {
+                        const reward = await api(`/characters/${c.id}/claim`, 'POST', {});
+                        await refresh();
+                        setNotice(`Activity complete: ${activitySummary(reward)}`);
+                      })
+                    }
+                  />
+                  <button className="primary" disabled={busy} onClick={() => play(c)}>
+                    {busy ? 'Connecting…' : 'Enter world →'}
                   </button>
                 </article>
               ) : (
@@ -583,6 +627,29 @@ function App() {
       )}
       {page === 'game' && (
         <main className="game-shell">
+          {connectionStatus && (
+            <div className="connection-recovery" role="status">
+              <div>
+                <h2>Finding your way back</h2>
+                <p>{connectionStatus}</p>
+                <button
+                  onClick={() => {
+                    recoveryEpoch.current++;
+                    const abandoned = roomRef.current;
+                    roomRef.current = null;
+                    void abandoned?.leave();
+                    setConnectionStatus('');
+                    setPage('characters');
+                    setSnapshot(null);
+                    bridge.current.snapshot = null;
+                    void refresh().catch((e) => setError(e.message));
+                  }}
+                >
+                  Return to characters
+                </button>
+              </div>
+            </div>
+          )}
           <div className="game-stage">
             <div className="world-title">
               <div>
@@ -653,11 +720,7 @@ function App() {
                   <div className="vitals">
                     <div className="player-name">
                       {p.name}
-                      <span>
-                        {weaponProfile(p.weapon).className === 'Citizen'
-                          ? 'Civilian'
-                          : `${weaponProfile(p.weapon).className} trial`}
-                      </span>
+                      <span>{playerClassName(p)}</span>
                     </div>
                     {statBar('HP', p.hp, playerAttributes(p).maxHealth, 'hp')}
                     {statBar('MP', p.mp, playerAttributes(p).maxMana, 'mp')}
@@ -793,14 +856,14 @@ function App() {
                       className="skill"
                       {...hold('skill')}
                       aria-label="Weapon skill"
-                      title={`${weaponSkillDescription(p.weapon)} · ${WEAPON_SKILL.mana} MP · ${WEAPON_SKILL.cooldown / 1000}s cooldown`}
+                      title={`${weaponSkillDescription(p.weapon)} · ${WEAPON_SKILL.mana} MP · ${classSkillCooldown(p) / 1000}s cooldown`}
                       data-ready={skillCooldown === 0 && p.mp >= WEAPON_SKILL.mana}
                     >
                       <ControlIcon name="skill" />
                       <small>K</small>
                       <b>
                         {weaponProfile(p.weapon).skillName} {weaponSkillProgression(p.weapon).rank}{' '}
-                        · {WEAPON_SKILL.mana} MP · {WEAPON_SKILL.cooldown / 1000}s
+                        · {WEAPON_SKILL.mana} MP · {classSkillCooldown(p) / 1000}s
                       </b>
                       <span className="skill-status" aria-live="polite">
                         {skillCooldown > 0
@@ -957,7 +1020,9 @@ function App() {
                   <option value="tide">Tide explorer</option>
                 </select>
               </label>
-              <p>You begin as a Citizen. Your path is yet unwritten.</p>
+              <p>
+                Begin as a Civilian. Complete the Crystal Caverns class quest to choose your path.
+              </p>
               <button className="primary" disabled={busy}>
                 {busy ? 'Creating…' : 'Create adventurer →'}
               </button>
@@ -1057,41 +1122,46 @@ function App() {
                 </div>
                 <EquipmentPanel player={p} send={(type, id) => room?.send(type, id)} />
                 <div className="inventory-grid">
-                  {Array.from({ length: 24 }, (_, i) => {
-                    const entry = Object.entries(p.inventory).filter(([, n]) => n > 0)[i];
-                    const item = entry ? ITEMS[entry[0] as keyof typeof ITEMS] : null;
-                    return (
-                      <div
-                        className="inventory-cell"
-                        tabIndex={item ? 0 : -1}
-                        key={i}
-                        onClick={(e) => {
-                          if (item) e.currentTarget.focus();
-                        }}
-                      >
-                        {item && (
-                          <>
-                            <ItemIcon id={item.id} />
-                            <b>{entry![1]}</b>
-                            <div className="item-detail">
-                              <strong>{item.name}</strong>
-                              <p>{item.description}</p>
-                              {item.type === 'weapon' && (
-                                <button
-                                  className="primary"
-                                  onClick={() =>
-                                    room?.send('equip', p.weapon === item.id ? null : item.id)
-                                  }
-                                >
-                                  {p.weapon === item.id ? 'Unequip' : 'Equip'}
-                                </button>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {Array.from(
+                    {
+                      length: Math.max(24, Object.values(p.inventory).filter((n) => n > 0).length),
+                    },
+                    (_, i) => {
+                      const entry = Object.entries(p.inventory).filter(([, n]) => n > 0)[i];
+                      const item = entry ? ITEMS[entry[0] as keyof typeof ITEMS] : null;
+                      return (
+                        <div
+                          className="inventory-cell"
+                          tabIndex={item ? 0 : -1}
+                          key={i}
+                          onClick={(e) => {
+                            if (item) e.currentTarget.focus();
+                          }}
+                        >
+                          {item && (
+                            <>
+                              <ItemIcon id={item.id} />
+                              <b>{entry![1]}</b>
+                              <div className="item-detail">
+                                <strong>{item.name}</strong>
+                                <p>{item.description}</p>
+                                {item.type === 'weapon' && (
+                                  <button
+                                    className="primary"
+                                    onClick={() =>
+                                      room?.send('equip', p.weapon === item.id ? null : item.id)
+                                    }
+                                  >
+                                    {p.weapon === item.id ? 'Unequip' : 'Equip'}
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
                 </div>
                 <p>
                   Loot is collected when you approach it. Wolves drop pelts, spiders drop silk,
@@ -1100,7 +1170,12 @@ function App() {
                 </p>
               </>
             )}
-            {panel === 'skills' && <SkillsPanel player={p} />}
+            {panel === 'skills' && (
+              <>
+                <ClassPanel player={p} send={bridge.current.send} />
+                <SkillsPanel player={p} />
+              </>
+            )}
             {panel === 'character' && (
               <>
                 <div className={`portrait-big ${p.outfit}`}>
@@ -1108,7 +1183,7 @@ function App() {
                   <span>✦</span>
                 </div>
                 <h3>
-                  {p.name} · Level {p.level} {weaponProfile(p.weapon).className}
+                  {p.name} · Level {p.level} {playerClassName(p)}
                 </h3>
                 <div className="stat-grid">
                   {[
@@ -1118,7 +1193,7 @@ function App() {
                     ['Enemies defeated', p.kills],
                     ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
                     ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
-                    ['Weapon trial', weaponProfile(p.weapon).className],
+                    ['Class', playerClassName(p)],
                     ['Attack range', `${weaponProfile(p.weapon).range}`],
                     ['Attack interval', `${weaponProfile(p.weapon).cooldown} ms`],
                   ].map(([k, v]) => (
@@ -1177,8 +1252,9 @@ function App() {
                   })}
                 </div>
                 <p>
-                  Weapon trials train Melee, Magic or Distance. Open Skills to view your training
-                  and combat attributes. Permanent class selection is planned.
+                  Civilians can try all four weapons. Complete the Crystal Caverns class quest to
+                  unlock your path and combat training. Open Skills for class talents and equipment
+                  attributes.
                 </p>
               </>
             )}
@@ -1194,6 +1270,15 @@ function App() {
                   setQuestPending(true);
                   room?.send('quest', { questId: quest.id, action });
                 }}
+              />
+            )}
+            {(panel === 'quests' || panel === 'crystal-quests') && (
+              <CrystalQuests
+                player={p}
+                dialog={panel === 'crystal-quests'}
+                near={nearNpc(p, map, 'mentor')}
+                pending={questPending}
+                send={bridge.current.send}
               />
             )}
             {(panel === 'quests' || panel === 'mira') && (
@@ -1224,6 +1309,7 @@ function App() {
             )}
             {panel === 'settings' && (
               <>
+                <AudioSettings />
                 <p>
                   AUTO follows real platform connections and ladders. Moving or attacking manually
                   cancels it immediately.

@@ -4,11 +4,20 @@ export * from './equipment-comparison';
 export * from './equipment';
 import { islandGearDrop, type Gear } from './equipment';
 export * from './combat-skills';
-import { weaponTrainingSkill, trainCombat, playerAttributes, attackPower } from './combat-skills';
+import {
+  weaponTrainingSkill,
+  activeCombatSkill,
+  trainCombat,
+  playerAttributes,
+  attackPower,
+} from './combat-skills';
 export * from './woods-progression';
 import { applyWoodsMilestones } from './woods-progression';
 export * from './travel';
 export * from './forging';
+export * from './offline';
+export * from './classes';
+import { canUseClassWeapon, classSkillCooldown, classSkillEvolution } from './classes';
 import {
   RULES,
   WOODS_MONSTERS,
@@ -35,6 +44,7 @@ import {
   starterTool,
   GATHERING_TOOLS,
   IRON_TOOL_DURATION,
+  toolDurationMultiplier,
   xpNeeded,
   type GameMap,
   type ItemId,
@@ -78,6 +88,9 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  classId?: import('@ros/game-data').ClassId;
+  classTalents?: Partial<Record<import('@ros/game-data').ClassTalent, number>>;
+  classRevision?: number;
   visitedAreas?: string[];
   teleportStarterGranted?: boolean;
   gear?: Gear[];
@@ -119,14 +132,18 @@ export type Player = Actor & {
   targetId: string | null;
 };
 export function activeGatheringTool(
-  p: Pick<Player, 'ownedTools' | 'equippedTools'>,
+  p: Pick<Player, 'ownedTools' | 'equippedTools' | 'level'>,
   skill: GatheringSkill,
 ) {
   const id = p.equippedTools?.[skill];
   return (
     GATHERING_TOOLS.find(
       (t) =>
-        t.id === id && t.skill === skill && t.material === 'iron' && p.ownedTools?.includes(t.id),
+        t.id === id &&
+        t.skill === skill &&
+        t.material !== 'wood' &&
+        p.level >= t.level &&
+        p.ownedTools?.includes(t.id),
     ) ?? starterTool(skill)
   );
 }
@@ -160,6 +177,8 @@ export type Drop = {
   expires: number;
 };
 export type Projectile = {
+  skillTargets?: number;
+  burstRadius?: number;
   weapon?: string | null;
   training?: OffensiveSkill | null;
   critical?: boolean;
@@ -184,6 +203,7 @@ export type Snapshot = {
   mapId: string;
 };
 export type Event = {
+  monster?: WoodsMonster;
   type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn' | 'skill' | 'bossAttack';
   radius?: number;
   critical?: boolean;
@@ -400,7 +420,7 @@ export function autoInput(
       !loot &&
       p.settings.skills &&
       p.mp >= WEAPON_SKILL.mana &&
-      now - p.lastSkill >= WEAPON_SKILL.cooldown;
+      now - p.lastSkill >= classSkillCooldown(p);
   }
   return i;
 }
@@ -448,14 +468,19 @@ export class World {
   }
   startGathering(p: Player, nodeId: string, now: number) {
     const node = this.map.resources?.find((n) => n.id === nodeId);
-    if (!node || !this.nearResource(p, node)) return false;
+    if (
+      !node ||
+      !this.nearResource(p, node) ||
+      (p.gatheringSkills?.[node.skill]?.level ?? 1) < (node.level ?? 1)
+    )
+      return false;
     if (p.gathering) return true;
     p.auto = false;
     const tool = activeGatheringTool(p, node.skill);
     p.gathering = {
       nodeId,
       startedAt: now,
-      finishAt: now + node.duration * (tool.material === 'iron' ? IRON_TOOL_DURATION : 1),
+      finishAt: now + node.duration * toolDurationMultiplier(tool.material),
       toolId: tool.id,
     };
     return true;
@@ -482,7 +507,7 @@ export class World {
     if (now < active.finishAt) return;
     p.gatheringSkills ??= {};
     const skill = (p.gatheringSkills[node.skill] ??= { level: 1, xp: 0 });
-    const item = node.item ?? fishingCatch(skill.level, Math.random());
+    const item = node.item ?? fishingCatch(skill.level, Math.random(), node.fish);
     const quantity = node.skill === 'Fishing' ? 1 : 1 + Math.floor(Math.random() * 3);
     p.inventory[item] = (p.inventory[item] ?? 0) + quantity;
     skill.xp += 10;
@@ -493,9 +518,7 @@ export class World {
     // Start a fresh timed cycle; a delayed tick never grants catch-up rewards.
     active.startedAt = now;
     active.finishAt =
-      now +
-      node.duration *
-        (activeGatheringTool(p, node.skill).material === 'iron' ? IRON_TOOL_DURATION : 1);
+      now + node.duration * toolDurationMultiplier(activeGatheringTool(p, node.skill).material);
     this.events.push({
       type: 'loot',
       x: p.x,
@@ -664,7 +687,8 @@ export class World {
       x: zone.x,
       y: zone.y,
       radius: zone.radius,
-      text: 'GROUND SLAM!',
+      monster: w.monster,
+      text: w.monster === 'crystal-wyrm' ? 'CRYSTAL ERUPTION!' : 'GROUND SLAM!',
     });
     for (const p of this.players.values()) {
       if (
@@ -681,11 +705,12 @@ export class World {
     }
   }
   attack(p: Player, skill: boolean, now: number) {
+    if (!canUseClassWeapon(p, p.weapon)) return;
     const profile = weaponProfile(p.weapon);
-    const evolution = weaponSkillProgression(p.weapon);
+    const evolution = classSkillEvolution(p);
     if (now < (p.nextAttackAt ?? p.lastAttack + profile.cooldown)) return;
     const empowered =
-      skill && p.mp >= WEAPON_SKILL.mana && now - p.lastSkill >= WEAPON_SKILL.cooldown;
+      skill && p.mp >= WEAPON_SKILL.mana && now - p.lastSkill >= classSkillCooldown(p);
     if (skill && !empowered) return;
     p.lastAttack = now;
     p.nextAttackAt = now + profile.cooldown;
@@ -706,7 +731,7 @@ export class World {
     }
     const stats = playerAttributes(p);
     const critical = stats.critChance > 0 && Math.random() < stats.critChance;
-    const training = weaponTrainingSkill(p.weapon);
+    const training = activeCombatSkill(p);
     const hit = Math.round(
       attackPower(p) *
         (empowered ? evolution.damageMultiplier : 1) *
@@ -727,6 +752,8 @@ export class World {
           (empowered && profile.projectile === 'arrow' ? evolution.arrowRangeMultiplier : 1),
         damage: hit,
         empowered,
+        skillTargets: evolution.maxTargets,
+        burstRadius: evolution.burstRadius,
         training,
         critical,
       });
@@ -774,7 +801,7 @@ export class World {
       if (
         Math.abs(target.x - owner.x) <
           weaponProfile(owner.weapon).range +
-            weaponSkillProgression(strike.weapon).meleeReach +
+            classSkillEvolution(owner).meleeReach +
             (WOODS_MONSTERS[target.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 0) &&
         Math.abs(target.y - owner.y) < 55 &&
         (target.x - owner.x) * owner.facing >= -12
@@ -804,13 +831,13 @@ export class World {
     hit: number,
     now: number,
     training = {
-      skill: weaponTrainingSkill(p.weapon) as OffensiveSkill | null,
+      skill: activeCombatSkill(p) as OffensiveSkill | null,
       focus: false,
       critical: false,
     },
   ) {
     if (w.hp <= 0) return;
-    if (training.skill && hit > 0) {
+    if (training.skill && p.classId && hit > 0) {
       trainCombat(p, training.skill, 3);
     }
     w.hp = Math.max(0, w.hp - hit);
@@ -843,6 +870,36 @@ export class World {
           playerId: p.id,
         });
       }
+      if (w.monster === 'shard-scorpion' && Math.random() < 0.2) {
+        p.inventory['crystal-boss-key'] = (p.inventory['crystal-boss-key'] ?? 0) + 1;
+        this.events.push({
+          type: 'loot',
+          x: p.x,
+          y: p.y - 105,
+          text: 'Crystal Wyrm Key',
+          loot: [{ item: 'crystal-boss-key', quantity: 1 }],
+          playerId: p.id,
+        });
+      }
+      if (w.monster === 'crystal-wyrm') {
+        p.bossKills ??= {};
+        p.bossKills['crystal-wyrm'] = (p.bossKills['crystal-wyrm'] ?? 0) + 1;
+        if (!p.firstClearRewards?.includes('crystal-wyrm')) {
+          (p.firstClearRewards ??= []).push('crystal-wyrm');
+          (p.unlockedIslands ??= []).push('murkmire');
+          p.inventory['crystal-wyrm-trophy'] = (p.inventory['crystal-wyrm-trophy'] ?? 0) + 1;
+          p.gold += 500;
+          this.events.push({
+            type: 'loot',
+            x: p.x,
+            y: p.y - 130,
+            text: 'Crystal Wyrm defeated',
+            lootGold: 500,
+            loot: [{ item: 'crystal-wyrm-trophy', quantity: 1 }],
+            playerId: p.id,
+          });
+        }
+      }
       if (w.monster === 'forest-bear') {
         p.bossKills ??= {};
         p.bossKills['forest-bear'] = (p.bossKills['forest-bear'] ?? 0) + 1;
@@ -867,6 +924,10 @@ export class World {
       });
       const monster = w.monster ?? 'wolf';
       const materials = {
+        'cave-bat': 'bat-wing',
+        'crystal-golem': 'golem-core',
+        'shard-scorpion': 'shard-stinger',
+        'crystal-wyrm': 'wyrm-scale',
         'thorn-spider': 'thorn-silk',
         'wild-boar': 'boar-tusk',
         'forest-bear': 'bear-claw',
@@ -881,10 +942,19 @@ export class World {
         y: w.y,
         owner: p.id,
         gear:
-          monster === 'forest-bear' || Math.random() < 0.1
+          stats.boss || Math.random() < 0.1
             ? islandGearDrop(
                 this.map.island,
-                { wolf: 1, 'thorn-spider': 4, 'wild-boar': 7, 'forest-bear': 10 }[monster],
+                {
+                  wolf: 1,
+                  'thorn-spider': 4,
+                  'wild-boar': 7,
+                  'forest-bear': 10,
+                  'cave-bat': 11,
+                  'crystal-golem': 14,
+                  'shard-scorpion': 17,
+                  'crystal-wyrm': 20,
+                }[monster],
               )
             : undefined,
         gold: stats.gold,
@@ -939,7 +1009,11 @@ export class World {
             critical: !!shot.critical,
           });
           shot.hitIds.push(target.id);
-          if (shot.hitIds.length >= weaponSkillProgression(shot.weapon).maxTargets) return false;
+          if (
+            shot.hitIds.length >=
+            (shot.skillTargets ?? weaponSkillProgression(shot.weapon).maxTargets)
+          )
+            return false;
         }
         return Math.abs(shot.x - shot.startX) < shot.range;
       }
@@ -952,10 +1026,11 @@ export class World {
                 (w) =>
                   w !== first &&
                   w.hp > 0 &&
-                  Math.abs(w.x - first.x) < weaponSkillProgression(shot.weapon).burstRadius &&
+                  Math.abs(w.x - first.x) <
+                    (shot.burstRadius ?? weaponSkillProgression(shot.weapon).burstRadius) &&
                   Math.abs(w.y - first.y) < 55,
               ),
-            ].slice(0, weaponSkillProgression(shot.weapon).maxTargets)
+            ].slice(0, shot.skillTargets ?? weaponSkillProgression(shot.weapon).maxTargets)
           : [first];
         for (const w of affected)
           this.hitWolf(owner, w, shot.damage, now, {
@@ -1014,9 +1089,34 @@ export class World {
       });
     }
   }
-  snapshot(now: number): Snapshot {
+  snapshot(now: number, viewerId?: string): Snapshot {
     return {
-      players: [...this.players.values()],
+      players: [...this.players.values()].map((p) => {
+        if (!viewerId || p.id === viewerId) return p;
+        const visible = { ...p, inventory: {}, gold: 0, xp: 0, kills: 0 };
+        for (const key of [
+          'gear',
+          'equippedGear',
+          'equipmentRevision',
+          'combatSkills',
+          'quests',
+          'ownedTools',
+          'equippedTools',
+          'forgeRevision',
+          'forgeQuest',
+          'blacksmithing',
+          'gatheringSkills',
+          'bossKills',
+          'firstClearRewards',
+          'unlockedIslands',
+          'visitedAreas',
+          'classTalents',
+          'classRevision',
+          'teleportStarterGranted',
+        ] as const)
+          delete visible[key];
+        return visible;
+      }),
       wolves: this.wolves,
       drops: this.drops,
       projectiles: this.projectiles,

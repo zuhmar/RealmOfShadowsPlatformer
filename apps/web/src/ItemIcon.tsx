@@ -1,3 +1,5 @@
+import crystalResources from '../public/assets/ui/crystal-resources.json';
+import crystalDrops from '../public/assets/ui/crystal-loot.json';
 import islandAtlas from '../public/assets/equipment/islands/manifest.json';
 import { equipmentDefinition } from '@ros/game-data';
 import loot from '../public/assets/ui/woods-loot.json';
@@ -6,6 +8,39 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  const crystalAtlas =
+    id && Object.hasOwn(crystalResources.frames, id)
+      ? crystalResources
+      : id && Object.hasOwn(crystalDrops.frames, id)
+        ? crystalDrops
+        : null;
+  if (crystalAtlas && id) {
+    const entry = (
+      crystalAtlas.frames as Record<
+        string,
+        { frame: { x: number; y: number; w: number; h: number } }
+      >
+    )[id].frame;
+    return (
+      <svg
+        width="40"
+        height="40"
+        viewBox={`${entry.x} ${entry.y} ${entry.w} ${entry.h}`}
+        role="img"
+        aria-label={itemDefinition(id)?.name ?? id}
+      >
+        <image
+          href={
+            crystalAtlas === crystalResources
+              ? '/assets/ui/crystal-resources.png'
+              : '/assets/ui/crystal-loot.png'
+          }
+          width={crystalAtlas.meta.size.w}
+          height={crystalAtlas.meta.size.h}
+        />
+      </svg>
+    );
+  }
   if (id === 'teleport-crystal')
     return (
       <img

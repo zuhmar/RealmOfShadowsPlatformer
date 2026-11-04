@@ -1,4 +1,5 @@
-import { useTeleport, initializeTeleport } from '@ros/shared';
+import { changeClass } from './classes.js';
+import { canUseClassWeapon, useTeleport, initializeTeleport } from '@ros/shared';
 import { changeEquipment } from './equipment.js';
 import { equipGear } from '@ros/shared';
 import { usePortal, applyWoodsMilestones } from '@ros/shared';
@@ -17,8 +18,8 @@ import {
   World,
   idleInput,
   nearNpc,
-  offlineReward,
-  grantXp,
+  activityReward,
+  applyActivityReward,
   playerAttributes,
   type Input,
   type Player,
@@ -78,8 +79,16 @@ export class MapRoom extends Room {
         if (p.equippedGear) delete p.equippedGear.weapon;
       } else if (typeof item === 'string') {
         const definition = itemDefinition(item);
+        if (definition?.type === 'weapon' && !canUseClassWeapon(p, item)) {
+          c.send(
+            'notice',
+            'That weapon belongs to another class. Visit a class mentor to change paths.',
+          );
+          return;
+        }
         if (
           definition?.type === 'weapon' &&
+          canUseClassWeapon(p, item) &&
           (p.inventory[item] ?? 0) > 0 &&
           p.level >= definition.level
         ) {
@@ -90,6 +99,7 @@ export class MapRoom extends Room {
       p.hp = Math.min(p.hp, playerAttributes(p).maxHealth);
       p.mp = Math.min(p.mp, playerAttributes(p).maxMana);
     });
+    this.onMessage('class', (c, payload) => this.classAction(c, payload));
     this.onMessage('equipGear', (c, id) => {
       const p = this.player(c);
       if (!p || typeof id !== 'string' || !this.rate(c, 100)) return;
@@ -156,7 +166,14 @@ export class MapRoom extends Room {
         delete p.gathering;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: 'bram' });
-      } else if (payload?.npcId === 'bram') c.send('notice', 'Walk closer to Bram.');
+      } else if (nearNpc(p, this.world.map, 'mentor')) {
+        p.auto = false;
+        delete p.gathering;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: 'mentor' });
+      } else if (payload?.npcId === 'mentor')
+        c.send('notice', 'Climb to the Cavern Mentor’s ledge to speak.');
+      else if (payload?.npcId === 'bram') c.send('notice', 'Walk closer to Bram.');
       else if (payload?.npcId === 'mira')
         c.send('notice', 'Walk closer to Mira to speak with her.');
       else {
@@ -170,7 +187,7 @@ export class MapRoom extends Room {
       const p = this.player(c);
       if (!p || !this.rate(c, 100) || typeof id !== 'string') return;
       const tool = GATHERING_TOOLS.find((t) => t.id === id);
-      if (!tool || (!tool.starter && (tool.material !== 'iron' || !p.ownedTools?.includes(id)))) {
+      if (!tool || (!tool.starter && (p.level < tool.level || !p.ownedTools?.includes(id)))) {
         c.send('notice', 'You do not own that tool.');
         return;
       }
@@ -185,6 +202,51 @@ export class MapRoom extends Room {
         c.send('notice', 'Stand next to the resource on its platform to gather.');
     });
     this.onMessage('quest', (c, payload) => this.quest(c, payload));
+  }
+  classAction(c: Client, payload: unknown) {
+    const p = this.player(c);
+    if (!p || !this.rate(c, 100) || !payload || typeof payload !== 'object') return;
+    const { action, id } = payload as { action?: unknown; id?: unknown };
+    if ((action !== 'choose' && action !== 'talent') || typeof id !== 'string') return;
+    if (
+      action === 'choose' &&
+      !(
+        (this.world.map.id === 'village' && nearNpc(p, this.world.map, 'mira') && !!p.classId) ||
+        (this.world.map.id === 'crystal' && nearNpc(p, this.world.map, 'mentor'))
+      )
+    ) {
+      c.send(
+        'notice',
+        'Complete the class trial and visit the Cavern Mentor. Later changes are also available from Mira.',
+      );
+      return;
+    }
+    p.auto = false;
+    delete p.gathering;
+    this.inputs.set(p.id, idleInput());
+    const task = this.saves
+      .catch(() => {})
+      .then(async () => {
+        const next = await changeClass(structuredClone(p), action, id);
+        for (const key of [
+          'classId',
+          'classTalents',
+          'classRevision',
+          'gold',
+          'weapon',
+          'equippedGear',
+        ] as const)
+          (p as any)[key] = next[key];
+        c.send(
+          'notice',
+          action === 'choose'
+            ? 'Class selected. Equip a matching weapon in Bag.'
+            : 'Talent learned.',
+        );
+      });
+    this.questTasks.set(p.id, task);
+    this.saves = task.catch(() => {});
+    void task.catch((e) => c.send('notice', e.message)).finally(() => this.questTasks.delete(p.id));
   }
   async travel(c: Client, destination?: string) {
     const p = this.player(c);
@@ -227,8 +289,17 @@ export class MapRoom extends Room {
       result(false, 'Unknown quest action.');
       return;
     }
-    if (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'mira')) {
-      result(false, 'Return to Mira in Elderwood Village to do that.');
+    const giver = QUESTS[value.questId as keyof typeof QUESTS].npcId;
+    if (
+      !nearNpc(p, this.world.map, giver) ||
+      this.world.map.id !== (giver === 'mentor' ? 'crystal' : 'village')
+    ) {
+      result(
+        false,
+        giver === 'mentor'
+          ? 'Return to the Cavern Mentor.'
+          : 'Return to Mira in Elderwood Village to do that.',
+      );
       return;
     }
     const action = value.action;
@@ -414,9 +485,8 @@ export class MapRoom extends Room {
           await tx.character.update({ where: { id }, data: { data: json(p) } });
         const activity = await tx.offlineActivity.findUnique({ where: { characterId: id } });
         if (activity) {
-          const reward = offlineReward(activity.startedAt.getTime(), Date.now());
-          grantXp(p, reward.xp);
-          p.gold += reward.gold;
+          const reward = activityReward(p, activity.kind, activity.startedAt.getTime(), Date.now());
+          applyActivityReward(p, reward);
           await tx.offlineReward.create({
             data: { characterId: id, xp: reward.xp, gold: reward.gold },
           });
@@ -448,7 +518,7 @@ export class MapRoom extends Room {
     this.characters.set(c.sessionId, p.id);
     this.inputs.set(p.id, idleInput());
     c.send('welcome', { id: p.id, mapId: this.world.map.id });
-    c.send('snapshot', this.world.snapshot(Date.now()));
+    c.send('snapshot', this.world.snapshot(Date.now(), p.id));
   }
   player(c: Client) {
     const id = this.characters.get(c.sessionId) ?? '';
@@ -469,29 +539,48 @@ export class MapRoom extends Room {
       i.skill = false;
       i.interact = false;
     }
-    if (++this.ticks % 2 === 0) this.broadcast('snapshot', this.world.snapshot(now));
+    if (++this.ticks % 2 === 0)
+      for (const client of this.clients) {
+        const id = this.characters.get(client.sessionId);
+        if (id && this.world.players.has(id)) client.send('snapshot', this.world.snapshot(now, id));
+      }
     if (this.world.events.length) this.broadcast('events', this.world.events);
     if (this.ticks % 150 === 0)
       for (const p of this.world.players.values())
         if (!this.questTasks.has(p.id))
           void this.enqueueSave(p).catch((e) => console.error('Save failed', e.message));
   }
-  async onLeave(c: Client) {
+  async onLeave(c: Client, consented: boolean) {
     const id = this.characters.get(c.sessionId);
     if (!id) return;
-    await this.questTasks.get(id)?.catch(() => {});
     const p = this.world.players.get(id);
-    this.world.players.delete(id);
+    if (p) {
+      p.auto = false;
+      delete p.gathering;
+      this.world.players.delete(id);
+    }
     this.inputs.delete(id);
     this.inputTimes.delete(id);
+    await this.questTasks.get(id)?.catch(() => {});
+    if (!consented && p) {
+      try {
+        await this.enqueueSave(p);
+        await this.allowReconnection(c, 30);
+        this.world.players.set(id, p);
+        this.inputs.set(id, idleInput());
+        this.inputTimes.set(id, Date.now());
+        c.send('welcome', { id, mapId: this.world.map.id });
+        c.send('snapshot', this.world.snapshot(Date.now(), p.id));
+        return;
+      } catch (error) {
+        console.info('Reconnect window closed', id);
+      }
+    }
     this.characters.delete(c.sessionId);
     this.rates.delete(c.sessionId);
     this.rates.delete(`chat:${c.sessionId}`);
     try {
-      if (p) {
-        p.auto = false;
-        await this.enqueueSave(p);
-      }
+      if (p) await this.enqueueSave(p);
     } finally {
       activeCharacters.delete(id);
     }

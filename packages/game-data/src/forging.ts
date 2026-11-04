@@ -26,6 +26,15 @@ export const FORGE_RECIPES: ForgeRecipe[] = [
     cost: { 'iron-bar': 5, 'oak-logs': 20 },
     xp: 15,
   })),
+  ...['pickaxe', 'axe', 'rod', 'sickle'].map((type) => ({
+    id: `crystal-${type}`,
+    name: `Crystal ${type === 'rod' ? 'Fishing Rod' : type[0].toUpperCase() + type.slice(1)}`,
+    kind: 'tool' as const,
+    cost: { 'crystal-bar': 10, crystalwood: 40 },
+    xp: 35,
+    level: 11,
+    tier: 'crystal',
+  })),
   ...EQUIPMENT_TIERS.filter((t) => t.material !== 'iron').map((t, i) => ({
     id: `${t.material}-bar`,
     name: `${t.material[0].toUpperCase() + t.material.slice(1)} Bar`,

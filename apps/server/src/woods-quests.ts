@@ -1,6 +1,8 @@
-import { WOODS_QUESTS, type WoodsQuestId } from '@ros/game-data';
+import { WOODS_QUESTS as WOODS_ONLY, CRYSTAL_QUESTS } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { db, json } from './db.js';
+const WOODS_QUESTS = { ...WOODS_ONLY, ...CRYSTAL_QUESTS };
+type WoodsQuestId = keyof typeof WOODS_QUESTS;
 export async function changeWoodsQuest(
   snapshot: Player,
   id: WoodsQuestId,
@@ -32,7 +34,7 @@ export async function changeWoodsQuest(
         row.progress < quest.target.count ||
         (next.quests[id]?.progress ?? 0) < quest.target.count
       )
-        throw new Error('Finish the quest objective, then return to Mira.');
+        throw new Error('Finish the quest objective, then return to the quest giver.');
       const claimed = await tx.questProgress.updateMany({
         where: { id: row.id, claimed: false, progress: { gte: quest.target.count } },
         data: { claimed: true },

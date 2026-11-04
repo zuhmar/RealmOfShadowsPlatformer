@@ -100,8 +100,9 @@ test('Forest Bear survives enough level-seven basic hits for its first dodge win
     w.attack(p, false, now);
   assert.ok(boss.hp > 0);
 });
-test('weapon comparisons account for switching trained skills and capped crit chance', () => {
+test('class-incompatible weapon comparisons are withheld and equipment caps remain active', () => {
   const p = createPlayer('p', 'Switcher');
+  p.classId = 'knight';
   p.gear = [
     createCraftedGear('woods-sword'),
     createCraftedGear('woods-bow'),
@@ -112,7 +113,7 @@ test('weapon comparisons account for switching trained skills and capped crit ch
   equipGear(p, p.gear[0].id);
   equipGear(p, p.gear[2].id);
   const rows = compareGear(p, p.gear[1]);
-  assert.equal(rows.find((r) => r.stat === 'attack')?.difference, -20);
+  assert.equal(rows.length, 0);
   assert.equal(
     rows.find((r) => r.stat === 'critChance'),
     undefined,

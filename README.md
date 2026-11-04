@@ -1,6 +1,6 @@
 # Realm of Shadows · First Light
 
-An original browser-based, shared-world idle platformer. The first playable milestone has a safe village, Wolf Hollow, three character slots, manual combat, real ladder-based AUTO hunting, loot, equipment, leveling, chat, PostgreSQL saves, and capped offline training. Desktop and mobile controls are included.
+A browser-based shared-world idle platformer. Elderwood Village, all four Whispering Woods areas, and all four Crystal Caverns areas are playable. Features include gathering, crafting, identifiable monster equipment, animated bosses, weapon-themed skills, quest-unlocked classes and talents, offline hunting/gathering, reconnect recovery, chat and PostgreSQL saves. Later five islands remain planned.
 
 ## Run locally
 
@@ -38,11 +38,12 @@ The guest session token is stored in browser local storage and the database stor
 
 ## Play
 
-1. Choose **Play as guest**, create a Citizen, then **Enter world**.
-2. In Elderwood Village, walk right to the glowing portal and press **E** (or the Portal hotbar button).
-3. In Wolf Hollow, fight manually or enable **AUTO**. AUTO uses the same validated server combat as manual play. Any manual movement, attack, or skill input cancels it.
-4. Collect gold and fangs near defeated wolves. Every fifth kill drops a Wayfarer Blade. Open **Bag**, select the blade, and equip it for +5 attack.
-5. Leave through the upper-right exit button. This waits for server save confirmation. On character selection, assign **offline training**; use **Claim rewards** or enter the world to settle them once, capped at eight hours.
+1. Play as guest or log in, create an adventurer, and enter Elderwood Village.
+2. Follow Mira’s trials through Wolf Hollow, Thorn Tangle, the boar area and Forest Bear. Try all four starter weapons as a Civilian.
+3. Defeat the bear and reach level 11 to enter Crystal Caverns from the village’s upper terrace.
+4. Complete and claim the Cavern Mentor’s bat trial to unlock your first free class choice. Later changes cost 500 gold and refund talents. Civilian characters do not train Melee, Magic or Distance.
+5. Explore the three Crystal hunting areas and spend one key per Crystal Wyrm entry. Boss quests always require one kill.
+6. Leave using the in-game exit for save confirmation. On character selection, assign offline hunting or gathering in a discovered area, then claim capped rewards once.
 
 | Input                        | Action                                                             |
 | ---------------------------- | ------------------------------------------------------------------ |
@@ -54,7 +55,7 @@ The guest session token is stored in browser local storage and the database stor
 | K                            | Weapon skill: 12 MP, 5-second shared cooldown, up to three targets |
 | E                            | Travel through a nearby portal                                     |
 
-Mobile has held direction, climb, jump, and attack buttons, plus the same skill/AUTO hotbar. Item details support keyboard focus and touch. No audio or third-party game artwork is used.
+Mobile has held direction, climb, jump, and attack buttons, plus the same skill/AUTO hotbar. Item details support keyboard focus and touch. Sound effects and optional ambient music have device-persisted volume and mute settings. Audio unlocks after a tap or key press.
 
 ## Validate
 
@@ -83,7 +84,7 @@ Browser captures go into ignored `artifacts/`. Assertions and game-logic tests s
 
 The hero is the boy who alone survived the Shadow Dragon’s attack on his hometown. After years of training, he begins the journey to slay it. See [the story foundation](docs/story.md); `STORY` and `QUESTS` in game-data supply the opening and dialogue.
 
-In Elderwood Village, approach **Mira** on the village path and press **E**, click her, or use the **Interact** hotbar button. Accept **The first trial**, travel to Wolf Hollow, defeat five Wolves, return through the portal and speak with Mira again. Claim **75 gold and a four-weapon trial kit: Elderwood Blade (Knight), Bow (Archer), Staff (Mage), and Dagger (Rogue)**, then equip any weapon from the Bag. All four are usable by Citizens before class selection. The journal and HUD show real quest progress; Mira’s marker changes from `!` to `?` when ready to turn in.
+In Elderwood Village, approach **Mira** on the village path and press **E**, click her, or use the **Interact** hotbar button. Accept **The first trial**, travel to Wolf Hollow, defeat 15 Wolves, return through the portal and speak with Mira again. Claim **75 gold and a four-weapon trial kit: Elderwood Blade (Knight), Bow (Archer), Staff (Mage), and Dagger (Rogue)**, then equip any weapon from the Bag. All four are usable by Civilians before class selection. The journal and HUD show real quest progress; Mira’s marker changes from `!` to `?` when ready to turn in.
 
 Only server-credited killing blows after acceptance count. Manual and AUTO combat both work; historical kills and offline training do not advance the quest. Acceptance and turn-in require being near Mira on the correct map/floor. Claiming is one-time and persistent per character. Existing characters begin with the quest unaccepted. No database migration or new environment variables are needed: the reserved quest tables from the foundation migration are used.
 
@@ -98,7 +99,7 @@ Only server-credited killing blows after acceptance count. Manual and AUTO comba
 | Mage   | Elderwood Staff (+8 attack)  | 320         | 1000 ms         | Traveling magic bolts; Arcane Burst skill |
 | Rogue  | Elderwood Dagger (+4 attack) | 58          | 380 ms          | Fast melee; Flurry skill                  |
 
-All trial weapons work with manual and AUTO combat. Ranged damage is resolved on server projectile collision, with range and facing validated. The skill button costs 12 MP and shares a five-second cooldown across weapons; basic attacks, including staff bolts, cost no MP. Switching weapons does not bypass an attack already on cooldown. AUTO walks to owner-only loot after ranged kills. This introduces weapon trials, not the full permanent class-unlock/skill-tree systems; the saved class remains Citizen.
+All trial weapons work with manual and AUTO combat. Ranged damage is resolved on server projectile collision, with range and facing validated. The skill button costs 12 MP and shares a five-second cooldown across weapons; basic attacks, including staff bolts, cost no MP. Switching weapons does not bypass an attack already on cooldown. AUTO walks to owner-only loot after ranged kills. The Crystal Caverns class quest unlocks permanent class choice and three talent branches.
 
 Characters who claimed the earlier sword-only reward can speak to Mira and **Collect class weapons** once to receive the bow, staff and dagger. Gold and the sword are not repeated. A versioned internal `QuestProgress` reward ledger makes the upgrade persistent and idempotent without a schema migration. New turn-ins receive all four weapons and 75 gold together.
 
@@ -135,13 +136,7 @@ Configuration is prepared, not deployed:
 
 ## Scope and expansion
 
-**Implemented:** Mira’s first quest and one-time reward, guest/register/login + upgrade, three character slots and confirmed deletion, outfit/appearance preview, one playable Citizen, village and Wolf map, portal travel, platform movement/jump/drop/ladder/camera, four weapon trials with melee/ranged/magic basic attacks and weapon skills, Wolf state machine/respawns/player recovery, platform-aware AUTO and settings, XP/leveling, owner-only gold/loot, stacking inventory, weapon equip/unequip, responsive HUD/minimap, shared room chat/players/monsters, save/re-entry, offline monster training and atomic capped claims.
-
-**Definitions/foundations only:** permanent class progression and skill trees, remaining island roster entries, Tiled object-layer import, normalized expansion database tables. The adapter imports platform/ladder layers; other map metadata stays in the base definition. It is not a general Tiled tilemap renderer.
-
-**Not implemented:** advanced class unlocks and complete class skill trees, the other Whispering Woods monster maps, Crystal Caverns maps, bosses, gathering/crafting, banks/shops, additional quest chains, armor/accessory slots, cosmetic wardrobe/unlocks, parties, private boss instances, seamless reconnect, audio, or production scaling. Mira offers a reward-bearing first trial; other village NPCs remain scenery with roles clearly labeled, and shops are not implemented.
-
-Seven hunting islands are defined: Whispering Woods, Crystal Caverns, four unnamed reserved islands, and Shadow Fortress. Only the supplied rosters are recorded; the later islands have no invented permanent monster roster. Shadow Dragon remains the final encounter reservation. This is the **first playable milestone**, not the complete ten-phase MMORPG.
+The playable scope is Elderwood Village, four Whispering Woods areas and four Crystal Caverns areas, with quest progression, gathering/crafting, equipment identification and sales, class choice/talents, offline activities, reconnect recovery and audio. The next five hunting islands are defined but not playable. Parties, private boss instances, account recovery and production scaling remain future work. See [Crystal systems](docs/crystal-caverns.md) for mechanics and validation limits.
 
 ### Trainable combat skills and attributes
 
@@ -171,7 +166,7 @@ Crafted pieces are Common with fixed stats, marked `source: crafted`, ready to e
 
 Bag shows all five equipment slots plus accessory, rarity filtering, and comparisons against the currently equipped item. Comparisons use actual derived stats, including weapon-skill changes and caps; unidentified attributes stay hidden. Visit Bram to sell an unequipped piece, review its gold value, then confirm or cancel. Equipped gear cannot be sold. Selling and identification share the serialized save queue, character lock and equipment revision, so repeated requests cannot duplicate gold.
 
-Ground loot and owner-only pickup effects show item sprites, numeric quantities and equipment rarity glows instead of item-name text. Regular Woods hunting areas each spawn ten monsters (previously five); boss rooms still spawn one boss. All four weapon specials use generated eight-frame animated effects, with animated empowered arrows and magic projectiles. Their colors follow the equipped weapon’s island theme while preserving the same animation shapes and timing; in-flight effects retain the weapon used to cast them. Specials progress through ranks 1–7 with equipment tiers: damage and reach rise each tier, and every two tiers add a target or Flurry strike (three at rank 1, six at rank 7). The combat button shows the current rank, with exact damage and coverage in its tooltip. Mana and cooldown stay at 12 MP / 5 seconds. Forest Bear now has 1,100 HP so ordinary geared characters encounter the dodge mechanic. Rank-one combat damage, boss warning timing, quest counts, ore/bar costs and drop/key odds are unchanged. See [the balance report](docs/woods-balance.md) for assumptions, measurements and economy estimates; reproduce it with `npm run balance:woods`.
+Ground loot and owner-only pickup effects show item sprites, numeric quantities and equipment rarity glows instead of item-name text. Regular Woods hunting areas each spawn ten monsters (previously five); boss rooms still spawn one boss. All four weapon specials use generated eight-frame animated effects, with animated empowered arrows and magic projectiles. Their colors follow the equipped weapon’s island theme while preserving the same animation shapes and timing; in-flight effects retain the weapon used to cast them. Specials progress through ranks 1–7 with equipment tiers: damage and reach rise each tier, and every two tiers add a target or Flurry strike (three at rank 1, six at rank 7). The combat button shows the current rank, with exact damage and coverage in its tooltip. Mana stays at 12 MP; base cooldown is five seconds, reduced by class discipline talents. Forest Bear now has 1,100 HP so ordinary geared characters encounter the dodge mechanic. Weapon damage scaling now accounts for attack speed; boss warning timing, quest counts, ore/bar costs and drop/key odds are retained. See [the balance report](docs/woods-balance.md) for assumptions, measurements and economy estimates; reproduce it with `npm run balance:woods`.
 
 ### Illustrated world map and Teleport Crystals
 

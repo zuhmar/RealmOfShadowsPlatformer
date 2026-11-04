@@ -1,3 +1,4 @@
+import { canUseClassWeapon } from './classes';
 import {
   itemDefinition,
   weaponKind,
@@ -110,6 +111,9 @@ export function gearAttributes(p: Player) {
   return result;
 }
 export function equipGear(p: Player, id: string) {
+  const owned = p.gear?.find((g) => g.id === id);
+  if (owned?.slot === 'weapon' && !canUseClassWeapon(p, owned.base))
+    throw new Error('That weapon belongs to another class. Visit Mira to change paths.');
   const gear = p.gear?.find((g) => g.id === id);
   if (
     !gear ||

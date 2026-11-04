@@ -1,5 +1,7 @@
+import { canUseClassWeapon } from './classes';
 import {
   weaponKind,
+  WEAPON_DAMAGE_SCALE,
   maxHp,
   damage,
   combatSkillXpNeeded,
@@ -33,8 +35,10 @@ export function trainCombat(p: Player, skill: CombatSkill, amount: number) {
   }
   if (state.level >= 100) state.xp = 0;
 }
+export const activeCombatSkill = (p: Player) =>
+  p.classId && canUseClassWeapon(p, p.weapon) ? weaponTrainingSkill(p.weapon) : null;
 export function playerAttributes(p: Player) {
-  const active = weaponTrainingSkill(p.weapon);
+  const active = activeCombatSkill(p);
   const rank = (skill: CombatSkill) =>
     Math.max(0, Math.min(99, (p.combatSkills?.[skill]?.level ?? 1) - 1));
   const offense = active ? rank(active) : 0,
@@ -55,4 +59,9 @@ export function playerAttributes(p: Player) {
   };
 }
 export const attackPower = (p: Player) =>
-  damage(p.level, attackBonus(p)) + playerAttributes(p).trainingDamage;
+  Math.round(
+    (damage(p.level, attackBonus(p)) +
+      playerAttributes(p).trainingDamage +
+      (activeCombatSkill(p) ? (p.classTalents?.mastery ?? 0) * 2 : 0)) *
+      WEAPON_DAMAGE_SCALE[weaponKind(p.weapon)],
+  );

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  canUseClassWeapon,
   identifyCost,
   formatGearAttribute,
   compareGear,
@@ -80,6 +81,7 @@ export function EquipmentPanel({
       <div className="skills-grid">
         {visible.map((g) => {
           const equipped = p.equippedGear?.[g.slot] === g.id;
+          const wrongClass = g.slot === 'weapon' && !canUseClassWeapon(p, g.base);
           const comparison = compareGear(p, g);
           const current = p.gear?.find((other) => other.id === p.equippedGear?.[g.slot]);
           const comparedName =
@@ -141,7 +143,11 @@ export function EquipmentPanel({
                     </div>
                   )}
                   {p.level < g.level && <p>Requires character Lv. {g.level}.</p>}
-                  <button disabled={p.level < g.level} onClick={() => send('equipGear', g.id)}>
+                  {wrongClass && <p>Requires another class. A mentor can change your path.</p>}
+                  <button
+                    disabled={p.level < g.level || wrongClass}
+                    onClick={() => send('equipGear', g.id)}
+                  >
                     {equipped ? 'Unequip' : 'Equip'} {g.name}
                   </button>
                 </>

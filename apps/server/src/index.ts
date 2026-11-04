@@ -4,7 +4,13 @@ import cors from 'cors';
 import { createServer } from 'node:http';
 import { Server } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
-import { createPlayer, offlineReward, grantXp, type Player } from '@ros/shared';
+import {
+  createPlayer,
+  activityReward,
+  applyActivityReward,
+  offlineActivities,
+  type Player,
+} from '@ros/shared';
 import { MAPS, RULES } from '@ros/game-data';
 import {
   db,
@@ -105,7 +111,15 @@ app.get(
       guest: u.guest,
       characters: cs.map((c) => ({
         ...c,
-        offlineReward: c.offline ? offlineReward(c.offline.startedAt.getTime(), Date.now()) : null,
+        offlineReward: c.offline
+          ? activityReward(
+              c.data as unknown as Player,
+              c.offline.kind,
+              c.offline.startedAt.getTime(),
+              Date.now(),
+            )
+          : null,
+        offlineActivities: offlineActivities(c.data as unknown as Player),
       })),
     });
   }),
@@ -162,12 +176,16 @@ app.post(
       throw new Error('Leave the world before assigning an offline activity');
     const c = await db.character.findFirst({ where: { id: req.params.id, userId: u.id } });
     if (!c) throw new Error('Character not found');
-    if (req.body.kind !== 'training')
-      throw new Error('Only monster training is available in this milestone');
-    await db.offlineActivity.upsert({
-      where: { characterId: c.id },
-      create: { characterId: c.id, kind: 'training' },
-      update: {},
+    await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Character" WHERE id = ${c.id} FOR UPDATE`;
+      if (activeCharacters.has(c.id))
+        throw new Error('Leave the world before assigning an activity');
+      const stored = await tx.character.findUniqueOrThrow({ where: { id: c.id } });
+      if (!offlineActivities(stored.data as unknown as Player).some((a) => a.id === req.body.kind))
+        throw new Error('Discover this area and meet its level requirement first.');
+      if (await tx.offlineActivity.findUnique({ where: { characterId: c.id } }))
+        throw new Error('Claim the current activity before changing jobs.');
+      await tx.offlineActivity.create({ data: { characterId: c.id, kind: req.body.kind } });
     });
     res.json({ ok: true });
   }),
@@ -182,13 +200,13 @@ app.post(
         { id: string }[]
       >`SELECT id FROM "Character" WHERE id = ${req.params.id} AND "userId" = ${u.id} FOR UPDATE`;
       if (!cs.length) throw new Error('Character not found');
+      if (activeCharacters.has(req.params.id)) throw new Error('Leave the world before claiming');
       const a = await tx.offlineActivity.findUnique({ where: { characterId: req.params.id } });
       if (!a) return { xp: 0, gold: 0, seconds: 0 };
       const c = await tx.character.findUniqueOrThrow({ where: { id: req.params.id } });
-      const reward = offlineReward(a.startedAt.getTime(), Date.now());
       const p = c.data as unknown as Player;
-      grantXp(p, reward.xp);
-      p.gold += reward.gold;
+      const reward = activityReward(p, a.kind, a.startedAt.getTime(), Date.now());
+      applyActivityReward(p, reward);
       await tx.character.update({ where: { id: c.id }, data: { data: json(p) } });
       await tx.offlineActivity.delete({ where: { characterId: c.id } });
       await tx.offlineReward.create({
@@ -201,13 +219,11 @@ app.post(
 );
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err.message);
-  res
-    .status(400)
-    .json({
-      error: err.message.includes('Unique constraint')
-        ? 'That email is already registered.'
-        : err.message,
-    });
+  res.status(400).json({
+    error: err.message.includes('Unique constraint')
+      ? 'That email is already registered.'
+      : err.message,
+  });
 });
 const http = createServer(app);
 const game = new Server({

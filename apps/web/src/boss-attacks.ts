@@ -1,3 +1,4 @@
+import { skillEffect } from './combat-effects';
 import Phaser from 'phaser';
 import { BOSS_ATTACK } from '@ros/game-data';
 import type { Wolf, Event } from '@ros/shared';
@@ -54,7 +55,9 @@ export class BossWarnings {
       mark.label
         .setScale(1 / this.scene.cameras.main.zoom)
         .setPosition(zone.x, zone.y - h - 25)
-        .setText(`GROUND SLAM ${Math.ceil(remaining / 100) / 10}s — MOVE!`);
+        .setText(
+          `${monster.monster === 'crystal-wyrm' ? 'CRYSTAL ERUPTION' : 'GROUND SLAM'} ${Math.ceil(remaining / 100) / 10}s — MOVE!`,
+        );
     }
     for (const [id, mark] of this.marks)
       if (!active.has(id)) {
@@ -65,22 +68,44 @@ export class BossWarnings {
   }
 }
 export function bossImpact(scene: Phaser.Scene, event: Event) {
+  if (event.monster === 'crystal-wyrm') {
+    skillEffect(scene, {
+      ...event,
+      type: 'skill',
+      skill: 'staff',
+      weapon: 'crystal-staff',
+      phase: 'impact',
+      y: event.y - 45,
+      text: '',
+    });
+  }
   const r = event.radius ?? BOSS_ATTACK.radius;
   const g = scene.add
     .graphics()
     .setPosition(event.x, event.y)
     .setDepth(18)
     .setName('boss-slam-impact');
-  g.fillStyle(0xff812e, 0.35);
+  g.fillStyle(event.monster === 'crystal-wyrm' ? 0x52c7ff : 0xff812e, 0.35);
   g.fillRect(-r, -BOSS_ATTACK.height, r * 2, BOSS_ATTACK.height);
   g.lineStyle(5, 0xffedb0, 0.95);
   g.strokeEllipse(0, -5, r * 2, 40);
-  for (let x = -r + 12; x < r; x += 35) {
-    g.lineStyle(8, 0x614020);
-    g.lineBetween(x, 0, x - 8, -55);
-    g.lineBetween(x - 8, -55, x + 5, -80);
-    g.lineStyle(3, 0xb8e56e);
-    g.lineBetween(x, 0, x - 8, -55);
+  if (event.monster === 'crystal-wyrm') {
+    for (let x = -r + 12; x < r; x += 35) {
+      g.fillStyle(0x42d9f5, 0.9);
+      g.fillTriangle(x - 12, 0, x + 12, 0, x + 5, -80);
+      g.fillStyle(0xd7fbff, 0.9);
+      g.fillTriangle(x - 5, 0, x + 3, 0, x + 5, -72);
+    }
+    g.setScale(1, 0.2);
+    scene.tweens.add({ targets: g, scaleY: 1, duration: 100 });
+  } else {
+    for (let x = -r + 12; x < r; x += 35) {
+      g.lineStyle(8, 0x614020);
+      g.lineBetween(x, 0, x - 8, -55);
+      g.lineBetween(x - 8, -55, x + 5, -80);
+      g.lineStyle(3, 0xb8e56e);
+      g.lineBetween(x, 0, x - 8, -55);
+    }
   }
   scene.tweens.add({ targets: g, alpha: 0, duration: 650, onComplete: () => g.destroy() });
 }

@@ -1,4 +1,12 @@
-import { MAPS, WOODS_MONSTERS, QUESTS, maxHp, weaponProfile, FORGE_RECIPES } from '@ros/game-data';
+import {
+  MAPS,
+  WOODS_MONSTERS,
+  QUESTS,
+  maxHp,
+  weaponProfile,
+  FORGE_RECIPES,
+  type ClassId,
+} from '@ros/game-data';
 import {
   World,
   createPlayer,
@@ -7,6 +15,7 @@ import {
   playerAttributes,
   weaponTrainingSkill,
   grantXp,
+  classSkillCooldown,
 } from '@ros/shared';
 export function encounter(
   weapon: string,
@@ -15,21 +24,17 @@ export function encounter(
   skill: number,
   armor = false,
   hpOverride?: number,
+  selectedClass = false,
 ) {
-  const map =
-    MAPS[
-      monster === 'forest-bear'
-        ? 'woods-boss'
-        : monster === 'wild-boar'
-          ? 'woods-3'
-          : monster === 'thorn-spider'
-            ? 'woods-2'
-            : 'woods'
-    ];
+  const map = Object.values(MAPS).find((m) => m.monster === monster) ?? MAPS.woods;
   const w = new World(map),
     p = createPlayer('balance', 'Balance', map.id),
     target = w.wolves[0];
   p.weapon = weapon;
+  if (selectedClass) {
+    p.classId = weaponProfile(weapon).className.toLowerCase() as ClassId;
+    p.classTalents = { mastery: 1, signature: 2, discipline: 1 };
+  }
   p.level = level;
   p.x = target.x - 45;
   p.y = target.y;
@@ -39,7 +44,9 @@ export function encounter(
   if (armor) {
     p.gear = [
       createCraftedGear(weapon),
-      ...['helmet', 'armor', 'legs', 'boots'].map((part) => createCraftedGear(`woods-${part}`)),
+      ...['helmet', 'armor', 'legs', 'boots'].map((part) =>
+        createCraftedGear(`${weapon.startsWith('crystal-') ? 'crystal' : 'woods'}-${part}`),
+      ),
     ];
     for (const g of p.gear) equipGear(p, g.id);
   }
@@ -54,7 +61,7 @@ export function encounter(
     while (target.hp > 0 && time < 120000) {
       const now = 10000 + time;
       p.mp = Math.min(playerAttributes(p).maxMana, p.mp + 0.03);
-      const special = now - p.lastSkill >= 5000 && p.mp >= 12;
+      const special = now - p.lastSkill >= classSkillCooldown(p) && p.mp >= 12;
       w.attack(p, special, now);
       w.stepProjectiles(0.02, now);
       w.stepFlurry(now);
@@ -68,6 +75,7 @@ export function encounter(
     monster,
     level,
     skill,
+    classSelected: selectedClass,
     attackInterval: weaponProfile(weapon).cooldown,
     seconds: +(time / 1000).toFixed(2),
   };
@@ -79,9 +87,12 @@ console.log(
   JSON.stringify(
     {
       assumptions:
-        'Stationary server damage benchmark; excludes navigation, dodging and respawn waits. 20ms steps. Crafted weapon and four armor pieces, no random attributes. Skill XP accrues on real hits.',
+        'Stationary server damage benchmark; excludes navigation, dodging and respawn waits. 20ms steps. Woods characters are Civilian (saved training inactive); Crystal characters have chosen a class with four earned talent points. Crafted weapon and four armor pieces, no random attributes. Skill XP accrues on real hits.',
       bossBefore450: before,
       bossCurrent: after,
+      crystalWyrm: ['sword', 'bow', 'staff', 'dagger'].map((kind) =>
+        encounter(`crystal-${kind}`, 'crystal-wyrm', 20, 10, true, undefined, true),
+      ),
       normals: [
         encounter('elderwood-blade', 'wolf', 1, 1),
         encounter('woods-sword', 'thorn-spider', 4, 3),

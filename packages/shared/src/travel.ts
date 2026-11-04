@@ -7,10 +7,16 @@ export function usePortal(p: Player, source: GameMap) {
   if (!portal) throw new Error('Walk close to a portal first.');
   const target = MAPS[portal.target];
   if (!target) throw new Error('That area is not open yet.');
+  if (
+    target.island === 'Crystal Caverns' &&
+    !p.unlockedIslands?.includes('crystal') &&
+    !p.bossKills?.['forest-bear']
+  )
+    throw new Error('Defeat the Forest Bear to earn Crystal Caverns access.');
   if (p.level < target.requiredLevel) throw new Error(`Reach level ${target.requiredLevel} first.`);
   if (portal.key && !(p.inventory[portal.key] >= 1))
     throw new Error(
-      `Requires 1 ${itemDefinition(portal.key)?.name ?? portal.key}. Wild Boars drop these keys.`,
+      `Requires 1 ${itemDefinition(portal.key)?.name ?? portal.key}. The preceding monster area drops these keys.`,
     );
   if (portal.key) {
     p.inventory[portal.key]--;

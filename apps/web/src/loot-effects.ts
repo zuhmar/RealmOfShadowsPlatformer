@@ -1,3 +1,5 @@
+import crystalResources from '../public/assets/ui/crystal-resources.json';
+import crystalDrops from '../public/assets/ui/crystal-loot.json';
 import Phaser from 'phaser';
 import { equipmentDefinition, weaponKind, EQUIPMENT_TIERS, type GameMap } from '@ros/game-data';
 import { GEAR_RARITY_COLORS, type Drop, type Event, type GearRarity } from '@ros/shared';
@@ -11,6 +13,18 @@ export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
     '/assets/ui/woods-resources.json',
   );
   scene.load.atlas('loot-basics', '/assets/ui/loot-basics.png', '/assets/ui/loot-basics.json');
+  if (map.island === 'Crystal Caverns') {
+    scene.load.atlas(
+      'loot-crystal-resources',
+      '/assets/ui/crystal-resources.png',
+      '/assets/ui/crystal-resources.json',
+    );
+    scene.load.atlas(
+      'loot-crystal-drops',
+      '/assets/ui/crystal-loot.png',
+      '/assets/ui/crystal-loot.json',
+    );
+  }
   scene.load.image('loot-crystal', '/assets/ui/teleport-crystal.png');
   scene.load.image('forest-bear-key', '/assets/ui/forest-bear-key.png');
   const tier = EQUIPMENT_TIERS.find((t) => t.island === map.island || t.islandName === map.island);
@@ -31,6 +45,12 @@ export function lootIcon(scene: Phaser.Scene, item: string, size = 28) {
   } else if (gear) {
     key = gear.tier === 'woods' ? 'woods-equipment' : `loot-equipment-${gear.tier}`;
     frame = gear.part;
+  } else if (Object.hasOwn(crystalResources.frames, item)) {
+    key = 'loot-crystal-resources';
+    frame = item;
+  } else if (Object.hasOwn(crystalDrops.frames, item)) {
+    key = 'loot-crystal-drops';
+    frame = item;
   } else if (Object.hasOwn(lootAtlas.frames, item)) {
     key = 'loot-materials';
     frame = item;

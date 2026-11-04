@@ -1,0 +1,59 @@
+{
+  "frames": {
+    "bat-wing": {
+      "frame": {
+        "x": 38,
+        "y": 46,
+        "w": 450,
+        "h": 407
+      }
+    },
+    "golem-core": {
+      "frame": {
+        "x": 557,
+        "y": 19,
+        "w": 416,
+        "h": 475
+      }
+    },
+    "shard-stinger": {
+      "frame": {
+        "x": 1098,
+        "y": 46,
+        "w": 398,
+        "h": 422
+      }
+    },
+    "wyrm-scale": {
+      "frame": {
+        "x": 59,
+        "y": 551,
+        "w": 387,
+        "h": 454
+      }
+    },
+    "crystal-boss-key": {
+      "frame": {
+        "x": 550,
+        "y": 522,
+        "w": 427,
+        "h": 476
+      }
+    },
+    "crystal-wyrm-trophy": {
+      "frame": {
+        "x": 1118,
+        "y": 516,
+        "w": 337,
+        "h": 482
+      }
+    }
+  },
+  "meta": {
+    "image": "crystal-loot.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    }
+  }
+}

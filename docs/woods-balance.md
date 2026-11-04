@@ -1,15 +1,15 @@
 # Whispering Woods balance pass
 
-Run `npm run balance:woods` to reproduce the server combat benchmark and economy calculation. The benchmark uses character level 7, weapon skill level 6, an Ironwood weapon and four crafted armor pieces. It uses server attacks, specials, projectiles, Flurry and hit-based training at 20 ms steps. Random criticals are disabled. These are stationary damage times, not predicted playthrough completion times: travel, spawn waits, incoming attacks and dodging are excluded.
+Run `npm run balance:woods` to reproduce the server damage and economy benchmark. Woods uses a level-seven Civilian with an Ironwood weapon and four crafted armor pieces; saved combat training is inactive before class choice. Crystal uses level 20, training level 10, matching Crystal gear and four talent points. Random attributes are absent. These stationary damage times exclude incoming attacks, dodging, travel and respawn waits; they are not playthrough predictions.
 
-| Class  | Forest Bear at 450 HP | Forest Bear at 1,100 HP |
-| ------ | --------------------: | ----------------------: |
-| Knight |                4.64 s |                 11.90 s |
-| Archer |                5.18 s |                 15.50 s |
-| Mage   |                6.02 s |                 17.02 s |
-| Rogue  |                2.30 s |                  6.48 s |
+| Weapon path    | Forest Bear, 1,100 HP | Crystal Wyrm, 8,500 HP |
+| -------------- | --------------------: | ---------------------: |
+| Sword / Knight |               15.86 s |                44.24 s |
+| Bow / Archer   |               17.22 s |                49.90 s |
+| Staff / Mage   |               18.02 s |                53.02 s |
+| Dagger / Rogue |               12.56 s |                35.36 s |
 
-The previous bear could die before its first slam impact at about 5.3 seconds, especially against Rogue. Increasing health to 1,100 gives every modeled class a first dodge window. Rogue retains faster close-range single-target damage; ranged classes can attack outside the 150-unit basic attack range. The warning stays 1.8 seconds, the slam stays 88 damage, and basics stay 22 before armor. Four crafted armor pieces give a level-seven character 192 health and 2.5 armor: an unavoided slam still removes about 46% of maximum health. Passive armor/block/dodge cannot cancel the slam.
+Dagger damage is scaled to 70% to account for its fast attack interval; bow uses 110% and staff 120%. Rogue retains stronger close-range sustained damage. Every modeled weapon encounters the bear’s first dodge window. The bear’s 1.8-second warning and 88-damage slam remain; the Wyrm’s animated eruption deals 192 damage before avoidance. Equipment remains the source of critical, dodge, block and other attributes.
 
 ## Quest and economy constraints retained
 

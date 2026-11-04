@@ -1,4 +1,7 @@
+export * from './crystal';
+import {CRYSTAL_MAPS,CRYSTAL_ITEMS,CRYSTAL_QUESTS} from './crystal';
 export * from './world-map';
+export * from './classes';
 export * from './island-equipment';
 import {
   EQUIPMENT_ITEMS,
@@ -148,7 +151,7 @@ export const ISLANDS = [
     maxLevel: 20,
     monsters: ['Cave Bat', 'Crystal Golem', 'Shard Scorpion'],
     boss: 'Crystal Wyrm',
-    available: false,
+    available: true,
   },
   {
     id: 'murkmire',
@@ -245,6 +248,8 @@ for (const [stage, name, monster, background] of [
     ],
   };
 }
+Object.assign(MAPS,CRYSTAL_MAPS);
+MAPS.village.portals.push({x:900,y:450,target:'crystal',label:'Crystal Caverns'});
 export const STORY = {
   title: 'The last survivor',
   prologue:
@@ -252,6 +257,7 @@ export const STORY = {
 };
 export const MIRA_WEAPON_KIT_LEDGER = 'mira-wolves-weapon-kit-v1';
 export const QUESTS = {
+  ...CRYSTAL_QUESTS,
   ...WOODS_QUESTS,
   'mira-wolves': {
     id: 'mira-wolves',
@@ -296,6 +302,7 @@ export const ITEMS = {
     bonus: 0,
     icon: '◆',
   },
+  ...CRYSTAL_ITEMS,
   ...EQUIPMENT_ITEMS,
   ...TIER_MINING_ITEMS,
   ...WOODS_ITEMS,

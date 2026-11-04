@@ -1,3 +1,4 @@
+import { CrystalScenery, preloadCrystal, cavernMentor } from './crystal';
 import { GEAR_RARITY_COLORS } from '@ros/shared';
 import { BossWarnings, bossImpact } from './boss-attacks';
 import { preloadBossEntrance, addBossEntrance } from './boss-entrances';
@@ -47,6 +48,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     wolves = new Map<string, WolfVisual | WoodsMonsterVisual>();
     characters = new Map<string, CharacterVisual>();
     woods?: WoodsScenery;
+    crystal?: CrystalScenery;
     village?: VillageScenery;
     miraMarker?: Phaser.GameObjects.Text;
     bossWarnings!: BossWarnings;
@@ -64,6 +66,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       preloadBossEntrance(this, loadingMap);
       preloadWoodsMonster(this, loadingMap.monster);
       if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
+      else if (loadingMap.island === 'Crystal Caverns') preloadCrystal(this, loadingMap);
       else preloadVillage(this);
       this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
       this.load.spritesheet(WOLF_TEXTURE, '/assets/monsters/wolf-spritesheet.png', {
@@ -139,6 +142,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const m = this.map;
       const woods = m.island === 'Whispering Woods';
       if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
+      else if (m.island === 'Crystal Caverns')
+        this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
       else this.village = new VillageScenery(this, m);
       this.floor = this.physics.add.staticGroup();
       for (const p of m.platforms) {
@@ -151,37 +156,51 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         if (!p.key || !m.bossEntrance) addPortal(this, m.id, p);
         if (p.key)
           this.add
-            .image(p.x, p.y - 205, 'forest-bear-key')
+            .image(
+              p.x,
+              p.y - 205,
+              p.key === 'crystal-boss-key' ? 'loot-crystal-drops' : 'forest-bear-key',
+              p.key === 'crystal-boss-key' ? 'crystal-boss-key' : undefined,
+            )
             .setDisplaySize(42, 28)
             .setDepth(7)
             .setName('boss-key-marker');
         this.add
-          .text(p.x, p.y - 164, p.key ? `${p.label}\nForest Bear Key ×1` : p.label, {
-            fontSize: '14px',
-            align: 'center',
-            fontFamily: 'Georgia',
-            color: '#fff5d5',
-            stroke: '#241034',
-            strokeThickness: 4,
-          })
+          .text(
+            p.x,
+            p.y - 164,
+            p.key
+              ? `${p.label}\n${p.key === 'crystal-boss-key' ? 'Crystal Wyrm' : 'Forest Bear'} Key ×1`
+              : p.label,
+            {
+              fontSize: '14px',
+              align: 'center',
+              fontFamily: 'Georgia',
+              color: '#fff5d5',
+              stroke: '#241034',
+              strokeThickness: 4,
+            },
+          )
           .setOrigin(0.5)
           .setDepth(7);
       }
       for (const npc of m.npcs) {
         const c =
-          npc.id === 'mira'
-            ? this.add
-                .sprite(npc.x, npc.y, 'mira', 'idle-0')
-                .setOrigin(0.5, 700 / 768)
-                .setScale(0.11)
-                .play('mira-idle')
-            : npc.id === 'bram'
+          npc.id === 'mentor'
+            ? cavernMentor(this, npc.x, npc.y)
+            : npc.id === 'mira'
               ? this.add
-                  .image(npc.x, npc.y, 'bram')
-                  .setOrigin(618 / 1254, 1240 / 1254)
-                  .setScale(90 / 1221)
-                  .setName('bram-npc')
-              : this.character(npc.x, npc.y, 'sage', true);
+                  .sprite(npc.x, npc.y, 'mira', 'idle-0')
+                  .setOrigin(0.5, 700 / 768)
+                  .setScale(0.11)
+                  .play('mira-idle')
+              : npc.id === 'bram'
+                ? this.add
+                    .image(npc.x, npc.y, 'bram')
+                    .setOrigin(618 / 1254, 1240 / 1254)
+                    .setScale(90 / 1221)
+                    .setName('bram-npc')
+                : this.character(npc.x, npc.y, 'sage', true);
         this.add
           .text(npc.x, npc.y - (npc.id === 'bram' ? 112 : 80), `${npc.name}\n${npc.role}`, {
             fontFamily: 'Georgia',
@@ -198,6 +217,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             .zone(npc.x, npc.y - 40, 80, 100)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => bridge.send('interact', { npcId: 'bram' }));
+        if (npc.id === 'mentor')
+          this.add
+            .zone(npc.x, npc.y - 40, 100, 120)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => bridge.send('interact', { npcId: 'mentor' }));
         if (npc.id === 'mira') {
           this.miraMarker = this.add
             .text(npc.x, npc.y - 126, '!', {
@@ -432,6 +456,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         if (this.cameras.main.zoom !== zoom) this.cameras.main.setZoom(zoom);
       }
       this.woods?.refresh();
+      this.crystal?.refresh();
       this.village?.refresh();
       if (!this.keys) return;
       const focus = document.activeElement?.tagName;

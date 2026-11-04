@@ -15,7 +15,11 @@ test('every island has its own destination theme; purple is reserved for Shadow 
   assert.equal(portalThemeFor('fortress', 'woods'), 'woods');
   assert.equal(portalThemeFor('village', 'unknown'), 'woods');
   for (const map of Object.values(MAPS))
-    for (const p of map.portals) assert.equal(portalThemeFor(map.id, p.target), 'woods');
+    for (const p of map.portals)
+      assert.equal(
+        portalThemeFor(map.id, p.target),
+        map.id.startsWith('crystal') || p.target.startsWith('crystal') ? 'crystal' : 'woods',
+      );
 });
 test('all seven portal sheets have eight bounded frames and measured anchors', () => {
   const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8'));
