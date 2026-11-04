@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ISLANDS,
   MAPS,
@@ -21,7 +21,11 @@ export function WorldMapPanel({
     () => ISLANDS.find((i) => p.mapId === i.id || p.mapId.startsWith(`${i.id}-`))?.id ?? 'woods',
   );
   const swipe = useRef<{ x: number; y: number } | null>(null),
-    ignoreClickUntil = useRef(0);
+    ignoreClickUntil = useRef(0),
+    carousel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    carousel.current?.focus();
+  }, []);
   const index = ISLANDS.findIndex((i) => i.id === selected),
     island = ISLANDS[index],
     chart = WORLD_MAP_ISLANDS.find((i) => i.id === selected)!;
@@ -29,17 +33,11 @@ export function WorldMapPanel({
     setSelected(ISLANDS[(index + direction + ISLANDS.length) % ISLANDS.length].id);
   const crystals = p.inventory[TELEPORT_CRYSTAL] ?? 0,
     atBram = p.mapId === 'village' && nearNpc(p, MAPS.village, 'bram');
-  const areaButton = (
-    id: string,
-    name: string,
-    detail: string,
-    point?: { x: number; y: number },
-    number?: number,
-  ) => {
+  const location = (id: string, label: string, point?: { x: number; y: number }, boss = false) => {
     const blocked = teleportBlock(p, id),
       key = teleportKey(id),
-      cost = `1 crystal${key ? ' + 1 boss key' : ''}`;
-    const shortReason = !MAPS[id]
+      cost = `1 crystal${key ? ' + 1 key' : ''}`;
+    const reason = !MAPS[id]
       ? 'Coming soon'
       : p.mapId === id
         ? 'You are here'
@@ -53,42 +51,32 @@ export function WorldMapPanel({
                 ? 'No crystals'
                 : cost;
     return (
-      <button
+      <div
         key={id}
-        data-area-id={id}
-        className={`map-destination ${point ? 'map-location-button' : ''} ${number === 4 ? 'boss-location' : ''} ${p.mapId === id ? 'current' : ''}`}
+        className={`map-location ${point ? 'map-hunting-location' : 'map-home-location'} ${boss ? 'boss-location' : ''}`}
         style={point ? { left: `${point.x}%`, top: `${point.y}%` } : undefined}
-        disabled={!!blocked}
-        onClick={() => onTeleport(id)}
-        aria-label={`Teleport to ${name}`}
-        aria-description={`${detail}. ${blocked ?? `Teleport for ${cost}.`}`}
-        title={`${name} · ${detail} · ${blocked ?? cost}`}
       >
-        {point && (
-          <span className="map-location-number" aria-hidden="true">
-            {number === 4 ? '◆' : number}
-          </span>
-        )}
-        <strong>{name}</strong>
-        <span className={point ? 'map-location-detail' : ''}>{detail}</span>
-        <small>{point ? shortReason : (blocked ?? `Teleport · ${cost}`)}</small>
-      </button>
+        <span className="map-monster-name">{label}</span>
+        <button
+          data-area-id={id}
+          className={`map-destination map-circle-button ${point ? 'map-location-button' : ''} ${p.mapId === id ? 'current' : ''}`}
+          disabled={!!blocked}
+          onClick={() => onTeleport(id)}
+          aria-label={`Teleport to ${label}`}
+          aria-description={blocked ?? `Costs ${cost}.`}
+          title={`${label} · ${blocked ?? cost}`}
+        >
+          <img src="/assets/ui/teleport-destination.png" alt="" draggable={false} />
+        </button>
+        <small className="map-location-status">{reason}</small>
+      </div>
     );
   };
   return (
     <section className="world-map-panel">
-      <div className="map-crystals">
-        <ItemIcon id={TELEPORT_CRYSTAL} />
-        <strong>
-          {crystals} Teleport Crystal{crystals === 1 ? '' : 's'}
-        </strong>
-      </div>
-      <p>
-        Swipe or use the arrows to explore each island. Click a hunting location on its map to
-        teleport for one crystal. Visit areas through portals first; boss entry also requires a key.
-      </p>
       <div
         className="island-carousel"
+        ref={carousel}
         role="region"
         aria-roledescription="carousel"
         aria-label="Island maps"
@@ -100,20 +88,36 @@ export function WorldMapPanel({
           }
         }}
       >
-        <div className="island-carousel-heading">
+        <header className="island-carousel-heading">
           <button aria-label="Previous island" onClick={() => move(-1)}>
             ‹
           </button>
           <div aria-live="polite">
-            <h3>{island.name}</h3>
+            <h2>{island.name}</h2>
             <small>
               Lv. {island.minLevel}–{island.maxLevel} · {index + 1} / {ISLANDS.length}
             </small>
+            {!island.available && (
+              <p className="map-island-availability">
+                {p.unlockedIslands?.includes(island.id)
+                  ? 'Access earned · four areas coming next'
+                  : 'Coming soon'}
+              </p>
+            )}
+            {island.id === 'crystal' && p.unlockedIslands?.includes('crystal') && (
+              <img
+                className="map-unlock-badge"
+                src="/assets/ui/crystal-unlock.png"
+                alt="Crystal Caverns access earned"
+                width="24"
+                height="24"
+              />
+            )}
           </div>
           <button aria-label="Next island" onClick={() => move(1)}>
             ›
           </button>
-        </div>
+        </header>
         <div
           className="world-map-chart island-map-slide"
           style={{ aspectRatio: `${chart.width} / ${chart.height}` }}
@@ -151,7 +155,7 @@ export function WorldMapPanel({
           <img
             key={chart.id}
             src={chart.image}
-            alt={`${island.name} island map with three empty hunting locations and a boss entrance`}
+            alt={`${island.name} island map with four hunting locations`}
             draggable={false}
           />
           <div className="map-area-list">
@@ -160,12 +164,11 @@ export function WorldMapPanel({
                 areaIndex === 0
                   ? island.id
                   : `${island.id}-${areaIndex === 3 ? 'boss' : areaIndex + 1}`;
-              return areaButton(
+              return location(
                 id,
-                areaIndex === 3 ? 'Boss Entrance' : `Hunting Area ${areaIndex + 1}`,
-                areaIndex === 3 ? 'Boss location' : 'Hunting location',
+                areaIndex === 3 ? island.boss : island.monsters[areaIndex],
                 chart.locations[areaIndex],
-                areaIndex + 1,
+                areaIndex === 3,
               );
             })}
           </div>
@@ -184,35 +187,25 @@ export function WorldMapPanel({
           ))}
         </nav>
       </div>
-      {island.id === 'crystal' && p.unlockedIslands?.includes('crystal') && (
-        <img
-          src="/assets/ui/crystal-unlock.png"
-          alt="Crystal Caverns access earned"
-          width="42"
-          height="42"
-          style={{ objectFit: 'contain' }}
-        />
-      )}
-      {!island.available && (
-        <p>
-          {p.unlockedIslands?.includes(island.id)
-            ? 'Access earned · four areas coming next'
-            : 'Island not open yet. Its hunting locations are shown on the map.'}
-        </p>
-      )}
-      <div className="map-hub">
-        {areaButton('village', 'Elderwood Village', 'Safe hub · Mira · Bram')}
-      </div>
-      <div className="map-crystal-shop">
-        <h3>More Teleport Crystals</h3>
-        <p>
-          Three starter crystals per character. Monsters have a 5% chance to drop one. Buy more from
-          Bram for {TELEPORT_CRYSTAL_PRICE} gold each. Walking through normal portals stays free.
-        </p>
-        <button disabled={!atBram || p.gold < TELEPORT_CRYSTAL_PRICE} onClick={onBuy}>
-          Buy Teleport Crystal · {TELEPORT_CRYSTAL_PRICE} gold
+      <div className="map-travel-toolbar" role="group" aria-label="Map travel controls">
+        <div className="map-crystals" title={`${crystals} Teleport Crystals`}>
+          <ItemIcon id={TELEPORT_CRYSTAL} />
+          <strong>
+            {crystals} Teleport Crystal{crystals === 1 ? '' : 's'}
+          </strong>
+        </div>
+        {location('village', 'Elderwood Village')}
+        <button
+          className="map-crystal-buy"
+          disabled={!atBram || p.gold < TELEPORT_CRYSTAL_PRICE}
+          onClick={onBuy}
+          title={
+            atBram ? 'Buy one crystal from Bram' : 'Visit Bram in Elderwood Village to buy crystals'
+          }
+          aria-label={`Buy Teleport Crystal · ${TELEPORT_CRYSTAL_PRICE} gold`}
+        >
+          + Crystal <small>{TELEPORT_CRYSTAL_PRICE} gold · Bram</small>
         </button>
-        {!atBram && <small>Stand next to Bram in Elderwood Village to buy.</small>}
       </div>
     </section>
   );

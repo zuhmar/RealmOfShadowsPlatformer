@@ -84,12 +84,26 @@ try {
       1254,
     );
     await expect(page.locator('.world-map-chart > img')).toHaveAttribute('src', /island-maps/);
-    const mapText = await page.locator('.island-carousel').innerText();
-    expect(mapText).not.toMatch(
-      /Wolf|Thorn Spider|Wild Boar|Forest Bear|Crystal Golem|Hydra|Frost Giant|Infernal Drake|Fallen Seraph|Shadow Dragon/,
-    );
-    await expect(page.locator('.map-area-list')).toContainText('Hunting Area 1');
-    await expect(page.locator('.map-area-list')).toContainText('Boss Entrance');
+    await expect(page.locator('.map-area-list .map-monster-name')).toHaveCount(4);
+    await expect(page.locator('.map-area-list .map-circle-button img')).toHaveCount(4);
+    await expect(page.locator('.modal-backdrop')).toHaveCount(0);
+    await expect(page.locator('.world-map-overlay .modal')).toHaveCount(0);
+    await expect(page.locator('.world-map-chart > img')).toHaveCount(1);
+    const overlayStyle = await page.locator('.world-map-overlay').evaluate((el) => ({
+      border: getComputedStyle(el).borderWidth,
+      shadow: getComputedStyle(el).boxShadow,
+    }));
+    expect(overlayStyle.border).toBe('0px');
+    expect(overlayStyle.shadow).toBe('none');
+    for (const node of await page.locator('.map-hunting-location').all()) {
+      const label = await node.locator('.map-monster-name').boundingBox(),
+        button = await node.locator('button').boundingBox();
+      expect(label.y + label.height).toBeLessThanOrEqual(button.y + 1);
+      expect(Math.abs(button.width - button.height)).toBeLessThanOrEqual(1);
+      expect(await node.locator('button').evaluate((el) => getComputedStyle(el).borderRadius)).toBe(
+        '50%',
+      );
+    }
 
     if (island !== 'Whispering Woods')
       for (const button of await page.locator('.map-area-list .map-destination').all())
@@ -99,21 +113,37 @@ try {
   await expect(page.locator('[data-area-id="woods-3"]')).toBeDisabled();
   await page.getByRole('button', { name: 'Buy Teleport Crystal · 25 gold', exact: true }).click();
   await expect(page.locator('.map-crystals')).toContainText('4 Teleport Crystals');
+  await expect(page.locator('.map-area-list')).toContainText('Wolf');
+  await expect(page.locator('.map-area-list')).toContainText('Thorn Spider');
+  await expect(page.locator('.map-area-list')).toContainText('Wild Boar');
+  await expect(page.locator('.map-area-list')).toContainText('Forest Bear');
   await page.locator('.world-map-chart > img').evaluate((img) => img.decode());
   expect(await page.locator('.world-map-chart > img').evaluate((img) => img.naturalWidth)).toBe(
     1254,
   );
-  await page.locator('.world-map-modal').evaluate((el) => (el.scrollTop = 0));
+  await page.locator('.world-map-overlay').evaluate((el) => (el.scrollTop = 0));
   await page.screenshot({ path: 'artifacts/world-map-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.locator('.world-map-modal').evaluate((el) => (el.scrollTop = 0));
+  await page.locator('.world-map-overlay').evaluate((el) => (el.scrollTop = 0));
   await page.screenshot({ path: 'artifacts/world-map-mobile.png' });
   const box = await page.locator('.world-map-chart').boundingBox();
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(390);
-  for (const width of [320, 390]) {
-    await page.setViewportSize({ width, height: 844 });
+  for (const [width, height] of [
+    [320, 844],
+    [390, 844],
+    [844, 390],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await page.getByRole('button', { name: 'Next island', exact: true }).click();
+    await expect(page.locator('.island-carousel-heading')).toContainText('Crystal Caverns');
+    await page.getByRole('button', { name: 'Previous island', exact: true }).click();
+    await expect(page.locator('.island-carousel-heading')).toContainText('Whispering Woods');
+    await expect(page.locator('.world-map-overlay')).toBeVisible();
     const chart = await page.locator('.world-map-chart').boundingBox();
+    expect(chart.y).toBeGreaterThanOrEqual(0);
+    expect(chart.y + chart.height).toBeLessThanOrEqual(height);
+    await page.screenshot({ path: `artifacts/world-map-circles-${width}x${height}.png` });
     for (const button of await page.locator('.map-location-button').all()) {
       const b = await button.boundingBox();
       expect(b.x).toBeGreaterThanOrEqual(chart.x);
@@ -122,6 +152,7 @@ try {
       expect(b.y + b.height).toBeLessThanOrEqual(chart.y + chart.height + 1);
     }
   }
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => {
     const el = document.querySelector('.island-map-slide');
     const start = new Event('touchstart', { bubbles: true });
@@ -141,7 +172,8 @@ try {
   await expect(page.locator('.map-crystals')).toContainText('3 Teleport Crystals');
   await teleport('Elderwood Village', 'village');
   await expect(page.locator('.map-crystals')).toContainText('2 Teleport Crystals');
-  await close();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.world-map-overlay')).toHaveCount(0);
   await leave();
   let saved = (await db.character.findUnique({ where: { id } })).data;
   expect(saved.gold).toBe(75);
@@ -180,7 +212,7 @@ try {
   expect(saved.mapId).toBe('village');
   expect(errors).toEqual([]);
   console.log(
-    'PASS: seven separate island images, on-map location buttons without monster names, arrows/keyboard/swipe, mobile bounds, discovery locks, crystal/key charges and saved travel.',
+    'PASS: panel-free single-island view, monster names above generated round teleport buttons, arrows/keyboard/swipe, mobile bounds, discovery locks, crystal/key charges and saved travel.',
   );
 } finally {
   await browser.close();

@@ -996,9 +996,39 @@ function App() {
           </section>
         </div>
       )}
-      {panel && p && (
+      {panel === 'map' && p && (
+        <div
+          className="world-map-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="World map"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.stopPropagation();
+              setPanel(null);
+            }
+          }}
+        >
+          <button
+            className="world-map-close"
+            aria-label="Close panel"
+            onClick={() => setPanel(null)}
+          >
+            <ControlIcon name="close" />
+          </button>
+          <WorldMapPanel
+            player={p}
+            onTeleport={(id) => {
+              room?.send('teleport', id);
+              setPanel(null);
+            }}
+            onBuy={() => room?.send('buyTeleportCrystal')}
+          />
+        </div>
+      )}
+      {panel && panel !== 'map' && p && (
         <div className="modal-backdrop">
-          <section className={`modal wide ${panel === 'map' ? 'world-map-modal' : ''}`}>
+          <section className="modal wide">
             <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
               <ControlIcon name="close" />
             </button>
@@ -1189,16 +1219,6 @@ function App() {
                   setForgePending(true);
                   room?.send('forge', { action, recipeId });
                 }}
-              />
-            )}
-            {panel === 'map' && (
-              <WorldMapPanel
-                player={p}
-                onTeleport={(id) => {
-                  room?.send('teleport', id);
-                  setPanel(null);
-                }}
-                onBuy={() => room?.send('buyTeleportCrystal')}
               />
             )}
             {panel === 'settings' && (

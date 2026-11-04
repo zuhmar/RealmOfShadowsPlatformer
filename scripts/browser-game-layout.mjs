@@ -217,7 +217,9 @@ try {
   await page.getByRole('button', { name: 'Chat', exact: true }).click();
   await expect(page.getByLabel('World chat', { exact: true })).not.toBeVisible();
   await page.getByRole('button', { name: 'World map', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Beyond the Elderwood.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Whispering Woods', exact: true })).toBeVisible();
+  await expect(page.locator('.world-map-overlay')).toBeVisible();
+  await expect(page.locator('.modal-backdrop')).toHaveCount(0);
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.getByRole('button', { name: 'Weapon skill', exact: true }).click({ delay: 120 });
   await expect(page.locator('.skill-status')).toHaveText(/[1-5]s/);
