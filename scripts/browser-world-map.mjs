@@ -26,13 +26,13 @@ const leave = async () => {
   await expect(page.locator('.site-header')).toBeVisible();
 };
 const teleport = async (name, map) => {
-  await page.getByRole('button', { name: `Teleport to ${name}`, exact: true }).click();
+  await page.locator(`[data-area-id="${map}"]`).click();
   await expect
     .poll(async () => (await db.character.findUnique({ where: { id } })).data.mapId)
     .toBe(map);
   await expect(page.locator('.world-title h1')).toContainText(name);
   await open();
-  await expect(page.locator('.map-destination.current')).toContainText(name);
+  await expect(page.locator('.map-destination.current')).toHaveAttribute('data-area-id', map);
 };
 try {
   await page.goto('http://localhost:5173');
@@ -59,7 +59,15 @@ try {
   await enter();
   await open();
   await expect(page.locator('.map-crystals')).toContainText('3 Teleport Crystals');
-  await expect(page.locator('.map-island-marker')).toHaveCount(7);
+  await expect(page.locator('.map-carousel-dot')).toHaveCount(7);
+  await page.getByRole('button', { name: 'Previous island', exact: true }).click();
+  await expect(page.locator('.island-carousel-heading')).toContainText('Shadow Fortress');
+  await page.getByRole('button', { name: 'Next island', exact: true }).click();
+  await expect(page.locator('.island-carousel-heading')).toContainText('Whispering Woods');
+  await page.getByRole('region', { name: 'Island maps', exact: true }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('.island-carousel-heading')).toContainText('Crystal Caverns');
+
   for (const island of [
     'Whispering Woods',
     'Crystal Caverns',
@@ -71,17 +79,30 @@ try {
   ]) {
     await page.getByRole('button', { name: `Explore ${island}`, exact: true }).click();
     await expect(page.locator('.map-area-list .map-destination')).toHaveCount(4);
+    await page.locator('.world-map-chart > img').evaluate((img) => img.decode());
+    expect(await page.locator('.world-map-chart > img').evaluate((img) => img.naturalWidth)).toBe(
+      1254,
+    );
+    await expect(page.locator('.world-map-chart > img')).toHaveAttribute('src', /island-maps/);
+    const mapText = await page.locator('.island-carousel').innerText();
+    expect(mapText).not.toMatch(
+      /Wolf|Thorn Spider|Wild Boar|Forest Bear|Crystal Golem|Hydra|Frost Giant|Infernal Drake|Fallen Seraph|Shadow Dragon/,
+    );
+    await expect(page.locator('.map-area-list')).toContainText('Hunting Area 1');
+    await expect(page.locator('.map-area-list')).toContainText('Boss Entrance');
+
     if (island !== 'Whispering Woods')
       for (const button of await page.locator('.map-area-list .map-destination').all())
         await expect(button).toBeDisabled();
   }
   await page.getByRole('button', { name: 'Explore Whispering Woods', exact: true }).click();
-  await expect(
-    page.getByRole('button', { name: 'Teleport to Brambleboar Run', exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator('[data-area-id="woods-3"]')).toBeDisabled();
   await page.getByRole('button', { name: 'Buy Teleport Crystal · 25 gold', exact: true }).click();
   await expect(page.locator('.map-crystals')).toContainText('4 Teleport Crystals');
   await page.locator('.world-map-chart > img').evaluate((img) => img.decode());
+  expect(await page.locator('.world-map-chart > img').evaluate((img) => img.naturalWidth)).toBe(
+    1254,
+  );
   await page.locator('.world-map-modal').evaluate((el) => (el.scrollTop = 0));
   await page.screenshot({ path: 'artifacts/world-map-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -90,6 +111,32 @@ try {
   const box = await page.locator('.world-map-chart').boundingBox();
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(390);
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    const chart = await page.locator('.world-map-chart').boundingBox();
+    for (const button of await page.locator('.map-location-button').all()) {
+      const b = await button.boundingBox();
+      expect(b.x).toBeGreaterThanOrEqual(chart.x);
+      expect(b.y).toBeGreaterThanOrEqual(chart.y);
+      expect(b.x + b.width).toBeLessThanOrEqual(chart.x + chart.width + 1);
+      expect(b.y + b.height).toBeLessThanOrEqual(chart.y + chart.height + 1);
+    }
+  }
+  await page.evaluate(() => {
+    const el = document.querySelector('.island-map-slide');
+    const start = new Event('touchstart', { bubbles: true });
+    Object.defineProperty(start, 'touches', { value: [{ clientX: 250, clientY: 100 }] });
+    el.dispatchEvent(start);
+    const end = new Event('touchend', { bubbles: true });
+    Object.defineProperty(end, 'changedTouches', { value: [{ clientX: 100, clientY: 105 }] });
+    el.dispatchEvent(end);
+    el.querySelector('button').click();
+  });
+  await expect(page.locator('.island-carousel-heading')).toContainText('Crystal Caverns');
+  await expect(page.locator('.map-crystals')).toContainText('4 Teleport Crystals');
+  await expect(page.locator('.world-title h1')).toContainText('Elderwood Village');
+  await page.getByRole('button', { name: 'Explore Whispering Woods', exact: true }).click();
+
   await teleport('Silkshade Glade', 'woods-2');
   await expect(page.locator('.map-crystals')).toContainText('3 Teleport Crystals');
   await teleport('Elderwood Village', 'village');
@@ -119,9 +166,7 @@ try {
   expect(saved.inventory['forest-bear-key']).toBeUndefined();
   await teleport('Elderwood Village', 'village');
   await expect(page.locator('.map-crystals')).toContainText('0 Teleport Crystals');
-  await expect(
-    page.getByRole('button', { name: 'Teleport to Silkshade Glade', exact: true }),
-  ).toBeDisabled();
+  await expect(page.locator('[data-area-id="woods-2"]')).toBeDisabled();
   await close();
   await leave();
   await enter();
@@ -135,7 +180,7 @@ try {
   expect(saved.mapId).toBe('village');
   expect(errors).toEqual([]);
   console.log(
-    'PASS: seven illustrated islands and 28 areas, discovery locks, starter grant once, Bram purchase, crystal charges, boss key cost, mobile map and saved room travel.',
+    'PASS: seven separate island images, on-map location buttons without monster names, arrows/keyboard/swipe, mobile bounds, discovery locks, crystal/key charges and saved travel.',
   );
 } finally {
   await browser.close();

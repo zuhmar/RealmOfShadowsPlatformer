@@ -3115,7 +3115,7 @@ footer {
   gap: 0.45rem;
 }
 .modal.world-map-modal {
-  width: 1060px;
+  width: 900px;
 }
 .map-crystals {
   display: flex;
@@ -3137,46 +3137,6 @@ footer {
   height: 100%;
   object-fit: fill;
   display: block;
-}
-.map-island-marker {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  width: 27%;
-  max-width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  color: #f5e7ff;
-  text-shadow: 0 2px 3px #000;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
-  background: #13082399 !important;
-}
-.map-island-marker span {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid #e1b1ff;
-  border-radius: 50%;
-  background: #3a1858;
-}
-.map-island-marker strong {
-  font-size: clamp(0.6rem, 1.6vw, 1rem);
-  line-height: 1.15;
-}
-.map-island-marker small {
-  color: #d8acf4;
-  font-size: 0.55rem;
-}
-.map-island-marker.selected {
-  box-shadow: 0 0 0 2px #e9baff;
-}
-.map-area-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.7rem;
 }
 .map-destination {
   display: flex;
@@ -3211,20 +3171,121 @@ footer {
   display: block;
   margin-top: 0.5rem;
 }
+.island-carousel {
+  max-width: min(760px, max(280px, calc(90dvh - 370px)));
+  margin: 1rem auto;
+}
+.island-carousel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  text-align: center;
+}
+.island-carousel-heading h3 {
+  margin: 0.3rem 0;
+}
+.island-carousel-heading > button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  font-size: 2rem;
+  color: #efd6ff;
+  border: 1px solid #9164aa !important;
+  border-radius: 50%;
+  line-height: 1;
+}
+.world-map-chart.island-map-slide {
+  aspect-ratio: 1;
+  touch-action: pan-y;
+}
+.island-map-slide > img {
+  object-fit: contain;
+}
+.island-map-slide .map-area-list {
+  position: absolute;
+  inset: 0;
+}
+.island-map-slide .map-location-button {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 44%;
+  min-height: 76px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.2rem;
+  padding: 0.5rem !important;
+  background: #170b2bd9 !important;
+  box-shadow: 0 3px 10px #0008;
+}
+.map-location-number {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  border: 1px solid #e0b8ff;
+  background: #462063;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.8rem;
+}
+.map-location-button strong {
+  font-size: clamp(0.72rem, 1.6vw, 1rem);
+  line-height: 1.2;
+}
+.map-location-button small {
+  font-size: clamp(0.65rem, 1.3vw, 0.8rem);
+}
+.map-location-detail {
+  font-size: 0.8rem;
+  color: #ddc8ed;
+}
+.app.playing .island-map-slide .map-location-button:disabled {
+  opacity: 1;
+  color: #dfcdeb;
+  cursor: not-allowed;
+  border-color: #9471a6 !important;
+}
+.map-location-button.current {
+  border-color: #acedae !important;
+}
+.map-location-button.boss-location .map-location-number {
+  color: #ffd283;
+}
+.map-carousel-pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.map-carousel-dot {
+  min-width: 30px;
+  height: 36px;
+  color: #eedaff;
+  border: 1px solid #73508c !important;
+  border-radius: 50%;
+}
+.map-carousel-dot.selected {
+  background: #66318f !important;
+  border-color: #eac2ff !important;
+}
 @media (max-width: 600px) {
-  .map-area-list {
-    grid-template-columns: 1fr;
+  .island-map-slide .map-location-button {
+    min-height: 68px;
+    gap: 0.15rem;
+    padding: 0.3rem !important;
   }
-  .map-island-marker {
-    gap: 0;
-    padding: 0.15rem;
+  .map-location-detail {
+    display: none;
   }
-  .map-island-marker span {
-    width: 18px;
-    height: 18px;
-    font-size: 0.65rem;
+  .map-location-number {
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
   }
-  .map-island-marker small {
-    font-size: 0.4rem;
-  }
+}
+.world-map-chart.island-map-slide {
+  border: 0;
+  background: radial-gradient(ellipse at center, #60308040, transparent 72%);
 }

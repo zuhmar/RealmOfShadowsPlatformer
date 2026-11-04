@@ -1,0 +1,187 @@
+{
+  "description": "New creature-free individual island maps with transparent exterior; no monster names or illustrations.",
+  "islands": {
+    "woods": {
+      "image": "woods.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "source": "exec-ac6d51cf-494d-4f9c-ad20-b3c35700095c.png",
+      "fullyTransparentFraction": 0.195,
+      "locations": [
+        {
+          "x": 25,
+          "y": 28
+        },
+        {
+          "x": 75,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 72
+        },
+        {
+          "x": 75,
+          "y": 72
+        }
+      ]
+    },
+    "crystal": {
+      "image": "crystal.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "source": "exec-4d160dca-ebf0-4185-8400-00ecab9d906c.png",
+      "fullyTransparentFraction": 0.1843,
+      "locations": [
+        {
+          "x": 25,
+          "y": 28
+        },
+        {
+          "x": 75,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 72
+        },
+        {
+          "x": 75,
+          "y": 72
+        }
+      ]
+    },
+    "murkmire": {
+      "image": "murkmire.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "source": "exec-e1b231c8-cfc1-4172-8407-021e7dbccd27.png",
+      "fullyTransparentFraction": 0.1981,
+      "locations": [
+        {
+          "x": 25,
+          "y": 28
+        },
+        {
+          "x": 75,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 72
+        },
+        {
+          "x": 75,
+          "y": 72
+        }
+      ]
+    },
+    "frostfall": {
+      "image": "frostfall.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "source": "exec-931d22f5-72c3-4f23-a144-f3d13fd760b3.png",
+      "fullyTransparentFraction": 0.2253,
+      "locations": [
+        {
+          "x": 25,
+          "y": 28
+        },
+        {
+          "x": 75,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 72
+        },
+        {
+          "x": 75,
+          "y": 72
+        }
+      ]
+    },
+    "ember": {
+      "image": "ember.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "source": "exec-da5cdcc5-aa6b-4e29-8142-e6989c395c33.png",
+      "fullyTransparentFraction": 0.26,
+      "locations": [
+        {
+          "x": 25,
+          "y": 28
+        },
+        {
+          "x": 75,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 72
+        },
+        {
+          "x": 75,
+          "y": 72
+        }
+      ]
+    },
+    "celestial": {
+      "image": "celestial.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "source": "exec-f3f342db-eb27-48b3-aad1-4c8775fa5147.png",
+      "fullyTransparentFraction": 0.2139,
+      "locations": [
+        {
+          "x": 25,
+          "y": 28
+        },
+        {
+          "x": 75,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 72
+        },
+        {
+          "x": 75,
+          "y": 72
+        }
+      ]
+    },
+    "fortress": {
+      "image": "fortress.png",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "source": "exec-b20ce5a0-5780-48a7-bdef-c6f3a892d45e.png",
+      "fullyTransparentFraction": 0.1989,
+      "locations": [
+        {
+          "x": 25,
+          "y": 28
+        },
+        {
+          "x": 75,
+          "y": 28
+        },
+        {
+          "x": 25,
+          "y": 72
+        },
+        {
+          "x": 75,
+          "y": 72
+        }
+      ]
+    }
+  }
+}
