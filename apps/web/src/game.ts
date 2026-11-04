@@ -3,20 +3,19 @@ import { BossWarnings, bossImpact } from './boss-attacks';
 import { preloadBossEntrance, addBossEntrance } from './boss-entrances';
 import { WoodsMonsterVisual, preloadWoodsMonster, registerWoodsMonster } from './woods-monsters';
 import { preloadPortals, registerPortals, addPortal } from './portals';
-import { skillEffect } from './combat-effects';
+import {
+  skillEffect,
+  preloadWeaponEffects,
+  registerWeaponEffects,
+  themeWeaponEffect,
+} from './combat-effects';
+import { preloadLoot, groundLoot, lootPickup } from './loot-effects';
 import Phaser from 'phaser';
 import { VillageScenery, preloadVillage } from './village';
 import { WoodsScenery, preloadWoods } from './woods';
 import { CharacterVisual, preloadCharacters, registerCharacters } from './character';
 import { WolfVisual, registerWolfAnimations, WOLF_TEXTURE, WOLF_FRAME_SIZE } from './wolf';
-import {
-  MAPS,
-  equipmentDefinition,
-  WOODS_MONSTERS,
-  WOODS_QUESTS,
-  weaponKind,
-  type GameMap,
-} from '@ros/game-data';
+import { MAPS, WOODS_MONSTERS, WOODS_QUESTS, type GameMap } from '@ros/game-data';
 import {
   idleInput,
   questStatus,
@@ -57,9 +56,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     preload() {
       preloadCharacters(this);
       this.load.image('bram', '/assets/characters/bram.png');
-      this.load.image('forest-bear-key', '/assets/ui/forest-bear-key.png');
+
       preloadPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
       const loadingMap = MAPS[bridge.snapshot?.mapId ?? 'village'];
+      preloadWeaponEffects(this);
+      preloadLoot(this, loadingMap);
       preloadBossEntrance(this, loadingMap);
       preloadWoodsMonster(this, loadingMap.monster);
       if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
@@ -72,6 +73,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     create() {
       registerWolfAnimations(this);
+      registerWeaponEffects(this);
       registerWoodsMonster(this, MAPS[bridge.snapshot?.mapId ?? 'village'].monster);
       registerCharacters(this);
       registerPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
@@ -89,13 +91,19 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         false,
       ) as typeof this.keys;
       this.events.on('float', (e: Event) => {
-        if (e.gear && e.playerId !== bridge.id) return;
+        if (e.type === 'loot') {
+          if (e.playerId === bridge.id) lootPickup(this, e);
+          return;
+        }
         if (e.type === 'bossAttack') {
           bossImpact(this, e);
           return;
         }
         if (e.type === 'skill') {
-          skillEffect(this, e);
+          skillEffect(this, {
+            ...e,
+            weapon: e.weapon ?? bridge.snapshot?.players.find((p) => p.id === e.playerId)?.weapon,
+          });
           if (!e.text) return;
         }
         if (e.type === 'respawn' && e.playerId)
@@ -368,34 +376,37 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         let node = this.actors.get(shot.id);
         if (!node) {
           node = this.add.container(shot.x, shot.y).setDepth(12);
-          const g = this.add.graphics();
-          if (shot.kind === 'arrow') {
-            g.lineStyle(2, 0xebdab0);
-            g.lineBetween(-12, 0, 10, 0);
-            g.fillStyle(0xd4e7e3);
-            g.fillTriangle(7, -4, 16, 0, 7, 4);
-          } else {
-            g.fillStyle(0x63b4e3, 0.25);
-            g.fillCircle(0, 0, 11);
-            g.fillStyle(0x8bd9f2);
-            g.fillCircle(0, 0, 5);
-            g.fillStyle(0xe9ffff);
-            g.fillCircle(-1, -1, 2);
-          }
           if (shot.empowered) {
-            const glow = this.add.graphics();
-            glow.fillStyle(0xd899ff, 0.25);
-            if (shot.kind === 'arrow') glow.fillRoundedRect(-24, -6, 44, 12, 6);
-            else {
-              glow.fillCircle(0, 0, 17);
-              glow.lineStyle(2, 0xe0a6ff);
-              glow.strokeCircle(0, 0, 13);
+            const kind = shot.kind === 'arrow' ? 'bow' : 'staff';
+            const fx = this.add
+              .sprite(0, 0, `special-${kind}`, 'fx-2')
+              .setDisplaySize(kind === 'bow' ? 110 : 48, kind === 'bow' ? 64 : 48)
+              .setName('empowered-projectile-effect');
+            themeWeaponEffect(
+              fx,
+              shot.weapon ?? s.players.find((p) => p.id === shot.owner)?.weapon,
+            );
+            fx.play(`special-${kind}-flight`);
+            node.add(fx);
+            this.actors.set(shot.id, node);
+          } else {
+            const g = this.add.graphics();
+            if (shot.kind === 'arrow') {
+              g.lineStyle(2, 0xebdab0);
+              g.lineBetween(-12, 0, 10, 0);
+              g.fillStyle(0xd4e7e3);
+              g.fillTriangle(7, -4, 16, 0, 7, 4);
+            } else {
+              g.fillStyle(0x63b4e3, 0.25);
+              g.fillCircle(0, 0, 11);
+              g.fillStyle(0x8bd9f2);
+              g.fillCircle(0, 0, 5);
+              g.fillStyle(0xe9ffff);
+              g.fillCircle(-1, -1, 2);
             }
-            node.add(glow);
-            g.setScale(1.25);
+            node.add(g);
+            this.actors.set(shot.id, node);
           }
-          node.add(g);
-          this.actors.set(shot.id, node);
         }
         node.x = Phaser.Math.Linear(node.x, shot.x, 0.75);
         node.y = shot.y;
@@ -403,42 +414,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       for (const d of s.drops) {
         alive.add(d.id);
-        if (!this.actors.has(d.id)) {
-          const c = this.add.container(d.x, d.y - 12);
-          const kind = weaponKind(d.item);
-          const gear = equipmentDefinition(d.gear?.base);
-          if (d.gear && d.owner === bridge.id) {
-            const color = GEAR_RARITY_COLORS[d.gear.rarity];
-            c.add(
-              this.add
-                .circle(0, 0, 23, Phaser.Display.Color.HexStringToColor(color).color, 0.14)
-                .setStrokeStyle(2, Phaser.Display.Color.HexStringToColor(color).color),
-            );
-            c.add(
-              this.add
-                .text(0, -43, `${d.gear.rarity} ${d.gear.name}`, {
-                  fontFamily: 'Georgia',
-                  fontSize: '13px',
-                  color,
-                  stroke: '#160d24',
-                  strokeThickness: 3,
-                  align: 'center',
-                  wordWrap: { width: 180 },
-                })
-                .setOrigin(0.5),
-            );
-          }
-          if (gear?.tier === 'woods') {
-            const icon = this.add.image(0, 0, 'woods-equipment', gear.part);
-            icon.setScale(36 / Math.max(icon.width, icon.height));
-            c.add(icon);
-          } else if (kind !== 'unarmed') {
-            const icon = this.add.image(0, 0, 'elderwood-weapons', kind);
-            icon.setScale(26 / Math.max(icon.width, icon.height));
-            c.add(icon);
-          } else c.add(this.add.star(0, 0, 4, 4, 10, 0xf3cf72).setStrokeStyle(2, 0x7d6542));
-          this.actors.set(d.id, c);
-        }
+        if (!this.actors.has(d.id)) this.actors.set(d.id, groundLoot(this, d, bridge.id));
       }
       for (const [key, c] of this.actors)
         if (!alive.has(key)) {

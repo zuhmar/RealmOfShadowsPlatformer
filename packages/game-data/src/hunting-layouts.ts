@@ -25,6 +25,11 @@ export const WOODS_HUNTING_LAYOUTS: Record<
       { x: 1730, y: 565, platform: 'silk-right' },
       { x: 1000, y: 370, platform: 'silk-bridge' },
       { x: 1800, y: 190, platform: 'silk-crown' },
+      { x: 1220, y: 760, platform: 'ground' },
+      { x: 600, y: 565, platform: 'silk-left' },
+      { x: 1510, y: 565, platform: 'silk-right' },
+      { x: 1260, y: 370, platform: 'silk-bridge' },
+      { x: 1560, y: 190, platform: 'silk-crown' },
     ],
   },
   'woods-3': {
@@ -47,6 +52,11 @@ export const WOODS_HUNTING_LAYOUTS: Record<
       { x: 580, y: 590, platform: 'root-bank' },
       { x: 1380, y: 570, platform: 'mud-rim' },
       { x: 1830, y: 450, platform: 'boar-rise' },
+      { x: 1050, y: 760, platform: 'ground' },
+      { x: 1710, y: 760, platform: 'ground' },
+      { x: 390, y: 590, platform: 'root-bank' },
+      { x: 1180, y: 570, platform: 'mud-rim' },
+      { x: 1950, y: 450, platform: 'boar-rise' },
     ],
   },
   'woods-boss': {

@@ -21,3 +21,5 @@ The previous bear could die before its first slam impact at about 5.3 seconds, e
 - Equipped pieces cannot be sold. Woods sale values before identification are 4/8/20/50/125 gold for Common/Uncommon/Rare/Epic/Legendary; identified monster gear gains 25%. Crafted gear gets no identification premium. Sale proceeds stay below identification fees, avoiding profitable identification-only rerolls or a free crafted-gold loop.
 
 No normal-monster health, skill XP rates, resource yields, crafting costs, drop odds or key odds were changed. These measurements support the current first-island economy; real player sessions should guide later class and encounter tuning.
+
+Regular Woods hunting rooms now contain ten monsters instead of five; the Forest Bear room still contains one boss. This increases available targets without changing per-monster drops or rank-one Ironwood combat. Later equipment tiers evolve weapon specials through seven ranks; the Woods benchmark continues to use rank one.

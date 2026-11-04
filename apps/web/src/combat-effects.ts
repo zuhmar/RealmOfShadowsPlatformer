@@ -1,41 +1,82 @@
 import Phaser from 'phaser';
 import type { Event } from '@ros/shared';
-
-export function skillEffect(scene: Phaser.Scene, event: Event) {
-  const effect = scene.add
-    .graphics()
-    .setPosition(event.x, event.y)
-    .setDepth(18)
-    .setName('weapon-skill-effect');
-  effect.setScale(event.facing ?? 1, 1);
-  effect.lineStyle(5, 0xdca9ff, 0.95);
-  if (event.skill === 'sword' || event.skill === 'unarmed') {
-    effect.beginPath();
-    effect.arc(0, 0, 105, -1.1, 1.1);
-    effect.strokePath();
-    effect.lineStyle(2, 0xffedff);
-    effect.beginPath();
-    effect.arc(0, 0, 90, -1.1, 1.1);
-    effect.strokePath();
-  } else if (event.skill === 'bow') {
-    effect.lineBetween(15, 0, 80, 0);
-    effect.lineBetween(60, -10, 80, 0);
-    effect.lineBetween(60, 10, 80, 0);
-  } else if (event.skill === 'staff') {
-    const radius = event.phase === 'impact' ? 140 : 28;
-    effect.fillStyle(0xa352f4, 0.16);
-    effect.fillEllipse(0, 0, radius * 2, radius);
-    effect.strokeEllipse(0, 0, radius * 2, radius);
-    effect.lineStyle(2, 0xf6e3ff);
-    effect.strokeEllipse(0, 0, radius * 1.6, radius * 0.8);
-  } else {
-    for (let i = 0; i < 3; i++)
-      effect.lineBetween(12 + i * 12, -22 + i * 6, 46 + i * 12, 17 + i * 6);
+import { equipmentDefinition, weaponSkillProgression } from '@ros/game-data';
+const kinds = ['sword', 'bow', 'staff', 'dagger'] as const;
+// A shared neutral atlas keeps the exact same movement and timing for every equipment tier.
+const themes: Record<string, { color: number; highlight: number }> = {
+  woods: { color: 0x81c94c, highlight: 0xf3ffe4 },
+  crystal: { color: 0x67dbed, highlight: 0xeafaff },
+  swamp: { color: 0x9bc53d, highlight: 0xf0ffd0 },
+  frost: { color: 0x6cbaff, highlight: 0xf1fcff },
+  ember: { color: 0xff7924, highlight: 0xffedaf },
+  celestial: { color: 0xe5bc63, highlight: 0xfff9e5 },
+  shadow: { color: 0xae60ed, highlight: 0xf4ddff },
+};
+export function themeWeaponEffect(sprite: Phaser.GameObjects.Sprite, weapon?: string | null) {
+  const tier = equipmentDefinition(weapon)?.tier ?? 'woods';
+  const theme = themes[tier];
+  const evolution = weaponSkillProgression(weapon);
+  sprite.setScale(sprite.scaleX * evolution.visualScale, sprite.scaleY * evolution.visualScale);
+  sprite.setData('skillRank', evolution.rank);
+  // Vertex colors retain the bright highlights while coloring the silver trails.
+  sprite.setTint(theme.color, theme.highlight, theme.color, theme.highlight);
+  sprite.setData('weaponTheme', tier);
+  return sprite;
+}
+export function preloadWeaponEffects(scene: Phaser.Scene) {
+  for (const kind of kinds)
+    scene.load.atlas(
+      `special-${kind}`,
+      `/assets/effects/weapon-specials/${kind}.png`,
+      `/assets/effects/weapon-specials/${kind}.json`,
+    );
+}
+export function registerWeaponEffects(scene: Phaser.Scene) {
+  for (const kind of kinds) {
+    if (!scene.anims.exists(`special-${kind}`))
+      scene.anims.create({
+        key: `special-${kind}`,
+        frames: Array.from({ length: 8 }, (_, i) => ({ key: `special-${kind}`, frame: `fx-${i}` })),
+        frameRate: kind === 'dagger' ? 24 : 20,
+        repeat: 0,
+      });
   }
-  scene.tweens.add({
-    targets: effect,
-    alpha: 0,
-    duration: event.skill === 'staff' ? 450 : 260,
-    onComplete: () => effect.destroy(),
-  });
+  for (const kind of ['bow', 'staff'] as const)
+    if (!scene.anims.exists(`special-${kind}-flight`))
+      scene.anims.create({
+        key: `special-${kind}-flight`,
+        frames: [2, 3, 4].map((i) => ({ key: `special-${kind}`, frame: `fx-${i}` })),
+        frameRate: 15,
+        repeat: -1,
+      });
+}
+export function skillEffect(scene: Phaser.Scene, event: Event) {
+  const kind = event.skill === 'unarmed' ? 'sword' : event.skill;
+  if (!kind || !kinds.includes(kind)) return;
+  const impact = event.phase === 'impact';
+  // Flurry's full sequence already shows three strikes; do not stack another full burst per server strike.
+  if (kind === 'dagger' && impact) return;
+  const facing = event.facing ?? 1;
+  const size =
+    kind === 'staff' ? (impact ? 280 : 72) : kind === 'sword' ? 240 : kind === 'bow' ? 160 : 150;
+  const x =
+    event.x +
+    (kind === 'sword'
+      ? facing * 60
+      : kind === 'bow'
+        ? facing * 65
+        : kind === 'dagger'
+          ? facing * 40
+          : 0);
+  const sprite = scene.add
+    .sprite(x, event.y, `special-${kind}`, 'fx-0')
+    .setDisplaySize(size, size)
+    .setDepth(18)
+    .setFlipX(facing < 0)
+    .setName('weapon-skill-effect')
+    .setData('skill', kind)
+    .setData('phase', event.phase ?? 'cast');
+  themeWeaponEffect(sprite, event.weapon);
+  sprite.play(`special-${kind}`);
+  sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => sprite.destroy());
 }

@@ -26,6 +26,7 @@ import {
   weaponProfile,
   weaponKind,
   WEAPON_SKILL,
+  weaponSkillProgression,
   type WeaponKind,
   type GatheringSkill,
   type ResourceNode,
@@ -159,6 +160,7 @@ export type Drop = {
   expires: number;
 };
 export type Projectile = {
+  weapon?: string | null;
   training?: OffensiveSkill | null;
   critical?: boolean;
   id: string;
@@ -187,7 +189,10 @@ export type Event = {
   critical?: boolean;
   gear?: Pick<Gear, 'name' | 'rarity'>;
   lootStage?: 'drop' | 'pickup';
+  loot?: { item: string; quantity: number; rarity?: Gear['rarity'] }[];
+  lootGold?: number;
   skill?: WeaponKind;
+  weapon?: string | null;
   facing?: number;
   phase?: 'cast' | 'impact';
   x: number;
@@ -496,6 +501,7 @@ export class World {
       x: p.x,
       y: p.y - 60,
       text: `+${quantity} ${item.replaceAll('-', ' ')} · ${node.skill} +10 XP`,
+      loot: [{ item, quantity }],
       playerId: p.id,
     });
   }
@@ -676,6 +682,7 @@ export class World {
   }
   attack(p: Player, skill: boolean, now: number) {
     const profile = weaponProfile(p.weapon);
+    const evolution = weaponSkillProgression(p.weapon);
     if (now < (p.nextAttackAt ?? p.lastAttack + profile.cooldown)) return;
     const empowered =
       skill && p.mp >= WEAPON_SKILL.mana && now - p.lastSkill >= WEAPON_SKILL.cooldown;
@@ -687,6 +694,7 @@ export class World {
       this.events.push({
         type: 'skill',
         skill: weaponKind(p.weapon),
+        weapon: p.weapon,
         phase: 'cast',
         facing: p.facing,
         playerId: p.id,
@@ -700,18 +708,23 @@ export class World {
     const critical = stats.critChance > 0 && Math.random() < stats.critChance;
     const training = weaponTrainingSkill(p.weapon);
     const hit = Math.round(
-      attackPower(p) * (empowered ? 2 : 1) * (critical ? stats.critDamage : 1),
+      attackPower(p) *
+        (empowered ? evolution.damageMultiplier : 1) *
+        (critical ? stats.critDamage : 1),
     );
     if (profile.projectile) {
       this.projectiles.push({
         id: `shot-${++this.serial}`,
         owner: p.id,
+        weapon: p.weapon,
         kind: profile.projectile,
         x: p.x + p.facing * 18,
         y: p.y - 30,
         startX: p.x,
         vx: p.facing * profile.speed * (empowered && profile.projectile === 'arrow' ? 1.35 : 1),
-        range: profile.range * (empowered && profile.projectile === 'arrow' ? 1.5 : 1),
+        range:
+          profile.range *
+          (empowered && profile.projectile === 'arrow' ? evolution.arrowRangeMultiplier : 1),
         damage: hit,
         empowered,
         training,
@@ -725,7 +738,7 @@ export class World {
           w.hp > 0 &&
           Math.abs(w.y - p.y) < 55 &&
           Math.abs(w.x - p.x) <
-            (empowered ? profile.range + 42 : profile.range) +
+            (empowered ? profile.range + evolution.meleeReach : profile.range) +
               (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 0) &&
           (w.x - p.x) * p.facing >= -12,
       )
@@ -733,21 +746,23 @@ export class World {
     if (empowered && weaponKind(p.weapon) === 'dagger') {
       const target = targets[0];
       if (target) {
-        const strike = Math.round(attackPower(p) * (critical ? stats.critDamage : 1));
+        const strike = Math.round(
+          attackPower(p) * evolution.flurryMultiplier * (critical ? stats.critDamage : 1),
+        );
         this.hitWolf(p, target, strike, now, { skill: training, focus: true, critical });
-        for (const delay of [110, 220])
+        for (let strikeIndex = 1; strikeIndex < evolution.flurryStrikes; strikeIndex++)
           this.flurry.push({
             owner: p.id,
             target: target.id,
             weapon: p.weapon,
-            at: now + delay,
+            at: now + strikeIndex * 110,
             damage: strike,
             training,
             critical,
           });
       }
     } else
-      for (const w of targets.slice(0, empowered ? 3 : 1))
+      for (const w of targets.slice(0, empowered ? evolution.maxTargets : 1))
         this.hitWolf(p, w, hit, now, { skill: training, focus: empowered, critical });
   }
   stepFlurry(now: number) {
@@ -759,7 +774,7 @@ export class World {
       if (
         Math.abs(target.x - owner.x) <
           weaponProfile(owner.weapon).range +
-            42 +
+            weaponSkillProgression(strike.weapon).meleeReach +
             (WOODS_MONSTERS[target.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 0) &&
         Math.abs(target.y - owner.y) < 55 &&
         (target.x - owner.x) * owner.facing >= -12
@@ -772,6 +787,7 @@ export class World {
         this.events.push({
           type: 'skill',
           skill: 'dagger',
+          weapon: strike.weapon,
           phase: 'impact',
           facing: owner.facing,
           x: target.x,
@@ -823,6 +839,7 @@ export class World {
           x: p.x,
           y: p.y - 105,
           text: '+1 Forest Bear Key',
+          loot: [{ item: FOREST_BEAR_KEY, quantity: 1 }],
           playerId: p.id,
         });
       }
@@ -835,6 +852,8 @@ export class World {
             x: p.x,
             y: p.y - 130,
             text: 'First clear! +100 gold · Trophy · Crystal Caverns unlocked',
+            lootGold: 100,
+            loot: [{ item: 'forest-bear-trophy', quantity: 1 }],
             playerId: p.id,
           });
       }
@@ -885,6 +904,7 @@ export class World {
           playerId: p.id,
           gear: { name: droppedGear.name, rarity: droppedGear.rarity },
           lootStage: 'drop',
+          loot: [{ item: droppedGear.base, quantity: 1, rarity: droppedGear.rarity }],
         });
     }
   }
@@ -919,7 +939,7 @@ export class World {
             critical: !!shot.critical,
           });
           shot.hitIds.push(target.id);
-          if (shot.hitIds.length >= 3) return false;
+          if (shot.hitIds.length >= weaponSkillProgression(shot.weapon).maxTargets) return false;
         }
         return Math.abs(shot.x - shot.startX) < shot.range;
       }
@@ -932,10 +952,10 @@ export class World {
                 (w) =>
                   w !== first &&
                   w.hp > 0 &&
-                  Math.abs(w.x - first.x) < 140 &&
+                  Math.abs(w.x - first.x) < weaponSkillProgression(shot.weapon).burstRadius &&
                   Math.abs(w.y - first.y) < 55,
               ),
-            ].slice(0, 3)
+            ].slice(0, weaponSkillProgression(shot.weapon).maxTargets)
           : [first];
         for (const w of affected)
           this.hitWolf(owner, w, shot.damage, now, {
@@ -947,6 +967,7 @@ export class World {
           this.events.push({
             type: 'skill',
             skill: 'staff',
+            weapon: shot.weapon,
             phase: 'impact',
             x: first.x,
             y: first.y - 30,
@@ -971,6 +992,7 @@ export class World {
           playerId: p.id,
           gear: { name: d.gear.name, rarity: d.gear.rarity },
           lootStage: 'pickup',
+          loot: [{ item: d.gear.base, quantity: 1, rarity: d.gear.rarity }],
         });
       }
       p.gold += d.gold;
@@ -982,6 +1004,11 @@ export class World {
         type: 'loot',
         x: p.x,
         y: p.y - 40,
+        lootGold: d.gold,
+        loot: [
+          { item: d.item, quantity: 1 },
+          ...(d.items ?? []).map((b) => ({ item: b.item, quantity: b.quantity })),
+        ],
         text: `+${d.gold} gold · ${[d.item, ...(d.items ?? []).map((b) => b.item)].map((id) => itemDefinition(id)?.name ?? id).join(' · ')}`,
         playerId: p.id,
       });

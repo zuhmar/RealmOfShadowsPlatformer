@@ -1,6 +1,11 @@
 export * from './world-map';
 export * from './island-equipment';
-import { EQUIPMENT_ITEMS, TIER_MINING_ITEMS } from './island-equipment';
+import {
+  EQUIPMENT_ITEMS,
+  TIER_MINING_ITEMS,
+  EQUIPMENT_TIERS,
+  equipmentDefinition,
+} from './island-equipment';
 export * from './combat-skills';
 export * from './woods-progression';
 import { WOODS_ITEMS, WOODS_QUESTS } from './woods-progression';
@@ -117,6 +122,11 @@ export const MAPS: Record<string, GameMap> = {
       { x: 820, y: 555, platform: 'moss' },
       { x: 1930, y: 555, platform: 'ridge' },
       { x: 1420, y: 350, platform: 'canopy' },
+      { x: 1440, y: 760, platform: 'ground' },
+      { x: 1780, y: 760, platform: 'ground' },
+      { x: 600, y: 555, platform: 'moss' },
+      { x: 1710, y: 555, platform: 'ridge' },
+      { x: 1630, y: 350, platform: 'canopy' },
     ],
     npcs: [],
   },
@@ -513,4 +523,37 @@ export function weaponKind(id: string | null | undefined): WeaponKind {
 }
 export function weaponProfile(id: string | null | undefined) {
   return WEAPON_PROFILES[weaponKind(id)];
+}
+
+/** Specials evolve with equipment tiers; starter and Ironwood retain the original rank-one balance. */
+export function weaponSkillProgression(id: string | null | undefined) {
+  const tier = equipmentDefinition(id)?.tier;
+  const step = Math.max(
+    0,
+    EQUIPMENT_TIERS.findIndex((t) => t.id === tier),
+  );
+  return {
+    rank: step + 1,
+    damageMultiplier: 2 + step * 0.15,
+    maxTargets: 3 + Math.floor(step / 2),
+    meleeReach: 42 + step * 6,
+    arrowRangeMultiplier: 1.5 + step * 0.08,
+    burstRadius: 140 + step * 15,
+    flurryStrikes: 3 + Math.floor(step / 2),
+    flurryMultiplier: 1 + step * 0.08,
+    visualScale: 1 + step * 0.07,
+  };
+}
+export function weaponSkillDescription(id: string | null | undefined) {
+  const s = weaponSkillProgression(id);
+  const kind = weaponKind(id);
+  const detail =
+    kind === 'dagger'
+      ? `Strike one enemy ${s.flurryStrikes} times for ${s.flurryMultiplier.toFixed(2)}× damage per strike.`
+      : kind === 'bow'
+        ? `Pierce up to ${s.maxTargets} enemies at ${Math.round(s.arrowRangeMultiplier * 100)}% range.`
+        : kind === 'staff'
+          ? `Explode in a ${s.burstRadius}px radius, hitting up to ${s.maxTargets} enemies.`
+          : `Sweep up to ${s.maxTargets} enemies with +${s.meleeReach}px reach.`;
+  return `Rank ${s.rank} · ${detail}${kind === 'dagger' ? '' : ` ${s.damageMultiplier.toFixed(2)}× damage.`}`;
 }

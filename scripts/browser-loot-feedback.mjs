@@ -59,22 +59,27 @@ try {
     t.bridge.snapshot = t.w.snapshot(10000);
     for (const e of t.w.events) t.game.scene.getScene('realm').events.emit('float', e);
   });
+  const nodes = () =>
+    page.evaluate(() => {
+      const all = [];
+      const walk = (n) => {
+        all.push({ name: n.name, item: n.getData?.('item'), text: n.text });
+        for (const c of n.list ?? []) walk(c);
+      };
+      for (const n of window.lootTest.game.scene.getScene('realm').children.list) walk(n);
+      return all;
+    });
   await expect
-    .poll(() =>
-      page.evaluate(() =>
-        window.lootTest
-          .texts()
-          .some((t) => t.text === 'Epic Ironwood Sword' && t.color === '#c879ff'),
-      ),
+    .poll(async () =>
+      (await nodes()).filter((n) => n.name === 'loot-item-sprite').map((n) => n.item),
     )
-    .toBe(true);
+    .toEqual(expect.arrayContaining(['gold', 'fang', 'wolf-pelt', 'woods-sword']));
+  expect((await nodes()).some((n) => n.name === 'loot-rarity-glow')).toBe(true);
   expect(
-    await page.evaluate(() =>
-      window.lootTest
-        .texts()
-        .some((t) => t.text === 'Epic Ironwood Sword dropped!' && t.color === '#c879ff'),
+    (await nodes()).some(
+      (n) => typeof n.text === 'string' && /Ironwood Sword|dropped!|Collected/.test(n.text),
     ),
-  ).toBe(true);
+  ).toBe(false);
   await page.screenshot({ path: 'artifacts/epic-gear-drop.png' });
   await page.evaluate(() => {
     const t = window.lootTest,
@@ -86,32 +91,32 @@ try {
     t.bridge.snapshot = t.w.snapshot(11000);
     for (const e of t.w.events) t.game.scene.getScene('realm').events.emit('float', e);
   });
+  expect((await nodes()).some((n) => n.name === 'loot-pickup-sprites')).toBe(true);
   expect(
-    await page.evaluate(() =>
-      window.lootTest
-        .texts()
-        .some((t) => t.text === 'Collected Epic Ironwood Sword' && t.color === '#c879ff'),
+    (await nodes()).some(
+      (n) => typeof n.text === 'string' && /Ironwood Sword|Collected/.test(n.text),
     ),
-  ).toBe(true);
+  ).toBe(false);
+  const beforeOther = (await nodes()).filter((n) => n.name === 'loot-pickup-sprites').length;
   await page.evaluate(() =>
-    window.lootTest.game.scene
-      .getScene('realm')
-      .events.emit('float', {
-        type: 'loot',
-        text: 'Hidden Other Gear',
-        x: 600,
-        y: 700,
-        playerId: 'other',
-        gear: { name: 'Other Gear', rarity: 'Legendary' },
-      }),
+    window.lootTest.game.scene.getScene('realm').events.emit('float', {
+      type: 'loot',
+      text: 'Hidden Other Gear',
+      x: 600,
+      y: 700,
+      playerId: 'other',
+      gear: { name: 'Other Gear', rarity: 'Legendary' },
+      loot: [{ item: 'woods-sword', quantity: 1, rarity: 'Legendary' }],
+    }),
   );
   expect(
     await page.evaluate(() => window.lootTest.texts().some((t) => t.text === 'Hidden Other Gear')),
   ).toBe(false);
+  expect((await nodes()).filter((n) => n.name === 'loot-pickup-sprites').length).toBe(beforeOther);
   await page.screenshot({ path: 'artifacts/epic-gear-pickup.png' });
   expect(errors).toEqual([]);
   console.log(
-    'PASS: named Epic ground label, rarity color, drop/pickup announcements and owner-only gear notifications render in Phaser.',
+    'PASS: item sprites, rarity glows, no loot-name text and owner-only pickup sprites render in Phaser.',
   );
 } finally {
   await browser.close();

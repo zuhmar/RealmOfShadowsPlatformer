@@ -23,7 +23,8 @@ import {
   itemDefinition,
   weaponProfile,
   WEAPON_SKILL,
-  SKILL_DESCRIPTIONS,
+  weaponSkillDescription,
+  weaponSkillProgression,
   GATHERING_SKILLS,
   gatheringXpNeeded,
   starterTool,
@@ -792,14 +793,14 @@ function App() {
                       className="skill"
                       {...hold('skill')}
                       aria-label="Weapon skill"
-                      title={`${SKILL_DESCRIPTIONS[weaponProfile(p.weapon).skillName as keyof typeof SKILL_DESCRIPTIONS]} · ${WEAPON_SKILL.mana} MP · ${WEAPON_SKILL.cooldown / 1000}s cooldown`}
+                      title={`${weaponSkillDescription(p.weapon)} · ${WEAPON_SKILL.mana} MP · ${WEAPON_SKILL.cooldown / 1000}s cooldown`}
                       data-ready={skillCooldown === 0 && p.mp >= WEAPON_SKILL.mana}
                     >
                       <ControlIcon name="skill" />
                       <small>K</small>
                       <b>
-                        {weaponProfile(p.weapon).skillName} · {WEAPON_SKILL.mana} MP ·{' '}
-                        {WEAPON_SKILL.cooldown / 1000}s
+                        {weaponProfile(p.weapon).skillName} {weaponSkillProgression(p.weapon).rank}{' '}
+                        · {WEAPON_SKILL.mana} MP · {WEAPON_SKILL.cooldown / 1000}s
                       </b>
                       <span className="skill-status" aria-live="polite">
                         {skillCooldown > 0

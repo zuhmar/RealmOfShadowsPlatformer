@@ -201,7 +201,25 @@ try {
     await page.evaluate(
       () => window.weaponTest.game.scene.getScene('realm').actors.get('shot-arrow').list.length,
     ),
-  ).toBe(2);
+  ).toBe(1);
+  const frames = await page.evaluate(() => {
+    const scene = window.weaponTest.game.scene.getScene('realm');
+    return scene.children.list
+      .filter((n) => n.name === 'weapon-skill-effect')
+      .map((n) => ({ key: n.texture.key, frame: n.frame.name, playing: n.anims.isPlaying }));
+  });
+  expect(frames.every((n) => n.playing && n.frame !== 'fx-0')).toBe(true);
+  expect(frames.map((n) => n.key)).toEqual(
+    expect.arrayContaining(['special-sword', 'special-bow', 'special-staff', 'special-dagger']),
+  );
+  expect(
+    await page.evaluate(() =>
+      ['shot-arrow', 'shot-orb'].every(
+        (id) =>
+          window.weaponTest.game.scene.getScene('realm').actors.get(id).list[0].anims.isPlaying,
+      ),
+    ),
+  ).toBe(true);
   await page.screenshot({ path: 'artifacts/four-weapon-trials.png' });
   await page.waitForTimeout(550);
   expect(
@@ -212,6 +230,45 @@ try {
           .children.list.filter((c) => c.name === 'weapon-skill-effect').length,
     ),
   ).toBe(0);
+  const themed = await page.evaluate(() => {
+    const scene = window.weaponTest.game.scene.getScene('realm');
+    for (const [i, tier] of [
+      'woods',
+      'crystal',
+      'swamp',
+      'frost',
+      'ember',
+      'celestial',
+      'shadow',
+    ].entries())
+      scene.events.emit('float', {
+        type: 'skill',
+        skill: 'sword',
+        weapon: `${tier}-sword`,
+        phase: 'cast',
+        x: 450 + i * 80,
+        y: 730,
+        facing: i % 2 ? -1 : 1,
+        text: '',
+      });
+    return scene.children.list
+      .filter((n) => n.name === 'weapon-skill-effect')
+      .map((n) => ({
+        theme: n.getData('weaponTheme'),
+        rank: n.getData('skillRank'),
+        tint: n.tintTopLeft,
+        flip: n.flipX,
+        animation: n.anims.currentAnim.key,
+        frames: n.anims.currentAnim.frames.length,
+      }));
+  });
+  expect(themed.map((n) => n.rank)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  expect(new Set(themed.map((n) => n.tint)).size).toBe(7);
+  expect(themed.every((n) => n.frames === 8 && n.animation === 'special-sword')).toBe(true);
+  expect(themed.map((n) => n.flip)).toEqual([false, true, false, true, false, true, false]);
+  await page.waitForTimeout(100);
+  await page.screenshot({ path: 'artifacts/weapon-tier-specials.png' });
+  await page.waitForTimeout(450);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(200);
   await page.screenshot({ path: 'artifacts/weapon-trials-mobile.png' });
