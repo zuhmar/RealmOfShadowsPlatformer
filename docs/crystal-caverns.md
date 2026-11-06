@@ -20,4 +20,4 @@ Run unit/type/build checks plus database integration tests. With web and server 
 
 The local 24-client, ten-monster room check recorded 94.82 ms p95 snapshot interval and 29,217 average snapshot bytes over twelve seconds. This is a local regression measurement, not a production capacity claim. Desktop/mobile viewport rendering is automated Chromium emulation; physical-phone testing remains outstanding.
 
-The class trial now opens a sprite carousel after its reward is claimed. Class skins include headwear and are free to switch separately from class through Character → Change skin. Crystal terrain uses dedicated modular platform and ladder art at uniform scale. See [class skins and proportional terrain](class-skins.md).
+The class trial now opens a sprite carousel after its reward is claimed. Class skins have integrated headwear and matching starter/Woods/Crystal weapons. Character → Change skin switches free between your matching class look and original outfit. Crystal terrain uses dedicated modular platform and ladder art at uniform scale. See [class skins and proportional terrain](class-skins.md).

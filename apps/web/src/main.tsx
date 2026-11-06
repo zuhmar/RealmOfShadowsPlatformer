@@ -1,4 +1,5 @@
 import { ClassSprite } from './ClassSprite';
+import { canEquipSkin } from '@ros/game-data';
 import { ClassCarousel } from './ClassCarousel';
 import { assetUrl } from './assets';
 import { HudUpdates } from './hud-updates';
@@ -640,7 +641,9 @@ function App() {
                   </div>
                   <div className={`portrait-big ${c.outfit}`}>
                     <ClassSprite
-                      skin={c.data.skin ?? null}
+                      skin={
+                        canEquipSkin(c.data.classId, c.data.skin) ? (c.data.skin ?? null) : null
+                      }
                       outfit={c.outfit}
                       appearance={c.appearance}
                     />

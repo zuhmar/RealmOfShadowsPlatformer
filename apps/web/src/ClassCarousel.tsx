@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { CLASS_PATHS, CLASS_SKINS, CLASS_CHANGE_GOLD, type ClassId } from '@ros/game-data';
+import {
+  CLASS_PATHS,
+  CLASS_SKINS,
+  CLASS_CHANGE_GOLD,
+  canEquipSkin,
+  type ClassId,
+} from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { ClassSprite } from './ClassSprite';
 const classes = Object.keys(CLASS_PATHS) as ClassId[];
@@ -37,10 +43,11 @@ export function ClassCarousel({
   }, []);
   const current = mode === 'skin' ? (p.skin ?? null) === id : p.classId === id;
   const blocked =
-    mode === 'class' &&
-    (!p.quests?.['crystal-class-trial']?.claimed ||
-      !near ||
-      (!!p.classId && p.gold < CLASS_CHANGE_GOLD));
+    mode === 'skin'
+      ? !canEquipSkin(p.classId, id)
+      : !p.quests?.['crystal-class-trial']?.claimed ||
+        !near ||
+        (!!p.classId && p.gold < CLASS_CHANGE_GOLD);
   return (
     <div className="class-carousel-backdrop" onPointerDown={(e) => e.stopPropagation()}>
       <section
@@ -109,7 +116,7 @@ export function ClassCarousel({
           </button>
           <div className="class-carousel-content" key={id ?? 'civilian'}>
             <div className={`class-preview class-preview-${id ?? 'civilian'}`}>
-              <ClassSprite skin={id} appearance={p.appearance} outfit={p.outfit} />
+              <ClassSprite armedPreview skin={id} appearance={p.appearance} outfit={p.outfit} />
             </div>
             <h3>{mode === 'class' ? path?.name : (skin?.name ?? 'Original adventurer')}</h3>
             <p>
@@ -161,7 +168,9 @@ export function ClassCarousel({
           </p>
         ) : (
           <p className="class-carousel-note">
-            Free cosmetic change. Your class, equipment, training and attributes stay the same.
+            {id && !canEquipSkin(p.classId, id)
+              ? `Requires the ${CLASS_PATHS[id].name} class.`
+              : 'Free cosmetic change. Your class, equipment, training and attributes stay the same.'}
           </p>
         )}
         {confirm && (

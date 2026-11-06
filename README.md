@@ -188,4 +188,4 @@ Images use lossless, content-addressed WebP copies with immutable delivery cachi
 
 ### Class selection and skins
 
-Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. Use **Character → Change skin** to switch free cosmetic looks, including class headwear, independently of class and equipment. See [class skins and proportional terrain](docs/class-skins.md) for artwork and checks.
+Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. Use **Character → Change skin** to switch free between your matching class skin and original look. Class headwear and current-island weapons are integrated into the sprite artwork. See [class skins and proportional terrain](docs/class-skins.md) for artwork and checks.

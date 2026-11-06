@@ -196,6 +196,7 @@ export type Projectile = {
   hitIds?: string[];
 };
 export { SnapshotEncoder, SnapshotDecoder, type SnapshotDelta, type SnapshotKeyframe } from './snapshot-stream';
+export { equipSkin, normalizeSkin } from './skins';
 export type Snapshot = {
   projectiles?: Projectile[];
   players: Player[];

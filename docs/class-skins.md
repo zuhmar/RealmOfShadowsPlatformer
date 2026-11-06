@@ -1,25 +1,32 @@
-# Class carousel and cosmetic skins
+# Class carousel and integrated class sprites
 
-Claiming the Cavern Mentor’s class trial opens a class-selection popup. The carousel displays Knight, Archer, Mage and Rogue with their sprite, weapon, training and signature details. Use its arrows, left/right keys, slide indicators or a horizontal swipe. Escape/close allows choosing later. The mentor and Skills panel both provide a Browse classes button to reopen it. First class choice remains free; later changes still require a nearby mentor or Mira, cost 500 gold and refund talents.
+Claiming the Cavern Mentor’s class trial opens the class-selection carousel. It displays Knight, Archer, Mage and Rogue with sprite art, weapon, training and signature details. Arrows, left/right keys, slide indicators and horizontal swipes browse it. Escape/close allows choosing later; the mentor and Skills panel offer Browse classes. First class choice remains free; later changes cost 500 gold at a mentor/Mira and refund talents.
 
-Open Character → Change skin to switch freely among the original adventurer, Royal Knight, Woodland Ranger, Starlight Mage and Dusk Rogue. Skins are cosmetic, available independently of the chosen class and do not change gold, equipment, training or attributes. The first class choice suggests its matching skin only if no cosmetic choice has been made. Later class changes preserve the chosen skin. Cosmetic choices persist through saves and appear on the profile, character panel, character selection and other players’ screens.
+## Class-specific skins
 
-Every class skin has male and female animation art. Knight includes a crested helmet, Archer a ranger hood, Mage a pointed hat and Rogue a hood. Pose-aligned headwear follows movement, attacks, jumping, climbing and defeat. Weapons keep their equipped tier artwork and tools keep their actual material. Climbing hides held items. Active player hurt animations remain disabled.
+Character → Change skin offers the original adventurer and the four class looks. Royal Knight requires Knight, Woodland Ranger requires Archer, Starlight Mage requires Mage and Dusk Rogue requires Rogue. The selector shows the required class and disables locked looks; the server also rejects forged cross-class skin requests. Civilian can use the original adventurer. Valid skin changes are free, cosmetic and do not alter equipment, training, attributes or gold.
 
-Skins, headwear and held-item atlases load on demand and use lossless optimized delivery copies. Sprite atlases retain their authored proportions and measured per-frame anchors. Skins use fixed class palettes; the original adventurer retains its existing sage/ember/tide outfit colors.
+Choosing/changing class selects its matching class look if a class skin was being used; an explicit original-adventurer choice stays original. Previously unrestricted saves with an incompatible class skin migrate to their matching class look, or to original for Civilian. Future cosmetic definitions can omit a required class; these four class skins require one.
 
-## Crystal platforms and proportional art
+## Integrated artwork
 
-Crystal Caverns now has a dedicated six-piece terrain atlas with ledge modules, ground, ladder and dock artwork. The four existing map layouts and collision surfaces remain authoritative. Terrain strips repeat at a uniform scale and crop the last piece to the required width/height. Village platforms and ladders, Woods ground and ladders use the same approach where they previously stretched. Existing Woods ledges and fishing art already scale proportionally.
+The current set contains 32 male/female sprite atlases under `characters/skins/integrated`: eight unarmed class bodies and 24 matching-class armed bodies covering starter, Woods and Crystal weapons. Knight uses a sword, Archer a bow, Mage a staff and Rogue a dagger. Helmets, hoods/hats and held weapons are authored directly into the character pixels in every frame. Combat and class-carousel previews do not attach separate headwear or weapon images.
 
-Background fitting now reads each loaded image’s real dimensions instead of assuming a common aspect ratio. Props, portal key markers and weapon effects also retain uniform image scale. Backgrounds may crop to cover the viewport; artwork is never stretched independently along an axis.
+Unarmed sheets contain idle, walk, jump, climb, attack and defeat poses; old hurt cells are unused. Armed sheets contain idle, walk, jump, class-appropriate attacks and defeat poses. Climbing switches to the unarmed integrated-headwear sheet. Gathering retains actual equipped tools through the existing tool renderer, on the headwear-integrated body. Higher-island class weapon sheets are future artwork; the existing original-adventurer weapon renderer remains available for those tiers.
 
-## Checks
+Sprite sheets load on demand. Their atlas metadata measures source dimensions, baselines and animation-row boundaries; all rendered images retain uniform scale. The original source references remain for authoring and compatibility with already-loaded older clients. Optimized delivery uses lossless WebP copies.
 
-- Unit checks validate skin IDs, eight complete bounded sprite atlases, sixteen headwear views, pose anchors and cosmetic independence.
-- `node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-class-skins.mjs` verifies the real quest claim popup, class selection, mobile carousel, skin switching and save/re-entry.
-- `node scripts/browser-skin-rendering.mjs` checks all eight skins, animation loops, matching headwear, held weapons and tools, unarmed climbing and restoration of the original skin.
-- `node scripts/browser-terrain-proportions.mjs` checks image/sprite scale across all nine playable maps in desktop/mobile viewports, background coverage and exact Crystal collision-surface coverage.
-- Existing class/transaction, character, weapon, gathering, Crystal, Woods and village checks remain applicable.
+## Platforms and proportional art
 
-Screenshots are saved under the ignored `artifacts/` directory. Mobile viewport checks use Chromium emulation.
+Crystal Caverns uses its dedicated modular ledge, ground, ladder and dock atlas across four distinct map layouts. Strips repeat at uniform scale and crop their final piece to authoritative collision dimensions. Village platforms/ladders and Woods ground/ladders also use this approach. Backgrounds use real loaded-image dimensions and crop to cover the viewport; props, portal key markers and effects retain their proportions.
+
+## Checks and art inspection
+
+- Unit checks validate matching-class eligibility, free allowed changes, class-change behavior, legacy migration, all 32 bounded sprite atlases and integrated headwear/weapon metadata.
+- `tests/skins.integration.ts` exercises server rejection, migration and durable cosmetic saves.
+- `node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-class-skins.mjs` checks the quest popup, class carousel, locked skins and save/re-entry.
+- `node scripts/browser-skin-rendering.mjs` checks the eight class/appearance combinations across starter/Woods/Crystal weapons, animation loops, unarmed ladders, gathering and original-skin restoration.
+- `node scripts/review-class-art.mjs` produces idle/attack contact sheets for visual inspection.
+- `node scripts/browser-terrain-proportions.mjs` checks all nine maps on desktop/mobile viewports.
+
+Generated raster files are copied unchanged. `scripts/frame-class-art.py` reads alpha bounds to create atlas metadata; it does not composite headwear or weapons onto characters. Screenshots go to ignored `artifacts/`. Mobile checks use Chromium emulation.

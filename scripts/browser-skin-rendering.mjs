@@ -22,6 +22,7 @@ try {
           Object.assign(createPlayer(`${appearance}-${skin}`, skin, 'crystal'), {
             appearance,
             skin,
+            classId: skin,
             weapon: `crystal-${['sword', 'bow', 'staff', 'dagger'][col]}`,
             x: 600 + col * 210,
             y: row ? 800 : 400,
@@ -57,7 +58,7 @@ try {
     return (
       s.characters.size === 8 &&
       [...s.characters.values()].every(
-        (v) => v.skinVisual?.container.visible && v.skinVisual.item.visible,
+        (v) => v.skinVisual?.container.visible && v.skinVisual.body.getData('integratedWeapon'),
       )
     );
   });
@@ -73,6 +74,28 @@ try {
       v.skinVisual.body.on('animationupdate', record);
     }
   });
+  for (const tier of ['starter', 'woods', 'crystal']) {
+    await page.evaluate((tier) => {
+      const t = window.skinsTest;
+      t.bridge.snapshot.players.forEach((p, i) => {
+        const kind = ['sword', 'bow', 'staff', 'dagger'][i % 4];
+        p.weapon =
+          tier === 'starter'
+            ? ['elderwood-blade', 'elderwood-bow', 'elderwood-staff', 'elderwood-dagger'][i % 4]
+            : `${tier}-${kind}`;
+      });
+    }, tier);
+    await page.waitForFunction(
+      (tier) =>
+        [...window.skinsTest.game.scene.getScene('realm').characters.values()].every(
+          (v) =>
+            v.skinVisual.body.texture.key.endsWith(`-${tier}`) &&
+            v.skinVisual.body.getData('integratedWeapon') &&
+            !v.skinVisual.item.visible,
+        ),
+      tier,
+    );
+  }
   await page.waitForTimeout(1200);
   await page.screenshot({ path: 'artifacts/class-skins-lineup.png' });
   const mutate = (values) =>
@@ -103,7 +126,9 @@ try {
     await page.evaluate(() =>
       [...window.skinsTest.game.scene.getScene('realm').characters.values()].every(
         (v) =>
-          !v.skinVisual.item.visible && String(v.skinVisual.head.frame.name).endsWith('-climb'),
+          !v.skinVisual.item.visible &&
+          v.skinVisual.body.getData('integratedWeapon') === null &&
+          !v.skinVisual.body.texture.key.endsWith('-crystal'),
       ),
     ),
   ).toBe(true);
@@ -162,7 +187,7 @@ try {
   );
   expect(errors).toEqual([]);
   console.log(
-    'PASS: eight class skins, all six-frame idle/walk/climb/attack loops, matching headwear, held tier weapons/tools, unarmed climbing, original-skin restoration and uniform artwork scale.',
+    'PASS: eight class skins, all six-frame idle/walk/climb/attack loops, integrated headwear/weapons, held tools, unarmed climbing, original-skin restoration and uniform artwork scale.',
   );
 } finally {
   await browser.close();

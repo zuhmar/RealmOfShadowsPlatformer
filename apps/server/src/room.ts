@@ -13,7 +13,6 @@ import {
   itemDefinition,
   GATHERING_TOOLS,
   BRAM_QUEST,
-  validSkin,
 } from '@ros/game-data';
 import {
   World,
@@ -22,6 +21,8 @@ import {
   activityReward,
   applyActivityReward,
   playerAttributes,
+  equipSkin,
+  normalizeSkin,
   SnapshotEncoder,
   type Input,
   type Player,
@@ -113,7 +114,12 @@ export class MapRoom extends Room {
     this.onMessage('class', (c, payload) => this.classAction(c, payload));
     this.onMessage('skin', (c, id) => {
       const p = this.player(c);
-      if (p && this.rate(c, 100) && validSkin(id)) p.skin = id;
+      if (!p || !this.rate(c, 100)) return;
+      try {
+        equipSkin(p, id);
+      } catch (error) {
+        c.send('notice', (error as Error).message);
+      }
     });
     this.onMessage('equipGear', (c, id) => {
       const p = this.player(c);
@@ -469,6 +475,7 @@ export class MapRoom extends Room {
         if (!rows.length) throw new Error('Character not found');
         const character = await tx.character.findUniqueOrThrow({ where: { id } });
         const p = character.data as unknown as Player;
+        if (normalizeSkin(p)) await tx.character.update({ where: { id }, data: { data: json(p) } });
         if (p.mapId !== this.world.map.id) throw new Error('Invalid map. Refresh your characters.');
         const questRows = await tx.questProgress.findMany({ where: { characterId: id } });
         p.quests = Object.fromEntries(
