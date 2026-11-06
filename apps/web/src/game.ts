@@ -1,3 +1,4 @@
+import { fitArtwork } from './artwork';
 import { assetUrl } from './assets';
 import { CrystalScenery, preloadCrystal, cavernMentor } from './crystal';
 import { GEAR_RARITY_COLORS } from '@ros/shared';
@@ -158,14 +159,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       for (const p of m.portals) {
         if (!p.key || !m.bossEntrance) addPortal(this, m.id, p);
         if (p.key)
-          this.add
-            .image(
+          fitArtwork(
+            this.add.image(
               p.x,
               p.y - 205,
               p.key === 'crystal-boss-key' ? 'loot-crystal-drops' : 'forest-bear-key',
               p.key === 'crystal-boss-key' ? 'crystal-boss-key' : undefined,
-            )
-            .setDisplaySize(42, 28)
+            ),
+            42,
+            28,
+          )
             .setDepth(7)
             .setName('boss-key-marker');
         this.add
@@ -405,10 +408,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           node = this.add.container(shot.x, shot.y).setDepth(12);
           if (shot.empowered) {
             const kind = shot.kind === 'arrow' ? 'bow' : 'staff';
-            const fx = this.add
-              .sprite(0, 0, `special-${kind}`, 'fx-2')
-              .setDisplaySize(kind === 'bow' ? 110 : 48, kind === 'bow' ? 64 : 48)
-              .setName('empowered-projectile-effect');
+            const fx = fitArtwork(
+              this.add.sprite(0, 0, `special-${kind}`, 'fx-2'),
+              kind === 'bow' ? 110 : 48,
+              kind === 'bow' ? 64 : 48,
+            ).setName('empowered-projectile-effect');
             themeWeaponEffect(
               fx,
               shot.weapon ?? s.players.find((p) => p.id === shot.owner)?.weapon,

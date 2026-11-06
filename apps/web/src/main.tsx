@@ -1,3 +1,5 @@
+import { ClassSprite } from './ClassSprite';
+import { ClassCarousel } from './ClassCarousel';
 import { assetUrl } from './assets';
 import { HudUpdates } from './hud-updates';
 import { SnapshotDecoder, type SnapshotKeyframe, type SnapshotDelta } from '@ros/shared';
@@ -90,6 +92,9 @@ function App() {
   const [playerId, setPlayerId] = useState('');
   const [chatOpen, setChatOpen] = useState(() => window.innerWidth > 700);
   const [panel, setPanel] = useState<string | null>(null);
+  const [cosmeticDialog, setCosmeticDialog] = useState<'class' | 'skin' | null>(null);
+  const offeredClass = useRef(new Set<string>());
+  const previousClass = useRef<{ id: string; classId?: string } | null>(null);
   const [forgePending, setForgePending] = useState(false);
   const [questPending, setQuestPending] = useState(false);
   const [chat, setChat] = useState<{ name: string; text: string }[]>([
@@ -126,6 +131,29 @@ function App() {
   }, [page, snapshot?.mapId]);
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
+  useEffect(() => {
+    if (!p) return;
+    if (
+      previousClass.current?.id === p.id &&
+      previousClass.current.classId !== p.classId &&
+      p.classId
+    )
+      setCosmeticDialog(null);
+    previousClass.current = { id: p.id, classId: p.classId };
+    if (
+      !p.classId &&
+      p.quests?.['crystal-class-trial']?.claimed &&
+      map.id === 'crystal' &&
+      nearNpc(p, map, 'mentor') &&
+      !offeredClass.current.has(p.id)
+    ) {
+      offeredClass.current.add(p.id);
+      setPanel(null);
+      setCosmeticDialog('class');
+      bridge.current.send('auto', false);
+    }
+  }, [p?.id, p?.classId, p?.quests?.['crystal-class-trial']?.claimed, map.id]);
+
   const trialStatus = p ? questStatus(p) : 'available';
   const woodsObjective =
     p &&
@@ -429,10 +457,14 @@ function App() {
   }, [notice]);
   useEffect(() => {
     bridge.current.blocked =
-      !!connectionStatus || panel === 'mira' || panel === 'bram' || panel === 'crystal-quests';
-    if (panel === 'mira' || panel === 'bram' || panel === 'crystal-quests')
+      !!cosmeticDialog ||
+      !!connectionStatus ||
+      panel === 'mira' ||
+      panel === 'bram' ||
+      panel === 'crystal-quests';
+    if (cosmeticDialog || panel === 'mira' || panel === 'bram' || panel === 'crystal-quests')
       bridge.current.held = {};
-  }, [panel, connectionStatus]);
+  }, [panel, connectionStatus, cosmeticDialog]);
   function isolateControlInput(e: React.SyntheticEvent) {
     if (page === 'game' && (e.target as Element).closest('button,input,textarea,select,.modal'))
       e.stopPropagation();
@@ -607,7 +639,11 @@ function App() {
                     </button>
                   </div>
                   <div className={`portrait-big ${c.outfit}`}>
-                    <Avatar outfit={c.outfit} appearance={c.appearance} />
+                    <ClassSprite
+                      skin={c.data.skin ?? null}
+                      outfit={c.outfit}
+                      appearance={c.appearance}
+                    />
                     <span>✦</span>
                   </div>
                   <h2>{c.name}</h2>
@@ -745,7 +781,11 @@ function App() {
               <>
                 <div className="player-hud">
                   <div className={`portrait ${p.outfit}`}>
-                    <Avatar outfit={p.outfit} appearance={p.appearance} />
+                    <ClassSprite
+                      skin={p.skin ?? null}
+                      outfit={p.outfit}
+                      appearance={p.appearance}
+                    />
                     <b>{p.level}</b>
                   </div>
                   <div className="vitals">
@@ -1123,6 +1163,18 @@ function App() {
           />
         </div>
       )}
+      {cosmeticDialog && p && page === 'game' && (
+        <ClassCarousel
+          player={p}
+          mode={cosmeticDialog}
+          near={
+            (map.id === 'crystal' && nearNpc(p, map, 'mentor')) ||
+            (!!p.classId && map.id === 'village' && nearNpc(p, map, 'mira'))
+          }
+          onClose={() => setCosmeticDialog(null)}
+          send={bridge.current.send}
+        />
+      )}
       {panel && panel !== 'map' && p && (
         <div className="modal-backdrop">
           <section className="modal wide">
@@ -1203,14 +1255,21 @@ function App() {
             )}
             {panel === 'skills' && (
               <>
-                <ClassPanel player={p} send={bridge.current.send} />
+                <ClassPanel
+                  player={p}
+                  send={bridge.current.send}
+                  onBrowse={() => setCosmeticDialog('class')}
+                />
                 <SkillsPanel player={p} />
               </>
             )}
             {panel === 'character' && (
               <>
+                <button className="primary" onClick={() => setCosmeticDialog('skin')}>
+                  Change skin
+                </button>
                 <div className={`portrait-big ${p.outfit}`}>
-                  <Avatar outfit={p.outfit} appearance={p.appearance} />
+                  <ClassSprite skin={p.skin ?? null} outfit={p.outfit} appearance={p.appearance} />
                   <span>✦</span>
                 </div>
                 <h3>
@@ -1305,6 +1364,7 @@ function App() {
             )}
             {(panel === 'quests' || panel === 'crystal-quests') && (
               <CrystalQuests
+                onBrowse={() => setCosmeticDialog('class')}
                 player={p}
                 dialog={panel === 'crystal-quests'}
                 near={nearNpc(p, map, 'mentor')}

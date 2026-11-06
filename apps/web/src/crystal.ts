@@ -1,9 +1,15 @@
+import { artworkStrip } from './artwork';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 export function preloadCrystal(scene: Phaser.Scene, map: GameMap) {
   scene.load.image('crystal-background', assetUrl(map.background!));
+  scene.load.atlas(
+    'crystal-platforms',
+    assetUrl('/assets/tilesets/crystal-platforms.png'),
+    '/assets/tilesets/crystal-platforms.json',
+  );
   scene.load.atlas(
     'crystal-scenery',
     assetUrl('/assets/tilesets/crystal-scenery.png'),
@@ -53,32 +59,38 @@ export class CrystalScenery {
       .rectangle(0, ground.y + 48, map.width, map.height + 1000, 0x10152e)
       .setOrigin(0)
       .setDepth(-2);
-    const tile = (x: number, y: number, width: number, frame = 'platform', height = 90) =>
-      scene.add
-        .image(x, y - height * 0.32, 'crystal-scenery', frame)
-        .setOrigin(0)
-        .setDisplaySize(width, height)
-        .setDepth(0)
-        .setName('crystal-platform');
     for (const p of map.platforms) {
-      if (p.id === 'ground')
-        for (let x = 0; x < p.width; x += 340) tile(x - 18, p.y, Math.min(376, p.width - x + 36));
-      else
-        tile(
-          p.x,
-          p.y,
-          p.width,
-          p.id === 'fishing-dock' ? 'fishing' : 'platform',
-          p.id === 'fishing-dock' ? 180 : 90,
-        ).setData({ platformId: p.id, surfaceY: p.y });
+      const frame = p.id === 'ground' ? 'ground' : p.id === 'fishing-dock' ? 'dock' : 'center';
+      artworkStrip(scene, {
+        texture: 'crystal-platforms',
+        frame,
+        x: p.x,
+        y: p.y,
+        length: p.width,
+        thickness: p.id === 'ground' ? 150 : p.id === 'fishing-dock' ? 55 : 72,
+        depth: 0,
+        name: 'crystal-platform',
+      }).forEach((image) => image.setData({ platformId: p.id, surfaceY: p.y }));
+      if (p.id === 'fishing-dock') {
+        const water = scene.add
+          .image(p.x + p.width / 2, p.y + 12, 'crystal-scenery', 'fishing')
+          .setOrigin(0.5, 0)
+          .setDepth(-1);
+        water.setScale(Math.min(p.width / water.width, 160 / water.height));
+      }
     }
     for (const l of map.ladders)
-      scene.add
-        .image(l.x, l.top - 6, 'crystal-scenery', 'ladder')
-        .setOrigin(0.5, 0)
-        .setDisplaySize(40, l.bottom - l.top + 12)
-        .setDepth(3)
-        .setName('crystal-ladder');
+      artworkStrip(scene, {
+        texture: 'crystal-platforms',
+        frame: 'ladder',
+        x: l.x,
+        y: l.top - 6,
+        length: l.bottom - l.top + 12,
+        thickness: 40,
+        vertical: true,
+        depth: 3,
+        name: 'crystal-ladder',
+      });
     const offsets =
       map.id === 'crystal-2'
         ? [350, 1400, 2200]
@@ -91,7 +103,10 @@ export class CrystalScenery {
       scene.add
         .image(x, ground.y, 'crystal-scenery', i % 2 ? 'cart' : 'cluster')
         .setOrigin(0.5, 1)
-        .setDisplaySize(i % 2 ? 95 : 100, i % 2 ? 65 : 105)
+        .setScale(
+          (i % 2 ? 65 : 105) /
+            scene.textures.getFrame('crystal-scenery', i % 2 ? 'cart' : 'cluster').height,
+        )
         .setDepth(1),
     );
     for (const node of map.resources ?? []) {
@@ -136,8 +151,8 @@ export class CrystalScenery {
         height,
       },
       this.map,
-      { width: 1774, height: 887 },
+      { width: this.background.width, height: this.background.height },
     );
-    this.background.setPosition(image.x, image.y).setDisplaySize(image.width, image.height);
+    this.background.setPosition(image.x, image.y).setScale(image.width / this.background.width);
   }
 }

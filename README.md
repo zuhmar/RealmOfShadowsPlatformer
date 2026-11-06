@@ -185,3 +185,7 @@ Elderwood’s island art matches the existing green-roofed buildings: cottages, 
 ### Performance delivery
 
 Images use lossless, content-addressed WebP copies with immutable delivery caching. Armed/gathering sheets and outfit colors load on demand. Multiplayer clients negotiate field-level snapshot deltas with periodic full-state recovery; legacy full snapshots remain supported. Phaser receives every update while React skips unchanged HUD state and coalesces bursts. See [performance measurements and repeatable checks](docs/performance.md) for the local 24-player and mobile-emulation results and their limits.
+
+### Class selection and skins
+
+Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. Use **Character → Change skin** to switch free cosmetic looks, including class headwear, independently of class and equipment. See [class skins and proportional terrain](docs/class-skins.md) for artwork and checks.

@@ -2,6 +2,7 @@ export * from './crystal';
 import {CRYSTAL_MAPS,CRYSTAL_ITEMS,CRYSTAL_QUESTS} from './crystal';
 export * from './world-map';
 export * from './classes';
+export * from './skins';
 export * from './island-equipment';
 import {
   EQUIPMENT_ITEMS,

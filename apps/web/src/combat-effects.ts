@@ -1,3 +1,4 @@
+import { fitArtwork } from './artwork';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { Event } from '@ros/shared';
@@ -69,9 +70,7 @@ export function skillEffect(scene: Phaser.Scene, event: Event) {
         : kind === 'dagger'
           ? facing * 40
           : 0);
-  const sprite = scene.add
-    .sprite(x, event.y, `special-${kind}`, 'fx-0')
-    .setDisplaySize(size, size)
+  const sprite = fitArtwork(scene.add.sprite(x, event.y, `special-${kind}`, 'fx-0'), size, size)
     .setDepth(18)
     .setFlipX(facing < 0)
     .setName('weapon-skill-effect')

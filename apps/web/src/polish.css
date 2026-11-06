@@ -51,3 +51,146 @@
 .audio-settings input[type='range'] {
   max-width: 200px;
 }
+
+.class-carousel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: #080313d9;
+}
+.class-carousel {
+  width: min(620px, 100%);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  position: relative;
+  text-align: center;
+  padding: 24px 18px 18px;
+  border: 1px solid #a56deb;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 25%, #38225e, #140c25 70%);
+  box-shadow: 0 0 70px #8b3cdf33;
+  outline: none;
+}
+.class-carousel h2 {
+  margin: 0 0 4px;
+  font-size: clamp(24px, 5vw, 34px);
+}
+.class-carousel h3 {
+  margin: 4px 0;
+  font-size: 26px;
+  color: #f1dfff;
+}
+.class-carousel-close {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  background: transparent;
+  font-size: 30px;
+  padding: 4px 10px;
+}
+.class-carousel-slide {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  align-items: center;
+  touch-action: pan-y;
+}
+.class-carousel-content {
+  min-width: 0;
+}
+.class-preview {
+  height: clamp(160px, 29dvh, 280px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #9062cb33, transparent 65%);
+}
+.class-preview svg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+}
+.class-arrow {
+  font-size: 38px;
+  background: transparent;
+  padding: 8px 2px;
+}
+.class-carousel p {
+  font-size: 14px;
+  line-height: 1.45;
+  margin: 8px 0;
+}
+.class-carousel dl {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin: 12px 0;
+}
+.class-carousel dt {
+  color: #b89bcc;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.class-carousel dd {
+  margin: 2px 0;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+.class-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px;
+}
+.class-dots button {
+  width: 11px;
+  height: 11px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: #60477b;
+}
+.class-dots button[aria-current='true'] {
+  background: #d498ff;
+  box-shadow: 0 0 10px #b36bff;
+}
+.class-carousel-note {
+  color: #c4b1d7;
+  max-width: 460px;
+  margin: 8px auto !important;
+}
+.class-confirm {
+  display: block;
+  margin: 12px auto 4px;
+  min-width: 190px;
+}
+@media (max-height: 650px) {
+  .class-preview {
+    height: 145px;
+  }
+  .class-carousel {
+    padding-top: 14px;
+  }
+  .class-carousel p {
+    margin: 4px 0;
+  }
+}
+.app.playing .class-carousel button {
+  color: #f2dfff;
+}
+.app.playing .class-carousel .class-confirm {
+  color: #f7eaff;
+  font-size: 18px;
+  font-weight: 700;
+}
+.app.playing .class-carousel .class-dots button {
+  border: 2px solid #8861ad;
+}
+.app.playing .class-carousel .class-dots button[aria-current='true'] {
+  border-color: #f0c5ff;
+  background: #bf76f0;
+}

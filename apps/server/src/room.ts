@@ -13,6 +13,7 @@ import {
   itemDefinition,
   GATHERING_TOOLS,
   BRAM_QUEST,
+  validSkin,
 } from '@ros/game-data';
 import {
   World,
@@ -110,6 +111,10 @@ export class MapRoom extends Room {
       p.mp = Math.min(p.mp, playerAttributes(p).maxMana);
     });
     this.onMessage('class', (c, payload) => this.classAction(c, payload));
+    this.onMessage('skin', (c, id) => {
+      const p = this.player(c);
+      if (p && this.rate(c, 100) && validSkin(id)) p.skin = id;
+    });
     this.onMessage('equipGear', (c, id) => {
       const p = this.player(c);
       if (!p || typeof id !== 'string' || !this.rate(c, 100)) return;
@@ -240,6 +245,7 @@ export class MapRoom extends Room {
         const next = await changeClass(structuredClone(p), action, id);
         for (const key of [
           'classId',
+          'skin',
           'classTalents',
           'classRevision',
           'gold',

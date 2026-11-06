@@ -1,3 +1,4 @@
+import { artworkStrip } from './artwork';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
@@ -39,12 +40,17 @@ export class VillageScenery {
       const height = p.oneWay ? 38 : 150;
       const surfaceY = p.oneWay ? 5 : 18;
       this.platforms.push(
-        scene.add
-          .image(p.x, p.y - (surfaceY * height) / frame.height, 'village-platforms', name)
-          .setOrigin(0)
-          .setDisplaySize(p.width, height)
-          .setDepth(0)
-          .setData({ platformId: p.id, surfaceY: p.y, artSurfaceY: surfaceY }),
+        ...artworkStrip(scene, {
+          texture: 'village-platforms',
+          frame: name,
+          x: p.x,
+          y: p.y,
+          length: p.width,
+          thickness: height,
+          surface: surfaceY,
+        }).map((image) =>
+          image.setData({ platformId: p.id, surfaceY: p.y, artSurfaceY: surfaceY }),
+        ),
       );
     }
     const place = (
@@ -85,11 +91,16 @@ export class VillageScenery {
       this.props.push(place('village-props', frame, x, ground.y + 2, height, 2));
     for (const ladder of map.ladders)
       this.ladders.push(
-        scene.add
-          .image(ladder.x, ladder.top - 6, 'village-props', 'ladder')
-          .setOrigin(0.5, 0)
-          .setDisplaySize(42, ladder.bottom - ladder.top + 12)
-          .setDepth(3),
+        ...artworkStrip(scene, {
+          texture: 'village-props',
+          frame: 'ladder',
+          x: ladder.x,
+          y: ladder.top - 6,
+          length: ladder.bottom - ladder.top + 12,
+          thickness: 42,
+          vertical: true,
+          depth: 3,
+        }),
       );
     // Decorative paving and bridge deck lie on the existing ground, with no new colliders.
     for (const [frame, x, width] of [
@@ -97,11 +108,15 @@ export class VillageScenery {
       ['wooden-bridge', 1380, 145],
     ] as const)
       this.props.push(
-        scene.add
-          .image(x, ground.y - 1, 'village-platforms', frame)
-          .setOrigin(0, 0)
-          .setDisplaySize(width, 15)
-          .setDepth(1),
+        ...artworkStrip(scene, {
+          texture: 'village-platforms',
+          frame,
+          x,
+          y: ground.y - 1,
+          length: width,
+          thickness: 15,
+          depth: 1,
+        }),
       );
     const camera = scene.cameras.main;
     camera.on(Phaser.Cameras.Scene2D.Events.FOLLOW_UPDATE, this.refresh, this);
@@ -122,7 +137,10 @@ export class VillageScenery {
       width,
       height,
     };
-    const image = backgroundArtwork(view, this.map, { width: 1536, height: 1024 });
-    this.background.setPosition(image.x, image.y).setDisplaySize(image.width, image.height);
+    const image = backgroundArtwork(view, this.map, {
+      width: this.background.width,
+      height: this.background.height,
+    });
+    this.background.setPosition(image.x, image.y).setScale(image.width / this.background.width);
   }
 }

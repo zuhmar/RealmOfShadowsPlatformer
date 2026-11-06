@@ -1,3 +1,4 @@
+import { artworkStrip } from './artwork';
 import { assetUrl } from './assets';
 import fishingAtlas from '../public/assets/tilesets/woods-fishing-platform.json';
 import Phaser from 'phaser';
@@ -93,23 +94,42 @@ export class WoodsScenery {
         { width: frame.width, height: frame.height },
         surface,
       );
-      const image = scene.add
-        .image(rect.x, rect.y, 'woods-platforms', name)
-        .setOrigin(0, 0)
-        .setDisplaySize(rect.width, rect.height)
-        .setDepth(0)
-        .setData({ platformId: platform.id, surfaceY: platform.y });
-      this.platforms.push(image);
+      if (platform.oneWay) {
+        this.platforms.push(
+          scene.add
+            .image(rect.x, rect.y, 'woods-platforms', name)
+            .setOrigin(0)
+            .setScale(rect.width / frame.width)
+            .setDepth(0)
+            .setData({ platformId: platform.id, surfaceY: platform.y }),
+        );
+      } else {
+        this.platforms.push(
+          ...artworkStrip(scene, {
+            texture: 'woods-platforms',
+            frame: name,
+            x: platform.x,
+            y: platform.y,
+            length: platform.width,
+            thickness: rect.height,
+            surface,
+            depth: 0,
+          }).map((image) => image.setData({ platformId: platform.id, surfaceY: platform.y })),
+        );
+      }
     }
     map.ladders.forEach((ladder, i) => {
-      const frame = i % 2 === 0 ? 'ladder-short' : 'ladder-tall';
       this.ladders.push(
-        scene.add
-          .image(ladder.x, ladder.top - 7, 'woods-ladders', frame)
-          .setOrigin(0.5, 0)
-          .setDisplaySize(42, ladder.bottom - ladder.top + 14)
-          .setDepth(3)
-          .setData({ top: ladder.top, bottom: ladder.bottom }),
+        ...artworkStrip(scene, {
+          texture: 'woods-ladders',
+          frame: i % 2 === 0 ? 'ladder-short' : 'ladder-tall',
+          x: ladder.x,
+          y: ladder.top - 7,
+          length: ladder.bottom - ladder.top + 14,
+          thickness: 42,
+          vertical: true,
+          depth: 3,
+        }).map((image) => image.setData({ top: ladder.top, bottom: ladder.bottom })),
       );
     });
     for (const prop of WOODS_AREA_PROPS[map.id] ?? WOODS_PROPS) {
@@ -196,7 +216,10 @@ export class WoodsScenery {
       width,
       height,
     };
-    const image = backgroundArtwork(view, this.map, this.manifest.background);
-    this.background.setPosition(image.x, image.y).setDisplaySize(image.width, image.height);
+    const image = backgroundArtwork(view, this.map, {
+      width: this.background.width,
+      height: this.background.height,
+    });
+    this.background.setPosition(image.x, image.y).setScale(image.width / this.background.width);
   }
 }

@@ -2,7 +2,7 @@
 
 ## Implemented
 
-- Lossless WebP delivery copies for 156 PNG assets, including backgrounds, transparent island maps, UI, monster and character atlases. Source PNGs remain available for authoring and older clients. Every generated copy was checked against the source dimensions and every RGBA byte. Atlas coordinates and recoloring masks are unchanged.
+- Lossless WebP delivery copies for 166 PNG assets, including backgrounds, transparent island maps, UI, monster and character atlases. Source PNGs remain available for authoring and older clients. Every generated copy was checked against the source dimensions and every RGBA byte. Atlas coordinates and recoloring masks are unchanged.
 - `assetUrl` resolves runtime image URLs through the generated manifest. CSS also uses the optimized login background. Content-addressed delivery URLs have a one-year immutable cache policy on Vercel. Updating art generates a new URL; deployment does not require Python.
 - Character entry loads the two base bodies and only currently needed armed/gathering sheets. New equipment and tools load on demand; the body supplies a valid fallback until loading finishes. Pending attacks resume on the loaded sheet. NPC and Wolf art load only on maps that use them. A fresh unarmed entry no longer preloads eight starter weapon sheets and six gathering sheets.
 - Outfit recoloring remains lazy. Tier weapons use the sage starter reference without making duplicate colored starter textures. Animation registration is cached. The existing island-sheet cache protects in-use/death sprites and prunes unused sheets toward twelve entries.
@@ -15,7 +15,7 @@ Measurements use the local development environment, not deployed production infr
 
 | Check                                                    | Result                                                                                                              |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Full optimized image library                             | 291,699,238 source bytes → 209,105,974 delivery bytes (28.3% smaller)                                               |
+| Full optimized image library                             | 310,339,208 source bytes → 222,656,922 delivery bytes (28.3% smaller)                                               |
 | Cold unarmed boar-area image set                         | 39,527,509 equivalent source bytes → 26,810,896 delivery bytes (32.2% smaller); zero armed/gathering sheets fetched |
 | 24-client Crystal room, ten monsters                     | About 3.4 KB average wire update versus 29.4 KB reconstructed full state, about 88.5% less JSON payload             |
 | Same room, 12-second sample                              | About 70 ms p95 update interval; periodic full keyframes included                                                   |

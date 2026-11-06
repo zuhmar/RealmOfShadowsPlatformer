@@ -1,3 +1,4 @@
+import { ClassSkinVisual, preloadSkins } from './class-skins';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import { islandArmedKey, preloadIslandArmed } from './island-armed';
@@ -28,7 +29,11 @@ type Clips = {
   animations: Record<string, { frames: string[]; frameRate: number; repeat: number }>;
 };
 export function preloadCharacters(scene: Phaser.Scene, players: Player[] = [], map?: GameMap) {
-  preloadIslandArmed(scene, players);
+  preloadIslandArmed(
+    scene,
+    players.filter((p) => !p.skin),
+  );
+  preloadSkins(scene, players, map);
   scene.load.atlas(
     'woods-equipment',
     assetUrl('/assets/equipment/islands/woods.png'),
@@ -46,7 +51,7 @@ export function preloadCharacters(scene: Phaser.Scene, players: Player[] = [], m
     '/assets/equipment/elderwood-weapons.json',
   );
   scene.load.json('armed-clips', '/assets/characters/armed/manifest.json');
-  for (const p of players) {
+  for (const p of players.filter((p) => !p.skin)) {
     const kind = weaponKind(p.weapon);
     if (kind !== 'unarmed') requestSheet(scene, appearanceOf(p.appearance), 'armed', kind, false);
     if (p.gathering)
@@ -252,6 +257,7 @@ export class CharacterVisual {
   landedUntil = 0;
   launchUntil = 0;
   pendingAttack = false;
+  skinVisual?: ClassSkinVisual;
   constructor(
     private scene: Phaser.Scene,
     public player: Player,
@@ -264,8 +270,25 @@ export class CharacterVisual {
       .setScale(0.36);
     this.gatheringVisual = new Phaser.GameObjects.Graphics(scene);
     this.container.add([this.gatheringVisual, this.sprite]);
+    if (player.skin) this.skinVisual = new ClassSkinVisual(scene, this.container);
   }
   sync(p: Player, map: GameMap, now: number) {
+    if (p.skin && !this.skinVisual)
+      this.skinVisual = new ClassSkinVisual(this.scene, this.container);
+    if (p.skin && this.skinVisual?.sync(p, map, now)) {
+      this.sprite.setVisible(false);
+      this.gatheringVisual.clear();
+      this.drawnWeapon = p.climbing ? 'unarmed' : weaponKind(p.weapon);
+      this.container.scaleX = p.facing;
+      this.container.x = Phaser.Math.Linear(this.container.x, p.x, 0.55);
+      this.container.y = Phaser.Math.Linear(this.container.y, p.y, 0.55);
+      if (Math.abs(this.container.x - p.x) > 150 || Math.abs(this.container.y - p.y) > 200)
+        this.container.setPosition(p.x, p.y);
+      this.player = { ...p };
+      return;
+    }
+    this.skinVisual?.container.setVisible(false);
+    this.sprite.setVisible(true);
     const motion = characterMotion(p, map);
     const gathering =
       p.gathering && motion !== 'climb' && p.grounded
@@ -376,6 +399,10 @@ export class CharacterVisual {
     this.player = { ...p };
   }
   die(x = this.container.x, y = this.container.y) {
+    if (this.player.skin) {
+      const corpse = this.skinVisual?.die(x, y, this.player);
+      if (corpse) return corpse;
+    }
     const kind = weaponKind(this.player.weapon);
     const tierWeapon = !!equipmentDefinition(this.player.weapon)?.weaponKind;
     if (!tierWeapon)

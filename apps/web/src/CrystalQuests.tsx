@@ -7,12 +7,14 @@ export function CrystalQuests({
   near,
   pending,
   send,
+  onBrowse,
 }: {
   player: Player;
   dialog: boolean;
   near: boolean;
   pending: boolean;
   send: (type: string, payload: unknown) => void;
+  onBrowse: () => void;
 }) {
   return (
     <section className="crystal-quests">
@@ -60,7 +62,7 @@ export function CrystalQuests({
         );
       })}
       {dialog && p.quests?.['crystal-class-trial']?.claimed && (
-        <ClassPanel player={p} send={send} />
+        <ClassPanel player={p} send={send} onBrowse={onBrowse} />
       )}
     </section>
   );

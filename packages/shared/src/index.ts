@@ -89,6 +89,7 @@ export type Actor = {
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
   classId?: import('@ros/game-data').ClassId;
+  skin?: import('@ros/game-data').ClassId | null;
   classTalents?: Partial<Record<import('@ros/game-data').ClassTalent, number>>;
   classRevision?: number;
   visitedAreas?: string[];
