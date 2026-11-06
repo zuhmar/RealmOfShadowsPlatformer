@@ -21,6 +21,7 @@ import {
   activityReward,
   applyActivityReward,
   playerAttributes,
+  SnapshotEncoder,
   type Input,
   type Player,
 } from '@ros/shared';
@@ -36,12 +37,21 @@ export class MapRoom extends Room {
   ticks = 0;
   questTasks = new Map<string, Promise<void>>();
   inputTimes = new Map<string, number>();
+  snapshotStreams = new Map<string, SnapshotEncoder>();
+  snapshotResyncAt = new Map<string, number>();
   onCreate(options: { mapId?: string }) {
     const map = MAPS[options.mapId ?? 'woods'];
     if (!map) throw new Error('Unknown map');
     this.world = new World(map);
     this.setMetadata({ mapId: map.id });
     this.setSimulationInterval((dt) => this.tick(Math.min(dt, 100) / 1000), 1000 / 30);
+    this.onMessage('snapshotResync', (c) => {
+      const now = Date.now();
+      if (now - (this.snapshotResyncAt.get(c.sessionId) ?? 0) >= 1000) {
+        this.snapshotResyncAt.set(c.sessionId, now);
+        this.sendSnapshot(c, now, true);
+      }
+    });
     this.onMessage('input', (c, payload) => {
       if (!this.rate(c, 100)) return;
       const p = this.player(c);
@@ -502,7 +512,11 @@ export class MapRoom extends Room {
     }
   }
 
-  onJoin(c: Client, _options: unknown, auth: { id: string; name: string; data: unknown }) {
+  onJoin(
+    c: Client,
+    options: { snapshotProtocol?: number },
+    auth: { id: string; name: string; data: unknown },
+  ) {
     const p = auth.data as Player;
     p.auto = false;
     delete p.gathering;
@@ -516,9 +530,22 @@ export class MapRoom extends Room {
     p.mp = Math.max(0, Math.min(p.mp, playerAttributes(p).maxMana));
     this.world.players.set(p.id, p);
     this.characters.set(c.sessionId, p.id);
+    if (options.snapshotProtocol === 1)
+      this.snapshotStreams.set(c.sessionId, new SnapshotEncoder());
     this.inputs.set(p.id, idleInput());
     c.send('welcome', { id: p.id, mapId: this.world.map.id });
-    c.send('snapshot', this.world.snapshot(Date.now(), p.id));
+    this.sendSnapshot(c, Date.now(), true);
+  }
+  sendSnapshot(c: Client, now: number, force = false) {
+    const id = this.characters.get(c.sessionId);
+    if (!id || !this.world.players.has(id)) return;
+    const snapshot = this.world.snapshot(now, id);
+    const stream = this.snapshotStreams.get(c.sessionId);
+    if (!stream) c.send('snapshot', snapshot);
+    else {
+      const message = stream.encode(snapshot, force);
+      c.send(message.type, message.data);
+    }
   }
   player(c: Client) {
     const id = this.characters.get(c.sessionId) ?? '';
@@ -542,7 +569,7 @@ export class MapRoom extends Room {
     if (++this.ticks % 2 === 0)
       for (const client of this.clients) {
         const id = this.characters.get(client.sessionId);
-        if (id && this.world.players.has(id)) client.send('snapshot', this.world.snapshot(now, id));
+        if (id && this.world.players.has(id)) this.sendSnapshot(client, now);
       }
     if (this.world.events.length) this.broadcast('events', this.world.events);
     if (this.ticks % 150 === 0)
@@ -570,13 +597,15 @@ export class MapRoom extends Room {
         this.inputs.set(id, idleInput());
         this.inputTimes.set(id, Date.now());
         c.send('welcome', { id, mapId: this.world.map.id });
-        c.send('snapshot', this.world.snapshot(Date.now(), p.id));
+        this.sendSnapshot(c, Date.now(), true);
         return;
       } catch (error) {
         console.info('Reconnect window closed', id);
       }
     }
     this.characters.delete(c.sessionId);
+    this.snapshotStreams.delete(c.sessionId);
+    this.snapshotResyncAt.delete(c.sessionId);
     this.rates.delete(c.sessionId);
     this.rates.delete(`chat:${c.sessionId}`);
     try {

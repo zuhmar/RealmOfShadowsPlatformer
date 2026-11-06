@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import atlas from '../public/assets/equipment/gathering-tools.json';
 import { GATHERING_TOOLS } from '@ros/game-data';
 export function ToolIcon({ id }: { id: string }) {
@@ -16,7 +17,7 @@ export function ToolIcon({ id }: { id: string }) {
       aria-label={GATHERING_TOOLS.find((tool) => tool.id === id)?.name ?? id}
     >
       <image
-        href="/assets/equipment/gathering-tools.png"
+        href={assetUrl('/assets/equipment/gathering-tools.png')}
         width={atlas.meta.size.w}
         height={atlas.meta.size.h}
       />

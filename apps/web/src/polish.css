@@ -1,1 +1,53 @@
-.connection-recovery{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;background:#130c25dd;color:#f3e9ff;text-align:center;padding:24px}.connection-recovery>div{max-width:420px}.offline-activities{display:grid;gap:8px;margin:12px 0}.offline-activities select{max-width:100%;width:100%;padding:8px;background:#24133e;color:#f5eaff;border:1px solid #8551b6;border-radius:8px}.offline-activities small{font-size:11px;line-height:1.4;color:#bcaacb}.class-paths .training-card button{margin:4px;min-height:36px}.crystal-quests .quest-card{margin-block:12px}.audio-settings{display:grid;gap:12px;padding-block:12px}.audio-settings label{display:flex;align-items:center;gap:10px}.audio-settings input[type=range]{max-width:200px}
+.connection-recovery {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: grid;
+  place-items: center;
+  background: #130c25dd;
+  color: #f3e9ff;
+  text-align: center;
+  padding: 24px;
+}
+.connection-recovery > div {
+  max-width: 420px;
+}
+.offline-activities {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.offline-activities select {
+  max-width: 100%;
+  width: 100%;
+  padding: 8px;
+  background: #24133e;
+  color: #f5eaff;
+  border: 1px solid #8551b6;
+  border-radius: 8px;
+}
+.offline-activities small {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #bcaacb;
+}
+.class-paths .training-card button {
+  margin: 4px;
+  min-height: 36px;
+}
+.crystal-quests .quest-card {
+  margin-block: 12px;
+}
+.audio-settings {
+  display: grid;
+  gap: 12px;
+  padding-block: 12px;
+}
+.audio-settings label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.audio-settings input[type='range'] {
+  max-width: 200px;
+}

@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { Event } from '@ros/shared';
 import { equipmentDefinition, weaponSkillProgression } from '@ros/game-data';
@@ -27,7 +28,7 @@ export function preloadWeaponEffects(scene: Phaser.Scene) {
   for (const kind of kinds)
     scene.load.atlas(
       `special-${kind}`,
-      `/assets/effects/weapon-specials/${kind}.png`,
+      assetUrl(`/assets/effects/weapon-specials/${kind}.png`),
       `/assets/effects/weapon-specials/${kind}.json`,
     );
 }

@@ -1,3 +1,4 @@
+import optimized from '../apps/web/public/assets/optimized-manifest.json' with { type: 'json' };
 import { chromium, expect } from '@playwright/test';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -72,7 +73,10 @@ try {
   await expect(page.locator('.map-area-list .map-destination')).toHaveCount(1);
   await expect(page.locator('[data-area-id="village"]')).toHaveCount(1);
   await expect(page.locator('[data-area-id="village"]')).toBeDisabled();
-  await expect(page.locator('.world-map-chart > img')).toHaveAttribute('src', /village.png$/);
+  await expect(page.locator('.world-map-chart > img')).toHaveAttribute(
+    'src',
+    optimized['/assets/backgrounds/island-maps/village.png'],
+  );
   await page.locator('.world-map-chart > img').evaluate((img) => img.decode());
   await page.screenshot({ path: 'artifacts/village-island-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -101,7 +105,10 @@ try {
     expect(await page.locator('.world-map-chart > img').evaluate((img) => img.naturalWidth)).toBe(
       1254,
     );
-    await expect(page.locator('.world-map-chart > img')).toHaveAttribute('src', /island-maps/);
+    await expect(page.locator('.world-map-chart > img')).toHaveAttribute(
+      'src',
+      /\/assets\/optimized\/.+\.webp$/,
+    );
     await expect(page.locator('.map-area-list .map-monster-name')).toHaveCount(4);
     await expect(page.locator('.map-area-list .map-circle-button img')).toHaveCount(4);
     await expect(page.locator('.modal-backdrop')).toHaveCount(0);

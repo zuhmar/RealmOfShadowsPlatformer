@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import { useEffect, useRef, useState } from 'react';
 import {
   ISLANDS,
@@ -81,7 +82,7 @@ export function WorldMapPanel({
           aria-description={blocked ?? `Costs ${cost}.`}
           title={`${label} · ${blocked ?? cost}`}
         >
-          <img src="/assets/ui/teleport-destination.png" alt="" draggable={false} />
+          <img src={assetUrl('/assets/ui/teleport-destination.png')} alt="" draggable={false} />
         </button>
         <small className="map-location-status">{reason}</small>
       </div>
@@ -123,7 +124,7 @@ export function WorldMapPanel({
             {island.id === 'crystal' && p.unlockedIslands?.includes('crystal') && (
               <img
                 className="map-unlock-badge"
-                src="/assets/ui/crystal-unlock.png"
+                src={assetUrl('/assets/ui/crystal-unlock.png')}
                 alt="Crystal Caverns access earned"
                 width="24"
                 height="24"
@@ -170,7 +171,7 @@ export function WorldMapPanel({
         >
           <img
             key={chart.id}
-            src={chart.image}
+            src={assetUrl(chart.image)}
             alt={
               isVillage
                 ? 'Elderwood Village floating island with green-roofed cottages, a forge, market and village square'

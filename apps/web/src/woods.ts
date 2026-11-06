@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import fishingAtlas from '../public/assets/tilesets/woods-fishing-platform.json';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
@@ -18,18 +19,18 @@ type ArtManifest = {
 export function preloadWoods(scene: Phaser.Scene, map?: GameMap) {
   scene.load.atlas(
     'woods-resources',
-    '/assets/props/woods-resource-nodes.png',
+    assetUrl('/assets/props/woods-resource-nodes.png'),
     '/assets/props/woods-resource-nodes.json',
   );
   scene.load.atlas(
     'woods-fishing',
-    '/assets/tilesets/woods-fishing-platform.png',
+    assetUrl('/assets/tilesets/woods-fishing-platform.png'),
     '/assets/tilesets/woods-fishing-platform.json',
   );
   scene.load.json('woods-art', '/assets/maps/whispering-woods-art.json');
   scene.load.image(
     'woods-background',
-    map?.background ?? '/assets/backgrounds/whispering-woods.png',
+    assetUrl(map?.background ?? '/assets/backgrounds/whispering-woods.png'),
   );
   for (const [name, folder] of [
     ['platforms', 'tilesets'],
@@ -38,7 +39,7 @@ export function preloadWoods(scene: Phaser.Scene, map?: GameMap) {
   ])
     scene.load.atlas(
       `woods-${name}`,
-      `/assets/${folder}/whispering-woods-${name}.png`,
+      assetUrl(`/assets/${folder}/whispering-woods-${name}.png`),
       `/assets/${folder}/whispering-woods-${name}.json`,
     );
 }

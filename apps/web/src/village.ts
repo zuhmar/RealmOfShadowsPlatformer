@@ -1,9 +1,10 @@
+import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 
 export function preloadVillage(scene: Phaser.Scene) {
-  scene.load.image('village-background', '/assets/backgrounds/elderwood-village.png');
+  scene.load.image('village-background', assetUrl('/assets/backgrounds/elderwood-village.png'));
   for (const [name, folder] of [
     ['buildings', 'props'],
     ['platforms', 'tilesets'],
@@ -11,7 +12,7 @@ export function preloadVillage(scene: Phaser.Scene) {
   ])
     scene.load.atlas(
       `village-${name}`,
-      `/assets/${folder}/elderwood-village-${name}.png`,
+      assetUrl(`/assets/${folder}/elderwood-village-${name}.png`),
       `/assets/${folder}/elderwood-village-${name}.json`,
     );
 }

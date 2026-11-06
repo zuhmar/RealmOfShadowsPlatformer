@@ -194,6 +194,7 @@ export type Projectile = {
   empowered: boolean;
   hitIds?: string[];
 };
+export { SnapshotEncoder, SnapshotDecoder, type SnapshotDelta, type SnapshotKeyframe } from './snapshot-stream';
 export type Snapshot = {
   projectiles?: Projectile[];
   players: Player[];

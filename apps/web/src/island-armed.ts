@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import { equipmentDefinition } from '@ros/game-data';
 import type { Player } from '@ros/shared';
@@ -53,7 +54,7 @@ class IslandArmedSheets {
       sheet = { base, path, lastUsed: this.scene.time.now, variants: new Set([base]) };
       this.sheets.set(id, sheet);
       if (!this.scene.textures.exists(base)) {
-        this.scene.load.atlas(base, `${path}.png`, `${path}.json`);
+        this.scene.load.atlas(base, assetUrl(`${path}.png`), `${path}.json`);
       }
       if (!this.scene.cache.json.has(`${base}-atlas`))
         this.scene.load.json(`${base}-atlas`, `${path}.json`);

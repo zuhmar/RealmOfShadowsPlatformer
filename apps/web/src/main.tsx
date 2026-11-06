@@ -1,3 +1,6 @@
+import { assetUrl } from './assets';
+import { HudUpdates } from './hud-updates';
+import { SnapshotDecoder, type SnapshotKeyframe, type SnapshotDelta } from '@ros/shared';
 import { AudioSettings } from './AudioSettings';
 import { realmAudio } from './audio';
 import { CrystalQuests } from './CrystalQuests';
@@ -81,6 +84,7 @@ function App() {
   const [notice, setNotice] = useState('');
   const [connectionStatus, setConnectionStatus] = useState('');
   const recoveryEpoch = useRef(0);
+  const hudUpdates = useRef<HudUpdates | null>(null);
   const [room, setRoom] = useState<Room | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [playerId, setPlayerId] = useState('');
@@ -108,6 +112,14 @@ function App() {
     send: (t, d) => roomRef.current?.send(t, d),
   });
   const snapshotRef = useRef<Snapshot | null>(null);
+  useEffect(() => {
+    const resume = () => hudUpdates.current?.flush();
+    document.addEventListener('visibilitychange', resume);
+    return () => {
+      hudUpdates.current?.stop();
+      document.removeEventListener('visibilitychange', resume);
+    };
+  }, []);
   useEffect(() => realmAudio.bind(), []);
   useEffect(() => {
     realmAudio.setBiome(page === 'game' ? (snapshot?.mapId ?? null) : null);
@@ -213,25 +225,42 @@ function App() {
     const client = new Client(SERVER.replace(/^http/, 'ws'));
     const next = reconnectToken
       ? await client.reconnect(reconnectToken)
-      : await client.joinOrCreate('map', { token, characterId: c.id, mapId });
+      : await client.joinOrCreate('map', { token, characterId: c.id, mapId, snapshotProtocol: 1 });
     if (epoch !== undefined && epoch !== recoveryEpoch.current) {
       await next.leave();
       return false;
     }
     roomRef.current = next;
+    hudUpdates.current?.stop();
+    const hud = new HudUpdates(c.id, (s) => {
+      if (roomRef.current === next) setSnapshot(s);
+    });
+    hudUpdates.current = hud;
+    const decoder = new SnapshotDecoder();
     next.onMessage('welcome', (w: { id: string }) => {
       setPlayerId(w.id);
       bridge.current.id = w.id;
     });
-    next.onMessage('snapshot', (s: Snapshot) => {
+    const receiveSnapshot = (s: Snapshot) => {
       if (roomRef.current !== next) return;
       bridge.current.snapshot = s;
       snapshotRef.current = s;
-      setSnapshot(s);
+      hud.push(s);
       setPlayerId(c.id);
       bridge.current.id = c.id;
       setRoom(next);
       setPage('game');
+    };
+    next.onMessage('snapshot', (s: SnapshotKeyframe) => receiveSnapshot(decoder.full(s)));
+    let resyncAt = 0;
+    next.onMessage('snapshotDelta', (delta: SnapshotDelta) => {
+      if (roomRef.current !== next) return;
+      const s = decoder.delta(delta);
+      if (s) receiveSnapshot(s);
+      else if (Date.now() - resyncAt > 1000) {
+        resyncAt = Date.now();
+        next.send('snapshotResync');
+      }
     });
     next.onMessage('events', (events: Event[]) => {
       for (const event of events) {
@@ -260,6 +289,7 @@ function App() {
     });
     next.onMessage('travel', (target: string) => {
       void run(async () => {
+        hud.stop();
         roomRef.current = null;
         await next.leave();
         setRoom(null);
@@ -274,6 +304,7 @@ function App() {
       setError(text ?? 'Connection error');
     });
     next.onLeave(() => {
+      hud.stop();
       if (roomRef.current !== next) return;
       roomRef.current = null;
       setRoom(null);
@@ -456,7 +487,7 @@ function App() {
       <header className="site-header">
         <a className="brand" href="#" onClick={(e) => e.preventDefault()}>
           <img
-            src="/assets/ui/realm-of-shadows-logo.png"
+            src={assetUrl('/assets/ui/realm-of-shadows-logo.png')}
             alt="Realm of Shadows"
             className="brand-logo"
           />
@@ -490,7 +521,7 @@ function App() {
           <section className="hero">
             <img
               className="hero-logo"
-              src="/assets/ui/realm-of-shadows-logo.png"
+              src={assetUrl('/assets/ui/realm-of-shadows-logo.png')}
               alt="Realm of Shadows"
             />
             <div className="eyebrow">THE LAST SURVIVOR · YOUR JOURNEY BEGINS</div>
@@ -695,7 +726,7 @@ function App() {
             <div className="adventure-loading" role="status" aria-live="polite">
               <div className="adventure-loading-content">
                 <img
-                  src="/assets/ui/realm-of-shadows-logo.png"
+                  src={assetUrl('/assets/ui/realm-of-shadows-logo.png')}
                   alt="Realm of Shadows"
                   draggable={false}
                 />
@@ -941,7 +972,7 @@ function App() {
             </button>
             <img
               className="login-logo"
-              src="/assets/ui/realm-of-shadows-logo.png"
+              src={assetUrl('/assets/ui/realm-of-shadows-logo.png')}
               alt="Realm of Shadows"
             />
             <span className="eyebrow">A PLACE TO CALL YOUR OWN</span>

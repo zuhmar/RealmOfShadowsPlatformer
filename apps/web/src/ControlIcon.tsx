@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import atlas from '../public/assets/ui/game-controls.json';
 export function ControlIcon({ name }: { name: keyof typeof atlas.frames }) {
   const { x, y, w, h } = atlas.frames[name].frame;
@@ -9,7 +10,7 @@ export function ControlIcon({ name }: { name: keyof typeof atlas.frames }) {
       focusable="false"
     >
       <image
-        href="/assets/ui/game-controls.png"
+        href={assetUrl('/assets/ui/game-controls.png')}
         width={atlas.meta.size.w}
         height={atlas.meta.size.h}
       />

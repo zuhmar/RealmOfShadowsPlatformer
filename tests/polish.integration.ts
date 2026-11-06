@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Client, type Room } from 'colyseus.js';
 import { db } from '../apps/server/src/db';
 import { changeClass } from '../apps/server/src/classes';
-import { createPlayer, type Player, type Snapshot } from '@ros/shared';
+import { SnapshotDecoder, createPlayer, type Player, type Snapshot } from '@ros/shared';
 import { QUESTS } from '@ros/game-data';
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function until(fn: () => boolean) {
@@ -93,18 +93,32 @@ test('unexpected disconnect reserves and restores the same character without res
       token: guest.token,
       characterId: c.id,
       mapId: 'village',
+      snapshotProtocol: 1,
     });
     let snapshot: Snapshot | undefined;
+    const decoder = new SnapshotDecoder();
+    let deltas = 0,
+      fullFrames = 0;
     room.onMessage('welcome', () => {});
     room.onMessage('events', () => {});
     room.onMessage('notice', () => {});
     room.onMessage('snapshot', (s: Snapshot) => {
-      snapshot = s;
+      snapshot = decoder.full(s);
+      fullFrames++;
+    });
+    room.onMessage('snapshotDelta', (d) => {
+      snapshot = decoder.delta(d);
+      assert.ok(snapshot);
+      deltas++;
     });
     await until(() => !!snapshot);
     room.send('input', { skill: true });
     await until(() => !!snapshot?.players.find((p) => p.id === c.id)?.lastSkill);
     const lastSkill = snapshot!.players.find((p) => p.id === c.id)!.lastSkill;
+    await until(() => deltas >= 2);
+    const framesBefore = fullFrames;
+    room.send('snapshotResync');
+    await until(() => fullFrames > framesBefore);
     const token = room.reconnectionToken,
       id = room.sessionId;
     const old = room;
@@ -120,11 +134,16 @@ test('unexpected disconnect reserves and restores the same character without res
     room = await client.reconnect(token);
     assert.equal(room.sessionId, id);
     let recovered: Snapshot | undefined;
+    const recoveredDecoder = new SnapshotDecoder();
     room.onMessage('welcome', () => {});
     room.onMessage('events', () => {});
     room.onMessage('notice', () => {});
     room.onMessage('snapshot', (s: Snapshot) => {
-      recovered = s;
+      recovered = recoveredDecoder.full(s);
+    });
+    room.onMessage('snapshotDelta', (d) => {
+      recovered = recoveredDecoder.delta(d);
+      assert.ok(recovered);
     });
     await until(() => !!recovered?.players.some((p) => p.id === c.id));
     const hero = recovered!.players.find((p) => p.id === c.id)!;

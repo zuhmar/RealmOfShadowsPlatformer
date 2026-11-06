@@ -1,17 +1,18 @@
+import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 export function preloadCrystal(scene: Phaser.Scene, map: GameMap) {
-  scene.load.image('crystal-background', map.background!);
+  scene.load.image('crystal-background', assetUrl(map.background!));
   scene.load.atlas(
     'crystal-scenery',
-    '/assets/tilesets/crystal-scenery.png',
+    assetUrl('/assets/tilesets/crystal-scenery.png'),
     '/assets/tilesets/crystal-scenery.json',
   );
   if (map.npcs.some((n) => n.id === 'mentor')) {
     scene.load.atlas(
       'cavern-mentor',
-      '/assets/characters/cavern-mentor.png',
+      assetUrl('/assets/characters/cavern-mentor.png'),
       '/assets/characters/cavern-mentor.json',
     );
     scene.load.json('cavern-mentor-clips', '/assets/characters/cavern-mentor-clips.json');

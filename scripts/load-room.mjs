@@ -2,7 +2,7 @@ import { Client } from 'colyseus.js';
 import assert from 'node:assert/strict';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { db } from '../apps/server/src/db.ts';
-import { createPlayer, createCraftedGear } from '../packages/shared/src/index.ts';
+import { SnapshotDecoder, createPlayer, createCraftedGear } from '../packages/shared/src/index.ts';
 import { ISLAND_EQUIPMENT } from '../packages/game-data/src/index.ts';
 const users = [],
   rooms = [],
@@ -10,7 +10,10 @@ const users = [],
   intervals = [];
 let bytes = 0,
   total = 0,
-  previous = 0;
+  previous = 0,
+  reconstructedBytes = 0,
+  fullFrames = 0,
+  deltaFrames = 0;
 async function api(path, token, body) {
   const r = await fetch(`http://localhost:2567/api${path}`, {
     method: 'POST',
@@ -55,19 +58,31 @@ try {
         token: guest.token,
         characterId: c.id,
         mapId: 'crystal',
+        snapshotProtocol: 1,
       });
       rooms.push(room);
       counts.set(room.sessionId, 0);
       for (const type of ['welcome', 'events', 'notice', 'chat']) room.onMessage(type, () => {});
-      room.onMessage('snapshot', (s) => {
+      const decoder = new SnapshotDecoder();
+      const measure = (payload, s) => {
+        assert.ok(s, 'Delta must reconstruct without a missing base');
         counts.set(room.sessionId, counts.get(room.sessionId) + 1);
-        bytes += Buffer.byteLength(JSON.stringify(s));
+        bytes += Buffer.byteLength(JSON.stringify(payload));
+        reconstructedBytes += Buffer.byteLength(JSON.stringify(s));
         total++;
         if (room === rooms[0]) {
           const now = performance.now();
           if (previous) intervals.push(now - previous);
           previous = now;
         }
+      };
+      room.onMessage('snapshot', (s) => {
+        fullFrames++;
+        measure(s, decoder.full(s));
+      });
+      room.onMessage('snapshotDelta', (d) => {
+        deltaFrames++;
+        measure(d, decoder.delta(d));
       });
       room.send('auto', true);
     }
@@ -82,6 +97,10 @@ try {
     minSnapshots: Math.min(...counts.values()),
     snapshotIntervalP95Ms: +p95.toFixed(2),
     averageSnapshotBytes: Math.round(bytes / total),
+    reconstructedFullSnapshotBytes: Math.round(reconstructedBytes / total),
+    wireReductionPercent: +(100 * (1 - bytes / reconstructedBytes)).toFixed(1),
+    fullFrames,
+    deltaFrames,
     measurementSeconds: 12,
     scope:
       'One local 24-client room with 10 monsters and large gear inventories. Not a production capacity or physical-phone test.',
@@ -89,7 +108,8 @@ try {
   assert.equal(rooms.length, 24);
   assert.ok(report.minSnapshots >= 100);
   assert.ok(p95 < 250, `Snapshot p95 ${p95} ms`);
-  assert.ok(report.averageSnapshotBytes < 50000);
+  assert.ok(report.wireReductionPercent > 50);
+  assert.ok(deltaFrames > fullFrames);
   await mkdir('artifacts', { recursive: true });
   await writeFile('artifacts/room-load.json', JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));

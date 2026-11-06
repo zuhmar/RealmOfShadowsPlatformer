@@ -1,3 +1,4 @@
+import optimized from '../apps/web/public/assets/optimized-manifest.json' with { type: 'json' };
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 await mkdir('artifacts', { recursive: true });
@@ -13,7 +14,12 @@ page.on('response', (r) => {
   if (r.status() >= 400 && r.url().includes('/assets/')) errors.push(`${r.status()} ${r.url()}`);
 });
 page.on('request', (r) => {
-  if (r.url().includes('/characters/armed/islands/') && r.url().endsWith('.png'))
+  if (
+    Object.entries(optimized).some(
+      ([source, delivery]) =>
+        source.includes('/characters/armed/islands/') && r.url().endsWith(delivery),
+    )
+  )
     requests.push(r.url());
 });
 try {

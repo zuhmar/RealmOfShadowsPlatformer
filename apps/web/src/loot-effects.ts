@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import crystalResources from '../public/assets/ui/crystal-resources.json';
 import crystalDrops from '../public/assets/ui/crystal-loot.json';
 import Phaser from 'phaser';
@@ -6,32 +7,40 @@ import { GEAR_RARITY_COLORS, type Drop, type Event, type GearRarity } from '@ros
 import lootAtlas from '../public/assets/ui/woods-loot.json';
 import resourcesAtlas from '../public/assets/ui/woods-resources.json';
 export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
-  scene.load.atlas('loot-materials', '/assets/ui/woods-loot.png', '/assets/ui/woods-loot.json');
+  scene.load.atlas(
+    'loot-materials',
+    assetUrl('/assets/ui/woods-loot.png'),
+    '/assets/ui/woods-loot.json',
+  );
   scene.load.atlas(
     'loot-resources',
-    '/assets/ui/woods-resources.png',
+    assetUrl('/assets/ui/woods-resources.png'),
     '/assets/ui/woods-resources.json',
   );
-  scene.load.atlas('loot-basics', '/assets/ui/loot-basics.png', '/assets/ui/loot-basics.json');
+  scene.load.atlas(
+    'loot-basics',
+    assetUrl('/assets/ui/loot-basics.png'),
+    '/assets/ui/loot-basics.json',
+  );
   if (map.island === 'Crystal Caverns') {
     scene.load.atlas(
       'loot-crystal-resources',
-      '/assets/ui/crystal-resources.png',
+      assetUrl('/assets/ui/crystal-resources.png'),
       '/assets/ui/crystal-resources.json',
     );
     scene.load.atlas(
       'loot-crystal-drops',
-      '/assets/ui/crystal-loot.png',
+      assetUrl('/assets/ui/crystal-loot.png'),
       '/assets/ui/crystal-loot.json',
     );
   }
-  scene.load.image('loot-crystal', '/assets/ui/teleport-crystal.png');
-  scene.load.image('forest-bear-key', '/assets/ui/forest-bear-key.png');
+  scene.load.image('loot-crystal', assetUrl('/assets/ui/teleport-crystal.png'));
+  scene.load.image('forest-bear-key', assetUrl('/assets/ui/forest-bear-key.png'));
   const tier = EQUIPMENT_TIERS.find((t) => t.island === map.island || t.islandName === map.island);
   if (tier && tier.id !== 'woods')
     scene.load.atlas(
       `loot-equipment-${tier.id}`,
-      `/assets/equipment/islands/${tier.id}.png`,
+      assetUrl(`/assets/equipment/islands/${tier.id}.png`),
       `/assets/equipment/islands/${tier.id}.json`,
     );
 }

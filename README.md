@@ -181,3 +181,7 @@ The carousel uses eight individual RGBA cutouts under `/assets/backgrounds/islan
 The round destination sprite is `/assets/ui/teleport-destination.png` (1254×1254 RGBA with clear exterior pixels). Map travel controls and crystal balance sit in a compact footer; there is no framed modal, companion heading, rectangular location card or shop panel behind the island.
 
 Elderwood’s island art matches the existing green-roofed buildings: cottages, a village hall, Bram’s forge, a market, a stream and waterfalls around a central square. The village has no hunting spawns or boss marker. Previewing its slide costs nothing; its central teleport button uses the normal one-crystal return-home rule. The quick home control remains available on the hunting slides.
+
+### Performance delivery
+
+Images use lossless, content-addressed WebP copies with immutable delivery caching. Armed/gathering sheets and outfit colors load on demand. Multiplayer clients negotiate field-level snapshot deltas with periodic full-state recovery; legacy full snapshots remain supported. Phaser receives every update while React skips unchanged HUD state and coalesces bursts. See [performance measurements and repeatable checks](docs/performance.md) for the local 24-player and mobile-emulation results and their limits.

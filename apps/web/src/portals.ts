@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import { portalThemeFor, type GameMap, type PortalTheme } from '@ros/game-data';
 import manifest from '../public/assets/effects/island-portals/manifest.json';
@@ -11,7 +12,7 @@ export function preloadPortalTheme(scene: Phaser.Scene, theme: PortalTheme) {
   if (scene.textures.exists(key(theme))) return;
   scene.load.atlas(
     key(theme),
-    `/assets/effects/island-portals/${theme}.png`,
+    assetUrl(`/assets/effects/island-portals/${theme}.png`),
     `/assets/effects/island-portals/${theme}.json`,
   );
 }

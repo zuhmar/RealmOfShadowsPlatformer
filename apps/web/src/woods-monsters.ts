@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import { groundSlamFrame } from './boss-animation';
 import Phaser from 'phaser';
 import { WOODS_MONSTERS, BOSS_ATTACK, type WoodsMonster } from '@ros/game-data';
@@ -14,7 +15,7 @@ export function preloadWoodsMonster(scene: Phaser.Scene, monster?: WoodsMonster)
   if (monster === 'crystal-wyrm') {
     scene.load.atlas(
       'crystal-wyrm-special',
-      '/assets/monsters/crystal-wyrm-special.png',
+      assetUrl('/assets/monsters/crystal-wyrm-special.png'),
       '/assets/monsters/crystal-wyrm-special.json',
     );
     scene.load.json(
@@ -25,12 +26,16 @@ export function preloadWoodsMonster(scene: Phaser.Scene, monster?: WoodsMonster)
   if (monster === 'forest-bear') {
     scene.load.atlas(
       'forest-bear-slam',
-      '/assets/monsters/forest-bear-slam.png',
+      assetUrl('/assets/monsters/forest-bear-slam.png'),
       '/assets/monsters/forest-bear-slam.json',
     );
     scene.load.json('forest-bear-slam-clips', '/assets/monsters/forest-bear-slam-clips.json');
   }
-  scene.load.atlas(monster, `/assets/monsters/${monster}.png`, `/assets/monsters/${monster}.json`);
+  scene.load.atlas(
+    monster,
+    assetUrl(`/assets/monsters/${monster}.png`),
+    `/assets/monsters/${monster}.json`,
+  );
   scene.load.json(`${monster}-clips`, `/assets/monsters/${monster}-clips.json`);
 }
 export function registerWoodsMonster(scene: Phaser.Scene, monster?: WoodsMonster) {

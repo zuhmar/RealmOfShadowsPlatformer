@@ -1,7 +1,8 @@
+import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import { islandArmedKey, preloadIslandArmed } from './island-armed';
 import type { Player } from '@ros/shared';
-import { weaponKind, type WeaponKind, type GameMap } from '@ros/game-data';
+import { equipmentDefinition, weaponKind, type WeaponKind, type GameMap } from '@ros/game-data';
 import {
   APPEARANCES,
   OUTFITS,
@@ -26,38 +27,42 @@ const armedKey = (appearance: string, outfit: string, weapon: string) =>
 type Clips = {
   animations: Record<string, { frames: string[]; frameRate: number; repeat: number }>;
 };
-export function preloadCharacters(scene: Phaser.Scene, players: Player[] = []) {
+export function preloadCharacters(scene: Phaser.Scene, players: Player[] = [], map?: GameMap) {
   preloadIslandArmed(scene, players);
   scene.load.atlas(
     'woods-equipment',
-    '/assets/equipment/islands/woods.png',
+    assetUrl('/assets/equipment/islands/woods.png'),
     '/assets/equipment/islands/woods.json',
   );
-  scene.load.atlas('mira', '/assets/characters/mira.png', '/assets/characters/mira.json');
+  if (!map || map.npcs.some((n) => n.id === 'mira'))
+    scene.load.atlas(
+      'mira',
+      assetUrl('/assets/characters/mira.png'),
+      '/assets/characters/mira.json',
+    );
   scene.load.atlas(
     'elderwood-weapons',
-    '/assets/equipment/elderwood-weapons.png',
+    assetUrl('/assets/equipment/elderwood-weapons.png'),
     '/assets/equipment/elderwood-weapons.json',
   );
   scene.load.json('armed-clips', '/assets/characters/armed/manifest.json');
-  for (const a of APPEARANCES)
-    for (const w of WEAPONS) {
-      const path = `/assets/characters/armed/citizen-${a}-${w}`;
-      scene.load.atlas(armedKey(a, 'sage', w), `${path}.png`, `${path}.json`);
-      scene.load.json(`armed-atlas-${a}-${w}`, `${path}.json`);
-    }
-  for (const a of APPEARANCES)
-    for (const material of ['wood', 'iron', 'crystal']) {
-      const suffix = material === 'wood' ? '' : `-${material}`;
-      const path = `/assets/characters/gathering/citizen-${a}${suffix}`;
-      scene.load.atlas(gatheringKey(a, 'sage', material), `${path}.png`, `${path}.json`);
-      scene.load.json(`gathering-atlas-${a}${suffix}`, `${path}.json`);
-    }
+  for (const p of players) {
+    const kind = weaponKind(p.weapon);
+    if (kind !== 'unarmed') requestSheet(scene, appearanceOf(p.appearance), 'armed', kind, false);
+    if (p.gathering)
+      requestSheet(
+        scene,
+        appearanceOf(p.appearance),
+        'gathering',
+        toolMaterial(p.gathering.toolId),
+        false,
+      );
+  }
   scene.load.json('citizen-clips', '/assets/characters/citizen-animations.json');
   for (const a of APPEARANCES)
     scene.load.atlas(
       `citizen-${a}-sage`,
-      `/assets/characters/citizen-${a}.png`,
+      assetUrl(`/assets/characters/citizen-${a}.png`),
       `/assets/characters/citizen-${a}.json`,
     );
   // Retain the atlas definitions to register the color variants with identical frame geometry.
@@ -65,12 +70,13 @@ export function preloadCharacters(scene: Phaser.Scene, players: Player[] = []) {
     scene.load.json(`citizen-atlas-${a}`, `/assets/characters/citizen-${a}.json`);
 }
 export function registerCharacters(scene: Phaser.Scene) {
-  scene.anims.create({
-    key: 'mira-idle',
-    frames: Array.from({ length: 6 }, (_, i) => ({ key: 'mira', frame: `idle-${i}` })),
-    frameRate: 4,
-    repeat: -1,
-  });
+  if (scene.textures.exists('mira'))
+    scene.anims.create({
+      key: 'mira-idle',
+      frames: Array.from({ length: 6 }, (_, i) => ({ key: 'mira', frame: `idle-${i}` })),
+      frameRate: 4,
+      repeat: -1,
+    });
   const clips = scene.cache.json.get('citizen-clips') as Clips;
   for (const a of APPEARANCES) {
     const atlas = scene.cache.json.get(`citizen-atlas-${a}`) as Atlas;
@@ -91,46 +97,84 @@ export function registerCharacters(scene: Phaser.Scene) {
       }
     }
   }
-  for (const a of APPEARANCES)
-    for (const weapon of WEAPONS) {
-      const atlas = scene.cache.json.get(`armed-atlas-${a}-${weapon}`) as Atlas;
-      const original = scene.textures
-        .get(armedKey(a, 'sage', weapon))
-        .getSourceImage() as HTMLImageElement;
-      for (const outfit of ['sage'] as const) {
-        const key = armedKey(a, outfit, weapon);
+  for (const a of APPEARANCES) {
+    for (const weapon of WEAPONS) registerSheet(scene, a, 'armed', weapon);
+    for (const material of ['wood', 'iron', 'crystal'])
+      registerSheet(scene, a, 'gathering', material);
+  }
+}
 
-        const armedClips = scene.cache.json.get('armed-clips') as Clips;
-        for (const [name, clip] of Object.entries(armedClips.animations)) {
-          if (name === 'climb') continue; // Always use the original unarmed climbing poses.
-          scene.anims.create({
-            key: `${key}-${name}`,
-            frames: clip.frames.map((frame) => ({ key, frame })),
-            frameRate: clip.frameRate,
-            repeat: clip.repeat,
-          });
-        }
-      }
-    }
-  for (const a of APPEARANCES)
-    for (const material of ['wood', 'iron', 'crystal']) {
-      const suffix = material === 'wood' ? '' : `-${material}`;
-      const atlas = scene.cache.json.get(`gathering-atlas-${a}${suffix}`) as Atlas;
-      const original = scene.textures
-        .get(gatheringKey(a, 'sage', material))
-        .getSourceImage() as HTMLImageElement;
-      for (const outfit of ['sage'] as const) {
-        const key = gatheringKey(a, outfit, material);
-
-        for (const name of ['mining', 'woodcutting', 'fishing', 'herbalism'])
-          scene.anims.create({
-            key: `${key}-${name}`,
-            frames: Array.from({ length: 6 }, (_, i) => ({ key, frame: `${name}-${i}` })),
-            frameRate: name === 'fishing' ? 4 : 7,
-            repeat: -1,
-          });
-      }
-    }
+const requests = new WeakMap<Phaser.Scene, Map<string, number>>();
+const registeredSheets = new WeakMap<Phaser.Scene, Set<string>>();
+const toolMaterial = (id?: string) =>
+  id?.startsWith('crystal-') ? 'crystal' : id?.startsWith('iron-') ? 'iron' : 'wood';
+function registerSheet(scene: Phaser.Scene, a: string, mode: 'armed' | 'gathering', part: string) {
+  const key = mode === 'armed' ? armedKey(a, 'sage', part) : gatheringKey(a, 'sage', part);
+  let registered = registeredSheets.get(scene);
+  if (registered?.has(key)) return;
+  if (!scene.textures.exists(key)) return;
+  const clips: Clips =
+    mode === 'armed'
+      ? scene.cache.json.get('armed-clips')
+      : {
+          animations: Object.fromEntries(
+            ['mining', 'woodcutting', 'fishing', 'herbalism'].map((name) => [
+              name,
+              {
+                frames: Array.from({ length: 6 }, (_, i) => `${name}-${i}`),
+                frameRate: name === 'fishing' ? 4 : 7,
+                repeat: -1,
+              },
+            ]),
+          ),
+        };
+  if (!clips) return;
+  for (const [name, clip] of Object.entries(clips.animations)) {
+    if (name === 'hurt' || name === 'climb' || scene.anims.exists(`${key}-${name}`)) continue;
+    scene.anims.create({
+      key: `${key}-${name}`,
+      frames: clip.frames.map((frame) => ({ key, frame })),
+      frameRate: clip.frameRate,
+      repeat: clip.repeat,
+    });
+  }
+  if (!registered) {
+    registered = new Set();
+    registeredSheets.set(scene, registered);
+  }
+  registered.add(key);
+}
+function requestSheet(
+  scene: Phaser.Scene,
+  a: string,
+  mode: 'armed' | 'gathering',
+  part: string,
+  start = true,
+) {
+  const key = mode === 'armed' ? armedKey(a, 'sage', part) : gatheringKey(a, 'sage', part);
+  const suffix = part === 'wood' ? '' : `-${part}`;
+  const atlasKey = mode === 'armed' ? `armed-atlas-${a}-${part}` : `gathering-atlas-${a}${suffix}`;
+  if (scene.textures.exists(key) && scene.cache.json.has(atlasKey)) {
+    registerSheet(scene, a, mode, part);
+    return true;
+  }
+  let pending = requests.get(scene);
+  if (!pending) {
+    pending = new Map();
+    requests.set(scene, pending);
+  }
+  const now = scene.time.now;
+  if ((pending.get(key) ?? -Infinity) <= now) {
+    pending.set(key, now + 15000);
+    const path =
+      mode === 'armed'
+        ? `/assets/characters/armed/citizen-${a}-${part}`
+        : `/assets/characters/gathering/citizen-${a}${suffix}`;
+    if (!scene.textures.exists(key)) scene.load.atlas(key, assetUrl(`${path}.png`), `${path}.json`);
+    if (!scene.cache.json.has(atlasKey)) scene.load.json(atlasKey, `${path}.json`);
+    if (start && !scene.load.isLoading()) scene.load.start();
+  }
+  return false;
 }
 
 /** Prepare just the outfit that a visible character needs, rather than every color variant on startup. */
@@ -154,7 +198,8 @@ function ensureOutfit(
       : mode === 'armed'
         ? armedKey(a, outfit, part)
         : gatheringKey(a, outfit, part);
-  if (scene.textures.exists(key)) return;
+  if (mode !== 'body' && !requestSheet(scene, a, mode, part)) return false;
+  if (scene.textures.exists(key)) return true;
   const suffix = part === 'wood' ? '' : `-${part}`;
   const atlasKey =
     mode === 'body'
@@ -194,6 +239,7 @@ function ensureOutfit(
       repeat: clip.repeat,
     });
   }
+  return true;
 }
 
 export class CharacterVisual {
@@ -205,6 +251,7 @@ export class CharacterVisual {
   drawnWeapon?: WeaponKind;
   landedUntil = 0;
   launchUntil = 0;
+  pendingAttack = false;
   constructor(
     private scene: Phaser.Scene,
     public player: Player,
@@ -231,29 +278,44 @@ export class CharacterVisual {
       : p.gathering?.toolId?.startsWith('iron-')
         ? 'iron'
         : 'wood';
-    const islandKey = armed ? islandArmedKey(this.scene, p) : null;
-    if (!islandKey)
-      ensureOutfit(
-        this.scene,
-        p.appearance,
-        p.outfit,
-        gathering ? 'gathering' : armed ? 'armed' : 'body',
-        gathering ? gatheringMaterial : kind,
-      );
-    const key = gathering
-      ? gatheringKey(p.appearance, p.outfit, gatheringMaterial)
-      : armed
-        ? (islandKey ?? armedKey(p.appearance, p.outfit, kind))
-        : characterKey(p.appearance, p.outfit);
-    this.drawnWeapon = armed ? kind : 'unarmed';
+    const islandGear = armed && !!equipmentDefinition(p.weapon)?.weaponKind;
+    const referenceReady =
+      islandGear && requestSheet(this.scene, appearanceOf(p.appearance), 'armed', kind);
+    const islandKey = referenceReady ? islandArmedKey(this.scene, p) : null;
+    // Tier weapons need the sage reference for tinting, but never a second colored legacy sheet.
+    const ready = islandGear
+      ? !!islandKey
+      : ensureOutfit(
+          this.scene,
+          p.appearance,
+          p.outfit,
+          gathering ? 'gathering' : armed ? 'armed' : 'body',
+          gathering ? gatheringMaterial : kind,
+        );
+    const key = !ready
+      ? characterKey(p.appearance, p.outfit)
+      : gathering
+        ? gatheringKey(p.appearance, p.outfit, gatheringMaterial)
+        : armed
+          ? (islandKey ?? armedKey(p.appearance, p.outfit, kind))
+          : characterKey(p.appearance, p.outfit);
+    ensureOutfit(this.scene, p.appearance, p.outfit, 'body');
+    // Use a valid unarmed pose while a newly equipped sheet loads.
+    const drawingGathering = ready ? gathering : undefined;
+    this.drawnWeapon = armed && ready ? kind : 'unarmed';
     if (key !== this.key) {
       this.key = key;
       this.sprite
         .stop()
-        .setTexture(key, gathering ? `${gathering.skill.toLowerCase()}-0` : 'idle-0');
+        .setTexture(key, drawingGathering ? `${drawingGathering.skill.toLowerCase()}-0` : 'idle-0');
     }
-    const action = characterAction(p, this.previous);
-    this.sprite.setOrigin(0.5, 0.875).setScale(gathering ? 0.32 : armed ? 0.4 : 0.36);
+    let action = characterAction(p, this.previous);
+    if (!ready && action === 'attack') this.pendingAttack = true;
+    if (ready && this.pendingAttack) {
+      action = 'attack';
+      this.pendingAttack = false;
+    }
+    this.sprite.setOrigin(0.5, 0.875).setScale(drawingGathering ? 0.32 : armed ? 0.4 : 0.36);
     if (this.previous?.grounded && !p.grounded && p.vy < 0 && !p.climbing)
       this.launchUntil = now + 70;
     if (this.previous && !this.previous.grounded && p.grounded && Math.abs(this.previous.vy) > 160)
@@ -261,7 +323,7 @@ export class CharacterVisual {
     const playing = this.sprite.anims.isPlaying;
     const clip = this.sprite.anims.currentAnim?.key ?? '';
     const oneShot = playing && clip.endsWith('-attack') && motion !== 'climb';
-    if (gathering) this.sprite.play(`${key}-${gathering.skill.toLowerCase()}`, true);
+    if (drawingGathering) this.sprite.play(`${key}-${drawingGathering.skill.toLowerCase()}`, true);
     else if (action && motion !== 'climb') this.sprite.play(`${key}-${action}`);
     else if (!oneShot) {
       if (motion === 'air' || (motion !== 'climb' && now < this.landedUntil)) {
@@ -279,9 +341,9 @@ export class CharacterVisual {
       } else this.sprite.play(`${key}-${motion}`, true);
     }
     this.gatheringVisual.clear();
-    if (gathering?.skill === 'Fishing') {
+    if (drawingGathering?.skill === 'Fishing') {
       const g = this.gatheringVisual,
-        x = (gathering.x + 22 - p.x) * p.facing,
+        x = (drawingGathering.x + 22 - p.x) * p.facing,
         y = 30 + Math.sin(now / 180) * 2;
       const atlas = this.scene.cache.json.get(
         `gathering-atlas-${appearanceOf(p.appearance)}${gatheringMaterial === 'wood' ? '' : `-${gatheringMaterial}`}`,
@@ -315,18 +377,25 @@ export class CharacterVisual {
   }
   die(x = this.container.x, y = this.container.y) {
     const kind = weaponKind(this.player.weapon);
-    ensureOutfit(
-      this.scene,
-      this.player.appearance,
-      this.player.outfit,
-      kind === 'unarmed' ? 'body' : 'armed',
-      kind,
-    );
-    const key =
+    const tierWeapon = !!equipmentDefinition(this.player.weapon)?.weaponKind;
+    if (!tierWeapon)
+      ensureOutfit(
+        this.scene,
+        this.player.appearance,
+        this.player.outfit,
+        kind === 'unarmed' ? 'body' : 'armed',
+        kind,
+      );
+    const requestedKey =
       kind === 'unarmed'
         ? characterKey(this.player.appearance, this.player.outfit)
-        : (islandArmedKey(this.scene, this.player) ??
-          armedKey(this.player.appearance, this.player.outfit, kind));
+        : tierWeapon
+          ? (islandArmedKey(this.scene, this.player) ??
+            characterKey(this.player.appearance, this.player.outfit))
+          : armedKey(this.player.appearance, this.player.outfit, kind);
+    const key = this.scene.textures.exists(requestedKey)
+      ? requestedKey
+      : characterKey(this.player.appearance, this.player.outfit);
     const corpse = this.scene.add
       .sprite(x, y, key, 'death-0')
       .setOrigin(0.5, 224 / 256)

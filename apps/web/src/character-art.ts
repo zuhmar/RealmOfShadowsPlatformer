@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 export const APPEARANCES = ['male', 'female'] as const;
 export const OUTFITS = ['sage', 'ember', 'tide'] as const;
 export type Appearance = (typeof APPEARANCES)[number];
@@ -99,10 +100,10 @@ export function characterPreview(appearance: string, outfit: string) {
       const response = await fetch(`/assets/characters/citizen-${a}.json`);
       if (!response.ok) throw new Error('Character artwork unavailable');
       const atlas = (await response.json()) as Atlas;
-      let image = `/assets/characters/citizen-${a}.png`;
+      let image = assetUrl(`/assets/characters/citizen-${a}.png`);
       if (o !== 'sage') {
         const source = new Image();
-        source.src = image;
+        source.src = assetUrl(image);
         await source.decode();
         image = recolorOutfit(source, atlas.meta.size.w, atlas.meta.size.h, o).toDataURL(
           'image/png',

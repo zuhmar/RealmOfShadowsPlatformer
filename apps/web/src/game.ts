@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import { CrystalScenery, preloadCrystal, cavernMentor } from './crystal';
 import { GEAR_RARITY_COLORS } from '@ros/shared';
 import { BossWarnings, bossImpact } from './boss-attacks';
@@ -56,11 +57,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       super('realm');
     }
     preload() {
-      preloadCharacters(this, bridge.snapshot?.players ?? []);
-      this.load.image('bram', '/assets/characters/bram.png');
-
-      preloadPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
       const loadingMap = MAPS[bridge.snapshot?.mapId ?? 'village'];
+      preloadCharacters(this, bridge.snapshot?.players ?? [], loadingMap);
+      if (loadingMap.npcs.some((n) => n.id === 'bram'))
+        this.load.image('bram', assetUrl('/assets/characters/bram.png'));
+      preloadPortals(this, loadingMap);
       preloadWeaponEffects(this);
       preloadLoot(this, loadingMap);
       preloadBossEntrance(this, loadingMap);
@@ -68,14 +69,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
       else if (loadingMap.island === 'Crystal Caverns') preloadCrystal(this, loadingMap);
       else preloadVillage(this);
-      this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
-      this.load.spritesheet(WOLF_TEXTURE, '/assets/monsters/wolf-spritesheet.png', {
-        frameWidth: WOLF_FRAME_SIZE,
-        frameHeight: WOLF_FRAME_SIZE,
-      });
+      if (loadingMap.id === 'woods' || loadingMap.monster === 'wolf') {
+        this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
+        this.load.spritesheet(WOLF_TEXTURE, assetUrl('/assets/monsters/wolf-spritesheet.png'), {
+          frameWidth: WOLF_FRAME_SIZE,
+          frameHeight: WOLF_FRAME_SIZE,
+        });
+      }
     }
     create() {
-      registerWolfAnimations(this);
+      if (this.textures.exists(WOLF_TEXTURE)) registerWolfAnimations(this);
       registerWeaponEffects(this);
       registerWoodsMonster(this, MAPS[bridge.snapshot?.mapId ?? 'village'].monster);
       registerCharacters(this);

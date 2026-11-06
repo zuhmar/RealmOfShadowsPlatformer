@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import { useEffect, useId, useState } from 'react';
 import { characterPreview, type Atlas } from './character-art';
 export function Avatar({
@@ -42,7 +43,7 @@ export function Avatar({
             </clipPath>
           </defs>
           <image
-            href={art.image}
+            href={assetUrl(art.image)}
             x={pose.spriteSourceSize.x - pose.frame.x}
             y={pose.spriteSourceSize.y - pose.frame.y}
             width={art.atlas.meta.size.w}

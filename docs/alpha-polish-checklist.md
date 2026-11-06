@@ -12,3 +12,5 @@ Completed scope: Crystal Caverns first; the remaining five islands stay planned.
 Verification: 106 unit tests; ten database/network integration tests; typecheck and production build; Crystal desktop/mobile rendering; character, island-weapon and gathering animation regressions; real browser reconnect preserving the canvas, confirmed exit, and audio lifecycle/settings checks. A local 24-client room measured 94.82 ms p95 update interval and 29,217 average snapshot bytes.
 
 Automated mobile viewport rendering and a short local room load test do not establish physical-phone performance or production capacity. Those remain release validation tasks.
+
+Performance follow-up completed: lossless image delivery and cache headers, on-demand armed/gathering sheets and map-specific NPC/monster art, duplicate outfit texture removal, sequenced delta snapshots with resync/legacy compatibility, and HUD publication coalescing. See [performance measurements](performance.md) for load results and mobile-emulation limits.

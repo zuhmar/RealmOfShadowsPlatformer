@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import { BOSS_ENTRANCE_PROPS, type GameMap, type PortalTheme } from '@ros/game-data';
 import manifest from '../public/assets/props/boss-entrances/manifest.json';
@@ -6,7 +7,7 @@ const art = manifest as Record<PortalTheme, Art>;
 export function preloadBossProp(scene: Phaser.Scene, theme: PortalTheme) {
   const key = `boss-prop-${theme}`;
   if (!scene.textures.exists(key))
-    scene.load.image(key, `/assets/props/boss-entrances/${theme}.png`);
+    scene.load.image(key, assetUrl(`/assets/props/boss-entrances/${theme}.png`));
 }
 export function preloadBossEntrance(scene: Phaser.Scene, map: GameMap) {
   if (map.bossEntrance) preloadBossProp(scene, map.bossEntrance.theme);

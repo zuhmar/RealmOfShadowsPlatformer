@@ -1,3 +1,4 @@
+import { assetUrl } from './assets';
 import crystalResources from '../public/assets/ui/crystal-resources.json';
 import crystalDrops from '../public/assets/ui/crystal-loot.json';
 import islandAtlas from '../public/assets/equipment/islands/manifest.json';
@@ -30,11 +31,11 @@ export function ItemIcon({ id }: { id: string | null }) {
         aria-label={itemDefinition(id)?.name ?? id}
       >
         <image
-          href={
+          href={assetUrl(
             crystalAtlas === crystalResources
               ? '/assets/ui/crystal-resources.png'
-              : '/assets/ui/crystal-loot.png'
-          }
+              : '/assets/ui/crystal-loot.png',
+          )}
           width={crystalAtlas.meta.size.w}
           height={crystalAtlas.meta.size.h}
         />
@@ -44,7 +45,7 @@ export function ItemIcon({ id }: { id: string | null }) {
   if (id === 'teleport-crystal')
     return (
       <img
-        src="/assets/ui/teleport-crystal.png"
+        src={assetUrl('/assets/ui/teleport-crystal.png')}
         alt="Teleport Crystal"
         draggable={false}
         width="40"
@@ -68,7 +69,7 @@ export function ItemIcon({ id }: { id: string | null }) {
         style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
       >
         <image
-          href={`/assets/equipment/islands/${gear.tier}.png`}
+          href={assetUrl(`/assets/equipment/islands/${gear.tier}.png`)}
           width={sheet.width}
           height={sheet.height}
         />
@@ -87,7 +88,7 @@ export function ItemIcon({ id }: { id: string | null }) {
         style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
       >
         <image
-          href="/assets/ui/woods-loot.png"
+          href={assetUrl('/assets/ui/woods-loot.png')}
           width={loot.meta.size.w}
           height={loot.meta.size.h}
         />
@@ -97,7 +98,7 @@ export function ItemIcon({ id }: { id: string | null }) {
   if (id === 'forest-bear-key')
     return (
       <img
-        src="/assets/ui/forest-bear-key.png"
+        src={assetUrl('/assets/ui/forest-bear-key.png')}
         alt="Forest Bear Key"
         draggable={false}
         width="32"
@@ -108,7 +109,7 @@ export function ItemIcon({ id }: { id: string | null }) {
   if (id === 'iron-bar')
     return (
       <img
-        src="/assets/ui/iron-bar.png"
+        src={assetUrl('/assets/ui/iron-bar.png')}
         alt="Iron Bar"
         draggable={false}
         width="32"
@@ -132,7 +133,7 @@ export function ItemIcon({ id }: { id: string | null }) {
         style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
       >
         <image
-          href="/assets/ui/woods-resources.png"
+          href={assetUrl('/assets/ui/woods-resources.png')}
           width={resources.meta.size.w}
           height={resources.meta.size.h}
         />
@@ -152,7 +153,7 @@ export function ItemIcon({ id }: { id: string | null }) {
       style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
     >
       <image
-        href="/assets/equipment/elderwood-weapons.png"
+        href={assetUrl('/assets/equipment/elderwood-weapons.png')}
         width={atlas.meta.size.w}
         height={atlas.meta.size.h}
       />
