@@ -54,6 +54,8 @@ test('bear entrance and guardian prop sit on the highest platform; ground cannot
   p.x = gate.x;
   p.y = 760;
   p.inventory['forest-bear-key'] = 1;
-  assert.throws(() => usePortal(p, map), /Walk/);
+  // Ground-level interaction reaches the Crystal route, never the bear gate above.
+  assert.throws(() => usePortal(p, map), /Forest Bear/);
+  assert.equal(p.mapId, map.id);
   assert.equal(p.inventory['forest-bear-key'], 1);
 });

@@ -249,6 +249,12 @@ for (const [stage, name, monster, background] of [
   };
 }
 Object.assign(MAPS,CRYSTAL_MAPS);
+MAPS['woods-3'].portals.push({
+  x: 2300,
+  y: 760,
+  target: 'crystal',
+  label: 'Crystal Caverns',
+});
 MAPS.village.portals.push({x:900,y:450,target:'crystal',label:'Crystal Caverns'});
 export const STORY = {
   title: 'The last survivor',

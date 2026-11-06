@@ -38,6 +38,21 @@ try {
   await page.waitForFunction(() => window.propTest.host.getAttribute('aria-busy') === 'false');
   expect(
     await page.evaluate(() => {
+      const portal = window.propTest.game.scene
+        .getScene('realm')
+        .children.list.find((c) => c.name === 'travel-portal' && c.getData('target') === 'crystal');
+      return (
+        portal && {
+          x: portal.x,
+          y: portal.y,
+          theme: portal.getData('theme'),
+          animated: portal.anims.isPlaying,
+        }
+      );
+    }),
+  ).toEqual({ x: 2300, y: 760, theme: 'crystal', animated: true });
+  expect(
+    await page.evaluate(() => {
       const s = window.propTest.game.scene.getScene('realm'),
         p = s.children.getByName('boss-entrance-prop');
       return {

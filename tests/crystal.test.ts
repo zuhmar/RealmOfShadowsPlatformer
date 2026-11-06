@@ -66,6 +66,26 @@ test('Crystal access requires Woods victory and level; each boss entry consumes 
   assert.equal(usePortal(p, MAPS['crystal-3']), 'crystal-boss');
   assert.equal(p.inventory['crystal-boss-key'], 1);
 });
+test('Brambleboar Run has a ground-level Crystal route separate from the keyed bear entrance', () => {
+  const source = MAPS['woods-3'];
+  const portal = source.portals.find((q) => q.target === 'crystal')!;
+  assert.ok(portal);
+  assert.equal(portal.y, source.platforms.find((f) => f.id === 'ground')!.y);
+  assert.ok(Math.abs(portal.y - source.portals.find((q) => q.key)!.y) > 110);
+  const p = createPlayer('p', 'Hero', source.id);
+  Object.assign(p, { x: portal.x, y: portal.y, level: 11 });
+  const original = structuredClone(p);
+  assert.throws(() => usePortal(p, source), /Forest Bear/);
+  assert.deepEqual(p, original);
+  p.bossKills = { 'forest-bear': 1 };
+  p.level = 10;
+  assert.throws(() => usePortal(p, source), /level 11/);
+  p.level = 11;
+  p.inventory['forest-bear-key'] = 2;
+  assert.equal(usePortal(p, source), 'crystal');
+  assert.equal(p.inventory['forest-bear-key'], 2);
+  assert.ok(p.visitedAreas?.includes('crystal'));
+});
 test('Crystal gear drops, first clear, boss counter and earned next-island access are awarded once', () => {
   const w = new World(MAPS['crystal-boss']),
     p = createPlayer('p', 'Hero', 'crystal-boss');

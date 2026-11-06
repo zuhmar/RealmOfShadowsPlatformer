@@ -1,5 +1,7 @@
 # Crystal Caverns and alpha systems
 
+Enter from the ground-level portal at the far right of Brambleboar Run, or the village’s upper terrace. Both routes require level 11 and earned Forest Bear access. The boar area’s keyed bear entrance stays on its separate upper platform.
+
 Crystal Caverns is the second playable island (levels 11–20): Cave Bats, Crystal Golems, Shard Scorpions and Crystal Wyrm have distinct connected platform layouts. Regular areas contain ten monsters; the boss room contains one double-sized boss with a basic attack and telegraphed animated eruption. The upper boss entrance consumes one Crystal key per entry. Scorpions can drop keys; the scorpion quest grants one.
 
 The Cavern Mentor’s quests require 90 bats, 120 golems, 180 scorpions and one Wyrm, sequentially. Claiming the bat trial unlocks the first free class choice at the mentor. Future changes cost 500 gold at the mentor or Mira, refund talents and unequip incompatible weapons. The server checks both the durable quest ledger and location. Knight/Rogue train Melee, Mage trains Magic, Archer trains Distance; Civilian has no active combat training. Training only raises base damage. Each class has mastery, signature and discipline talents with one point per five character levels, up to 15 points.
