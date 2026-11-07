@@ -12,6 +12,23 @@ test('every class has integrated headwear in both unarmed bodies and starter/Woo
         const atlas = JSON.parse(readFileSync(new URL(`${path}.json`, root), 'utf8'));
         assert.equal(Object.keys(atlas.frames).length, tier ? 30 : 42);
         assert.equal(atlas.meta.integratedHeadwear, true);
+        assert.equal(atlas.meta.framingVersion, 2);
+        for (const entry of Object.values(atlas.frames) as any[]) {
+          assert.equal(
+            entry.spriteSourceSize.y + entry.frame.h,
+            atlas.meta.sourceFrame.baseline,
+            `${path}: feet must remain on the baseline across pose changes`,
+          );
+        }
+        const idleHeight = Array.from(
+          { length: 6 },
+          (_, i) => atlas.frames[`idle-${i}`].frame.h,
+        ).sort((a: number, b: number) => a - b);
+        assert.ok(
+          Math.abs(((idleHeight[2] + idleHeight[3]) / 2) * atlas.meta.sourceFrame.scale - 80) <
+            0.01,
+        );
+
         assert.ok(atlas.meta.sourceFrame.scale > 0);
         assert.ok(atlas.meta.sourceFrame.baseline < atlas.meta.sourceFrame.height);
         if (tier) assert.deepEqual(atlas.meta.integratedWeapon, { skin, tier });
@@ -91,4 +108,12 @@ test('previously unrestricted saved class skins migrate without affecting gold, 
   p.skin = 'rogue';
   assert.equal(normalizeSkin(p), true);
   assert.equal(p.skin, null);
+});
+
+test('Crystal knight jump crops exclude the detached strips from the next row', () => {
+  const atlas = JSON.parse(readFileSync(new URL('armed/crystal/female-knight.json', root), 'utf8'));
+  for (const name of ['jump-2', 'jump-3']) {
+    const f = atlas.frames[name].frame;
+    assert.ok(f.y + f.h < 660, `${name} includes the neighboring helmet strip`);
+  }
 });

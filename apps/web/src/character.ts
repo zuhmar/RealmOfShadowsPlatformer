@@ -1,3 +1,4 @@
+import { guardAtlasSampling } from './atlas-sampling';
 import { ClassSkinVisual, preloadSkins } from './class-skins';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
@@ -118,6 +119,7 @@ function registerSheet(scene: Phaser.Scene, a: string, mode: 'armed' | 'gatherin
   let registered = registeredSheets.get(scene);
   if (registered?.has(key)) return;
   if (!scene.textures.exists(key)) return;
+  guardAtlasSampling(scene.textures.get(key));
   const clips: Clips =
     mode === 'armed'
       ? scene.cache.json.get('armed-clips')

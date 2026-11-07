@@ -1,3 +1,4 @@
+import { guardAtlasSampling } from './atlas-sampling';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import { equipmentDefinition } from '@ros/game-data';
@@ -82,6 +83,7 @@ class IslandArmedSheets {
       this.scene.textures.addAtlas(key, texture, atlas);
       sheet.variants.add(key);
     }
+    guardAtlasSampling(this.scene.textures.get(key));
     for (const [name, clip] of Object.entries(clips.animations)) {
       if (name === 'climb' || this.scene.anims.exists(`${key}-${name}`)) continue;
       this.scene.anims.create({

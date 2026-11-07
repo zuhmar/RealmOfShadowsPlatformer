@@ -1,3 +1,4 @@
+import { guardAtlasSampling } from './atlas-sampling';
 import Phaser from 'phaser';
 import {
   CLASS_PATHS,
@@ -66,6 +67,7 @@ export function skinSheet(p: Player, unarmed = false) {
 export function skinKey(scene: Phaser.Scene, p: Player, start = true, unarmed = false) {
   const sheet = skinSheet(p, unarmed);
   if (!sheet || !load(scene, sheet.key, sheet.path, true, start)) return null;
+  guardAtlasSampling(scene.textures.get(sheet.key));
   if (!scene.anims.exists(`${sheet.key}-idle`)) {
     const atlas = scene.cache.json.get(`${sheet.key}-atlas`) as SkinAtlas;
     for (const [name, clip] of Object.entries(atlas.meta.animations)) {

@@ -96,6 +96,20 @@ try {
       tier,
     );
   }
+  await page.evaluate(() => {
+    const scene = window.skinsTest.game.scene.getScene('realm');
+    for (const visual of scene.characters.values()) {
+      const body = visual.skinVisual.body;
+      const frame = body.frame;
+      if (Math.abs(frame.u0 - (frame.cutX + 0.5) / frame.source.width) > 1e-9)
+        throw new Error('Pose filtering can sample a neighboring sprite');
+      const atlas = scene.cache.json.get(`${body.texture.key}-atlas`);
+      for (const pose of Object.values(atlas.frames)) {
+        if (pose.spriteSourceSize.y + pose.frame.h !== atlas.meta.sourceFrame.baseline)
+          throw new Error('Pose changes move the feet away from the baseline');
+      }
+    }
+  });
   await page.waitForTimeout(1200);
   await page.screenshot({ path: 'artifacts/class-skins-lineup.png' });
   const mutate = (values) =>

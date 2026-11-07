@@ -1,3 +1,4 @@
+import { guardAtlasSampling } from './atlas-sampling';
 import { fitArtwork } from './artwork';
 import { assetUrl } from './assets';
 import { CrystalScenery, preloadCrystal, cavernMentor } from './crystal';
@@ -58,6 +59,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       super('realm');
     }
     preload() {
+      this.load.on(Phaser.Loader.Events.COMPLETE, () => {
+        for (const key of this.textures.getTextureKeys())
+          guardAtlasSampling(this.textures.get(key));
+      });
       const loadingMap = MAPS[bridge.snapshot?.mapId ?? 'village'];
       preloadCharacters(this, bridge.snapshot?.players ?? [], loadingMap);
       if (loadingMap.npcs.some((n) => n.id === 'bram'))

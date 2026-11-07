@@ -30,3 +30,5 @@ Crystal Caverns uses its dedicated modular ledge, ground, ladder and dock atlas 
 - `node scripts/browser-terrain-proportions.mjs` checks all nine maps on desktop/mobile viewports.
 
 Generated raster files are copied unchanged. `scripts/frame-class-art.py` reads alpha bounds to create atlas metadata; it does not composite headwear or weapons onto characters. Screenshots go to ignored `artifacts/`. Mobile checks use Chromium emulation.
+
+Atlas framing uses the dominant connected silhouette to exclude detached strips from neighboring rows while retaining detached arrows. Each class pose uses a fixed foot baseline and the sheet’s uniform 80-unit idle scale. Profile and carousel previews use that same scale rather than the generated cell size. `scripts/tighten-character-atlases.py` tightens the older adventurer, held-weapon and gathering atlas rectangles while preserving their virtual coordinates; source raster artwork remains unchanged. Runtime atlas sampling uses a half-texel inset to prevent linear filtering from reading the neighboring cell.

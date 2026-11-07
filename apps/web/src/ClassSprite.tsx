@@ -7,7 +7,10 @@ type Frame = {
   spriteSourceSize: { x: number; y: number };
   sourceSize: { w: number; h: number };
 };
-type SkinAtlas = { frames: Record<string, Frame>; meta: { size: { w: number; h: number } } };
+type SkinAtlas = {
+  frames: Record<string, Frame>;
+  meta: { size: { w: number; h: number }; sourceFrame: { scale: number; baseline: number } };
+};
 const atlases = new Map<string, Promise<SkinAtlas>>();
 /** Headwear and weapons are part of the authored character pixels. */
 export function ClassSprite({
@@ -48,18 +51,19 @@ export function ClassSprite({
   }, [path, skin]);
   if (!skin) return <Avatar appearance={appearance} outfit={outfit} />;
   const f = atlas?.frames['idle-0'];
+  const viewport = atlas ? 104 / atlas.meta.sourceFrame.scale : 256;
   return (
     <svg
       role="img"
       aria-label={`${appearance} ${skin} skin`}
       aria-busy={!atlas}
-      viewBox={f ? `0 0 ${f.sourceSize.w} ${f.sourceSize.h}` : '0 0 256 256'}
+      viewBox={`0 0 ${viewport} ${viewport}`}
       className="class-sprite"
     >
       {atlas && f && (
         <svg
-          x={f.spriteSourceSize.x}
-          y={f.spriteSourceSize.y}
+          x={f.spriteSourceSize.x + viewport / 2 - f.sourceSize.w / 2}
+          y={f.spriteSourceSize.y + viewport * 0.9 - atlas.meta.sourceFrame.baseline}
           width={f.frame.w}
           height={f.frame.h}
           viewBox={`${f.frame.x} ${f.frame.y} ${f.frame.w} ${f.frame.h}`}

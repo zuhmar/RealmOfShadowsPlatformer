@@ -57,8 +57,11 @@ try {
           for (const pose of ['idle-0', 'attack-3']) {
             const f = atlas.frames[pose],
               s = f.spriteSourceSize,
-              b = f.frame;
-            row.innerHTML += `<svg width="110" height="155" viewBox="0 0 ${f.sourceSize.w} ${f.sourceSize.h}"><svg x="${s.x}" y="${s.y}" width="${b.w}" height="${b.h}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}"><image href="${image}" width="${atlas.meta.size.w}" height="${atlas.meta.size.h}"/></svg></svg>`;
+              b = f.frame,
+              viewport = 104 / atlas.meta.sourceFrame.scale,
+              x = s.x + viewport / 2 - f.sourceSize.w / 2,
+              y = s.y + viewport * 0.9 - atlas.meta.sourceFrame.baseline;
+            row.innerHTML += `<svg width="110" height="155" viewBox="0 0 ${viewport} ${viewport}"><svg x="${x}" y="${y}" width="${b.w}" height="${b.h}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}"><image href="${image}" width="${atlas.meta.size.w}" height="${atlas.meta.size.h}"/></svg></svg>`;
           }
           grid.append(card);
           const decoded = new Image();
