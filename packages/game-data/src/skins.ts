@@ -1,3 +1,6 @@
+import { CLASS_PATHS } from './classes';
+import { equipmentDefinition } from './island-equipment';
+import { weaponKind } from './index';
 import type { ClassId } from './classes';
 export const CLASS_SKINS: Record<
   ClassId,
@@ -15,12 +18,12 @@ export const CLASS_SKINS: Record<
   },
   mage: {
     name: 'Starlight Mage',
-    description: 'Violet robes and a star-trimmed pointed hat.',
+    description: 'Sapphire-blue robes, silver trim and a pointed wizard hat.',
     requiredClass: 'mage',
   },
   rogue: {
     name: 'Dusk Rogue',
-    description: 'Charcoal leather, plum accents and a shadow hood.',
+    description: 'Charcoal hood and mask, brown leather and a burgundy cape.',
     requiredClass: 'rogue',
   },
 };
@@ -42,4 +45,36 @@ export function canEquipSkin(classId: ClassId | undefined, skin: unknown) {
     validSkin(skin) &&
     (skin === null || !SKINS[skin].requiredClass || SKINS[skin].requiredClass === classId)
   );
+}
+
+/** Gender-neutral Celestial sheets follow equipped gear, not the current map. */
+export function classSkinSheet(
+  p: {
+    skin?: unknown;
+    classId?: ClassId;
+    weapon?: string | null;
+    climbing?: boolean;
+    gathering?: unknown;
+  },
+  forceUnarmed = false,
+) {
+  const skin = p.skin;
+  if (
+    typeof skin !== 'string' ||
+    skin === 'golden-test' ||
+    !Object.hasOwn(CLASS_SKINS, skin) ||
+    !canEquipSkin(p.classId, skin)
+  )
+    return { key: 'skin-golden-test', path: '/assets/characters/skins/golden-test', armed: false };
+  const cls = skin as ClassId,
+    kind = weaponKind(p.weapon),
+    tier = equipmentDefinition(p.weapon)?.tier ?? 'starter';
+  const armed =
+    !forceUnarmed &&
+    !p.climbing &&
+    !p.gathering &&
+    CLASS_PATHS[cls].weapon === kind &&
+    ['starter', 'woods', 'crystal'].includes(tier);
+  const id = `${cls}-${armed ? 'armed' : 'unarmed'}${armed && tier !== 'starter' ? `-${tier}` : ''}`;
+  return { key: `skin-celestial-${id}`, path: `/assets/characters/skins/celestial/${id}`, armed };
 }

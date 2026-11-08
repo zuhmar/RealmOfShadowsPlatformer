@@ -1,6 +1,12 @@
 import { guardAtlasSampling } from './atlas-sampling';
 import Phaser from 'phaser';
-import { equipmentDefinition, starterTool, weaponKind, type GameMap } from '@ros/game-data';
+import {
+  classSkinSheet,
+  equipmentDefinition,
+  starterTool,
+  weaponKind,
+  type GameMap,
+} from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 import {
@@ -14,7 +20,7 @@ type SkinAtlas = {
     sourceFrame: { width: number; height: number; baseline: number; scale: number };
     anchors: Record<string, { hand: { x: number; y: number } }>;
     animations: Record<string, { frames: string[]; frameRate: number; repeat: number }>;
-    integratedWeapon: { skin: string; tier: string } | null;
+    integratedWeapon: string | { skin: string; tier: string } | null;
   };
 };
 const pending = new WeakMap<Phaser.Scene, Map<string, number>>();
@@ -35,8 +41,8 @@ function load(scene: Phaser.Scene, key: string, path: string, metadata = false, 
   }
   return false;
 }
-export function skinSheet(_p: Player, _unarmed = false) {
-  return { key: 'skin-golden-test', path: '/assets/characters/skins/golden-test', armed: false };
+export function skinSheet(p: Player, unarmed = false) {
+  return classSkinSheet(p, unarmed);
 }
 export function skinKey(scene: Phaser.Scene, p: Player, start = true, unarmed = false) {
   const sheet = skinSheet(p, unarmed);
@@ -62,6 +68,7 @@ function geometry(scene: Phaser.Scene, sprite: Phaser.GameObjects.Sprite, key: s
   return f;
 }
 export function preloadSkins(scene: Phaser.Scene, players: Player[], map?: GameMap) {
+  if (players.length) skinKey(scene, { ...players[0], skin: 'golden-test' }, false, true);
   for (const p of players) {
     skinKey(scene, p, false, true);
     skinKey(scene, p, false);
@@ -78,7 +85,7 @@ export class ClassSkinVisual {
   key = '';
   launchUntil = 0;
   landedUntil = 0;
-  pendingAttack = false;
+  pendingAction: 'attack' | 'skill' | null = null;
   constructor(
     private scene: Phaser.Scene,
     parent: Phaser.GameObjects.Container,
@@ -95,13 +102,18 @@ export class ClassSkinVisual {
   }
   sync(p: Player, map: GameMap, now: number) {
     const action = characterAction(p, this.previous);
-    if (action) this.pendingAttack = true;
+    if (action)
+      this.pendingAction =
+        this.previous && p.lastSkill > this.previous.lastSkill ? 'skill' : 'attack';
     const requested = skinSheet(p);
     if (!requested) {
       this.container.setVisible(false);
       return false;
     }
-    const key = skinKey(this.scene, p) ?? skinKey(this.scene, p, true, true);
+    const key =
+      skinKey(this.scene, p) ??
+      skinKey(this.scene, p, true, true) ??
+      skinKey(this.scene, { ...p, skin: 'golden-test' }, true, true);
     if (!key) {
       this.container.setVisible(false);
       return false;
@@ -123,8 +135,10 @@ export class ClassSkinVisual {
     if (this.previous && !this.previous.grounded && p.grounded && Math.abs(this.previous.vy) > 160)
       this.landedUntil = now + 100;
     const playing =
-      this.body.anims.isPlaying && this.body.anims.currentAnim?.key.endsWith('-attack');
-    if (node || motion === 'climb') this.pendingAttack = false;
+      this.body.anims.isPlaying &&
+      (this.body.anims.currentAnim?.key.endsWith('-attack') ||
+        this.body.anims.currentAnim?.key.endsWith('-skill'));
+    if (node || motion === 'climb') this.pendingAction = null;
     if (node?.skill === 'Fishing') this.body.play(`${key}-idle`, true);
     else if (node) {
       if (this.body.anims.currentAnim?.key !== `${key}-attack` || !this.body.anims.isPlaying)
@@ -137,9 +151,13 @@ export class ClassSkinVisual {
       this.body
         .stop()
         .setFrame(now < this.launchUntil ? 'jump-0' : jumpFrame(p, now < this.landedUntil));
-    else if (this.pendingAttack && exact) {
-      this.body.play(`${key}-attack`);
-      this.pendingAttack = false;
+    else if (this.pendingAction && exact) {
+      const clip =
+        this.pendingAction === 'skill' && this.scene.anims.exists(`${key}-skill`)
+          ? 'skill'
+          : 'attack';
+      this.body.play(`${key}-${clip}`);
+      this.pendingAction = null;
     } else if (!playing) this.body.play(`${key}-${motion}`, true);
     this.item.setVisible(false);
     this.line.clear();
@@ -166,7 +184,12 @@ export class ClassSkinVisual {
         }
       }
     }
-    if (!node && motion !== 'climb' && weaponKind(p.weapon) !== 'unarmed') {
+    if (
+      !(exact && requested.armed) &&
+      !node &&
+      motion !== 'climb' &&
+      weaponKind(p.weapon) !== 'unarmed'
+    ) {
       const gear = equipmentDefinition(p.weapon);
       const weaponKey = gear ? `test-weapon-${gear.tier}` : 'elderwood-weapons';
       const ready = !gear || load(this.scene, weaponKey, `/assets/equipment/islands/${gear.tier}`);
@@ -202,7 +225,10 @@ export class ClassSkinVisual {
     return true;
   }
   die(x: number, y: number, p: Player) {
-    const key = skinKey(this.scene, p) ?? skinKey(this.scene, p, true, true);
+    const key =
+      skinKey(this.scene, p) ??
+      skinKey(this.scene, p, true, true) ??
+      skinKey(this.scene, { ...p, skin: 'golden-test' }, true, true);
     if (!key) return null;
     const c = this.scene.add.container(x, y).setDepth(9).setScale(p.facing, 1),
       body = this.scene.add.sprite(0, 0, key, 'death-0');

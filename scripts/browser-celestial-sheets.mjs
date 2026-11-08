@@ -4,7 +4,7 @@ const browser = await chromium.launch({
   executablePath: '/usr/bin/chromium',
   args: ['--no-sandbox'],
 });
-const page = await browser.newPage({ viewport: { width: 1200, height: 1100 } });
+const page = await browser.newPage({ viewport: { width: 1200, height: 2200 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 try {
@@ -72,7 +72,7 @@ try {
       type: Phaser.CANVAS,
       parent: host,
       width: 1200,
-      height: 1100,
+      height: 2200,
       backgroundColor: '#21172d',
       render: { antialias: true },
       scene: Gallery,
@@ -109,7 +109,7 @@ try {
   }
   expect(errors).toEqual([]);
   console.log(
-    'PASS: all eight sheets load and all six clips per sheet play every frame without errors.',
+    'PASS: all class and island sheets load and all six clips per sheet play every frame without errors.',
   );
 } finally {
   await browser.close();

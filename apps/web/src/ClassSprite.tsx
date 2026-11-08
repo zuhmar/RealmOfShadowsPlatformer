@@ -1,5 +1,3 @@
-import { CLASS_PATHS } from '@ros/game-data';
-import weapons from '../public/assets/equipment/elderwood-weapons.json';
 import { useEffect, useState } from 'react';
 import type { SkinId } from '@ros/game-data';
 import { assetUrl } from './assets';
@@ -26,7 +24,10 @@ export function ClassSprite({
   outfit?: string;
   armedPreview?: boolean;
 }) {
-  const path = '/assets/characters/skins/golden-test';
+  const path =
+    skin && skin !== 'golden-test'
+      ? `/assets/characters/skins/celestial/${skin}-${armedPreview ? 'armed' : 'unarmed'}`
+      : '/assets/characters/skins/golden-test';
   const [atlas, setAtlas] = useState<SkinAtlas | null>(null);
   useEffect(() => {
     let active = true;
@@ -54,12 +55,12 @@ export function ClassSprite({
 
   const f = atlas?.frames['idle-0'];
   const viewport = atlas ? 104 / atlas.meta.sourceFrame.scale : 256;
-  const weapon = armedPreview && skin && skin !== 'golden-test' ? CLASS_PATHS[skin].weapon : null;
-  const wf = weapon ? weapons.frames[weapon].frame : null;
   return (
     <svg
       role="img"
-      aria-label="Celestial adventurer"
+      aria-label={
+        skin && skin !== 'golden-test' ? `${skin} Celestial adventurer` : 'Celestial adventurer'
+      }
       aria-busy={!atlas}
       viewBox={`0 0 ${viewport} ${viewport}`}
       className="class-sprite"
@@ -76,21 +77,6 @@ export function ClassSprite({
             href={assetUrl(`${path}.png`)}
             width={atlas.meta.size.w}
             height={atlas.meta.size.h}
-          />
-        </svg>
-      )}
-      {atlas && wf && (
-        <svg
-          x={viewport * 0.61}
-          y={viewport * 0.47}
-          width={viewport * 0.28}
-          height={viewport * 0.4}
-          viewBox={`${wf.x} ${wf.y} ${wf.w} ${wf.h}`}
-        >
-          <image
-            href={assetUrl('/assets/equipment/elderwood-weapons.png')}
-            width={weapons.meta.size.w}
-            height={weapons.meta.size.h}
           />
         </svg>
       )}

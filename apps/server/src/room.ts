@@ -266,6 +266,7 @@ export class MapRoom extends Room {
         for (const key of [
           'classId',
           'skin',
+          'skinConceptVersion',
           'classTalents',
           'classRevision',
           'gold',

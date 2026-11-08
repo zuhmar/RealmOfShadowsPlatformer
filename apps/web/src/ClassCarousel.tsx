@@ -23,7 +23,7 @@ export function ClassCarousel({
   onClose: () => void;
   send: (type: string, value: unknown) => void;
 }) {
-  const choices: (SkinId | null)[] = mode === 'skin' ? ['golden-test'] : classes;
+  const choices: (SkinId | null)[] = mode === 'skin' ? ['golden-test', ...classes] : classes;
   const [index, setIndex] = useState(
     Math.max(0, choices.indexOf(mode === 'skin' ? (p.skin ?? null) : (p.classId ?? 'knight'))),
   );
@@ -165,7 +165,7 @@ export function ClassCarousel({
               ? 'Visit the Cavern Mentor to choose your first class. Later changes are also available from Mira.'
               : p.classId
                 ? `Changing class costs ${CLASS_CHANGE_GOLD} gold and refunds talent points.`
-                : 'Your first class choice is free. Your Celestial form stays the same across all four paths.'}
+                : 'Your first class choice is free and equips its class outfit. You can change your appearance separately.'}
           </p>
         ) : (
           <p className="class-carousel-note">

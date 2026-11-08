@@ -188,7 +188,7 @@ Images use compact, content-addressed WebP copies with exact transparency and im
 
 ### Class selection and skins
 
-Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. All four paths now share the Celestial body, with class weapons shown in the preview and equipped weapons/tools held in-game. Existing saves adopt this appearance automatically. See [character direction and story canon](docs/character-concept.md) for current artwork and [archived class skins and proportional terrain](docs/class-skins.md) for the former assets.
+Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. All four paths now have normal-colorway class outfits on the Celestial body. Choosing a class equips its outfit; Character → Change skin offers the matching outfit or bare Celestial. Equipped starter, Woods and Crystal weapons select the corresponding armed sheet; climbing/gathering use unarmed sheets with equipped tools. Existing class characters adopt their outfit once, then saved choices are preserved. See [class outfit integration](docs/class-outfit-integration.md). See [character direction and story canon](docs/character-concept.md) for current artwork and [archived class skins and proportional terrain](docs/class-skins.md) for the former assets.
 
 Platforms and ladders use a [cohesive terrain renderer](docs/cohesive-terrain.md): continuous ledges, matching biome materials and full-height connected rails across all nine playable maps. Distinct area layouts and collision positions are preserved.
 

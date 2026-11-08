@@ -10,9 +10,13 @@ helpers=runpy.run_path(str(repo/'scripts/frame-class-art.py'))
 root=repo/'apps/web/public/assets/characters/skins/celestial'
 root.mkdir(parents=True,exist_ok=True)
 weapons={'knight':'sword','archer':'bow','mage':'staff','rogue':'dual-daggers'}
-manifest={'version':1,'facing':'right','columns':6,'rows':6,'sheets':{}}
+manifest_path=root/'manifest.json'
+manifest=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'version':2,'facing':'right','columns':6,'rows':6,'sheets':{}}
+manifest['version']=2
+for entry in manifest['sheets'].values():entry.setdefault('tier','starter')
 for job in json.loads(Path(sys.argv[1]).read_text()):
- cls,variant=job['id'].split('-');assert cls in weapons and variant in ['armed','unarmed']
+ parts=job['id'].split('-');cls,variant=parts[:2];tier=parts[2] if len(parts)>2 else 'starter'
+ assert cls in weapons and variant in ['armed','unarmed'] and tier in ['starter','woods','crystal']
  armed=variant=='armed';names=['idle','walk','jump','attack','skill','death'] if armed else ['idle','walk','jump','climb','attack','death']
  source=Path(job['path']);im=Image.open(source).convert('RGBA');a=im.getchannel('A');w,h=im.size
  assert a.histogram()[0]/(w*h)>.15,f'{job["id"]}: missing transparent gutters'
@@ -34,8 +38,8 @@ for job in json.loads(Path(sys.argv[1]).read_text()):
   frames[key]={'frame':{'x':x,'y':y,'w':fw,'h':fh},'rotated':False,'trimmed':True,'spriteSourceSize':{'x':sx,'y':sy,'w':fw,'h':fh},'sourceSize':{'w':vw,'h':vh}}
   anchors[key]={'hand':{'x':sx+fw*(.9 if name in ['attack','skill'] and col in [2,3] else .78),'y':sy+fh*.63}}
  idle_h=statistics.median([b[5] for b in boxes if b[0]=='idle'])
- meta={'image':job['id']+'.png','size':{'w':w,'h':h},'sourceFrame':{'width':vw,'height':vh,'baseline':baseline,'scale':80/idle_h},'framingVersion':2,'class':cls,'variant':variant,'integratedHeadwear':True,'integratedWeapon':weapons[cls] if armed else None,'animations':{name:{'frames':[f'{name}-{n}' for n in range(6)],'frameRate':{'idle':6,'walk':10,'jump':10,'climb':8,'attack':12,'skill':12,'death':8}[name],'repeat':-1 if name in ['idle','walk','climb'] else 0} for name in names},'anchors':anchors}
+ meta={'image':job['id']+'.png','size':{'w':w,'h':h},'sourceFrame':{'width':vw,'height':vh,'baseline':baseline,'scale':80/idle_h},'framingVersion':2,'class':cls,'variant':variant,'tier':tier,'integratedHeadwear':True,'integratedWeapon':weapons[cls] if armed else None,'animations':{name:{'frames':[f'{name}-{n}' for n in range(6)],'frameRate':{'idle':6,'walk':10,'jump':10,'climb':8,'attack':12,'skill':12,'death':8}[name],'repeat':-1 if name in ['idle','walk','climb'] else 0} for name in names},'anchors':anchors}
  target=root/(job['id']+'.png');shutil.copyfile(source,target);target.with_suffix('.json').write_text(json.dumps({'frames':frames,'meta':meta},indent=2)+'\n')
- manifest['sheets'][job['id']]={'image':f'/assets/characters/skins/celestial/{job["id"]}.png','atlas':f'/assets/characters/skins/celestial/{job["id"]}.json','class':cls,'variant':variant,'weapon':weapons[cls] if armed else None,'source':source.name,'frames':36,'animations':names}
+ manifest['sheets'][job['id']]={'image':f'/assets/characters/skins/celestial/{job["id"]}.png','atlas':f'/assets/characters/skins/celestial/{job["id"]}.json','class':cls,'variant':variant,'tier':tier,'weapon':weapons[cls] if armed else None,'source':source.name,'frames':36,'animations':names}
  print(job['id'],im.size,'rows',ys,'scale',meta['sourceFrame']['scale'])
 (root/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')

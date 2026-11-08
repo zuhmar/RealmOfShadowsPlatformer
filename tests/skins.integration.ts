@@ -61,21 +61,21 @@ test('skin RPC enforces class restrictions, migrates old cosmetics and saves fre
     room.onMessage('notice', (s) => notices.push(s));
     const me = () => snapshot?.players.find((v) => v.id === p.id);
     await until(() => !!me());
-    assert.equal(me()!.skin, 'golden-test');
+    assert.equal(me()!.skin, 'knight');
     const gold = me()!.gold,
       weapon = me()!.weapon;
     room.send('skin', 'mage');
     await until(() => notices.some((s) => s.includes('matching class')));
-    assert.equal(me()!.skin, 'golden-test');
+    assert.equal(me()!.skin, 'knight');
     room.send('skin', null);
     await pause(120);
     await until(() => me()?.skin === 'golden-test');
     room.send('skin', 'knight');
     await pause(120);
-    await until(() => me()?.skin === 'golden-test');
+    await until(() => me()?.skin === 'knight');
     room.send('skin', 'dragon');
     await until(() => notices.some((s) => s.includes('Unknown skin')));
-    assert.equal(me()!.skin, 'golden-test');
+    assert.equal(me()!.skin, 'knight');
     assert.equal(me()!.gold, gold);
     assert.equal(me()!.weapon, weapon);
     assert.equal(me()!.classId, 'knight');

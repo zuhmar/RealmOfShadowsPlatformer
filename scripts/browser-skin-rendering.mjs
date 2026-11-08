@@ -60,8 +60,9 @@ try {
       [...s.characters.values()].every(
         (v) =>
           v.skinVisual?.container.visible &&
-          v.skinVisual.body.texture.key === 'skin-golden-test' &&
-          v.skinVisual.item.visible,
+          v.skinVisual.body.texture.key.endsWith('-armed-crystal') &&
+          !!v.skinVisual.body.getData('integratedWeapon') &&
+          !v.skinVisual.item.visible,
       )
     );
   });
@@ -92,9 +93,11 @@ try {
       (tier) =>
         [...window.skinsTest.game.scene.getScene('realm').characters.values()].every(
           (v) =>
-            v.skinVisual.body.texture.key === 'skin-golden-test' &&
-            v.skinVisual.item.getData('itemId') === v.player.weapon &&
-            v.skinVisual.item.visible,
+            v.skinVisual.body.texture.key.endsWith(
+              tier === 'starter' ? '-armed' : `-armed-${tier}`,
+            ) &&
+            v.skinVisual.body.getData('integratedWeapon') === v.player.weapon &&
+            !v.skinVisual.item.visible,
         ),
       tier,
     );
@@ -151,6 +154,8 @@ try {
   ).toBe(true);
   await mutate({ grounded: true, climbing: false, vy: 0, lastAttack: 100 });
   await allFrames('attack');
+  await mutate({ lastSkill: 200 });
+  await allFrames('skill');
   await page.evaluate(() => {
     const t = window.skinsTest,
       skills = ['Mining', 'Woodcutting', 'Fishing', 'Herbalism'],
@@ -207,7 +212,7 @@ try {
   );
   expect(errors).toEqual([]);
   console.log(
-    'PASS: all eight legacy class/appearance combinations use Celestial bodies, six-frame idle/walk/climb/attack loops, weapon overlays, held tools, unarmed climbing, legacy appearance migration and uniform artwork scale.',
+    'PASS: all four class outfits support both appearances, starter/Woods/Crystal baked weapons, idle/walk/climb/attack/skill clips, held gathering tools and unarmed climbing and uniform artwork scale.',
   );
 } finally {
   await browser.close();

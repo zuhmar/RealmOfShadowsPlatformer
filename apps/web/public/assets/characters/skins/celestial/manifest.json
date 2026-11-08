@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "facing": "right",
   "columns": 6,
   "rows": 6,
@@ -19,7 +19,8 @@
         "climb",
         "attack",
         "death"
-      ]
+      ],
+      "tier": "starter"
     },
     "knight-armed": {
       "image": "/assets/characters/skins/celestial/knight-armed.png",
@@ -36,7 +37,8 @@
         "attack",
         "skill",
         "death"
-      ]
+      ],
+      "tier": "starter"
     },
     "archer-unarmed": {
       "image": "/assets/characters/skins/celestial/archer-unarmed.png",
@@ -53,7 +55,8 @@
         "climb",
         "attack",
         "death"
-      ]
+      ],
+      "tier": "starter"
     },
     "archer-armed": {
       "image": "/assets/characters/skins/celestial/archer-armed.png",
@@ -70,7 +73,8 @@
         "attack",
         "skill",
         "death"
-      ]
+      ],
+      "tier": "starter"
     },
     "mage-unarmed": {
       "image": "/assets/characters/skins/celestial/mage-unarmed.png",
@@ -87,7 +91,8 @@
         "climb",
         "attack",
         "death"
-      ]
+      ],
+      "tier": "starter"
     },
     "mage-armed": {
       "image": "/assets/characters/skins/celestial/mage-armed.png",
@@ -104,7 +109,8 @@
         "attack",
         "skill",
         "death"
-      ]
+      ],
+      "tier": "starter"
     },
     "rogue-unarmed": {
       "image": "/assets/characters/skins/celestial/rogue-unarmed.png",
@@ -121,7 +127,8 @@
         "climb",
         "attack",
         "death"
-      ]
+      ],
+      "tier": "starter"
     },
     "rogue-armed": {
       "image": "/assets/characters/skins/celestial/rogue-armed.png",
@@ -130,6 +137,151 @@
       "variant": "armed",
       "weapon": "dual-daggers",
       "source": "exec-2f9621b0-93ce-43ca-a706-ff1c846b6d8e.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ],
+      "tier": "starter"
+    },
+    "knight-armed-woods": {
+      "image": "/assets/characters/skins/celestial/knight-armed-woods.png",
+      "atlas": "/assets/characters/skins/celestial/knight-armed-woods.json",
+      "class": "knight",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "sword",
+      "source": "exec-ecfa88fa-fc03-4e21-b8b6-d523db10c9f4.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "knight-armed-crystal": {
+      "image": "/assets/characters/skins/celestial/knight-armed-crystal.png",
+      "atlas": "/assets/characters/skins/celestial/knight-armed-crystal.json",
+      "class": "knight",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "sword",
+      "source": "exec-2294f618-6edc-4b1d-8db7-f7fb2055ef24.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "archer-armed-woods": {
+      "image": "/assets/characters/skins/celestial/archer-armed-woods.png",
+      "atlas": "/assets/characters/skins/celestial/archer-armed-woods.json",
+      "class": "archer",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "bow",
+      "source": "exec-fcc6494d-3391-4302-944f-59f0f1e4eb93.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "archer-armed-crystal": {
+      "image": "/assets/characters/skins/celestial/archer-armed-crystal.png",
+      "atlas": "/assets/characters/skins/celestial/archer-armed-crystal.json",
+      "class": "archer",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "bow",
+      "source": "exec-944f3d8b-83dd-430d-9f87-36d0674a8aca.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "mage-armed-woods": {
+      "image": "/assets/characters/skins/celestial/mage-armed-woods.png",
+      "atlas": "/assets/characters/skins/celestial/mage-armed-woods.json",
+      "class": "mage",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "staff",
+      "source": "exec-5283c192-2b20-4892-9cb6-aec62ffbd6ea.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "mage-armed-crystal": {
+      "image": "/assets/characters/skins/celestial/mage-armed-crystal.png",
+      "atlas": "/assets/characters/skins/celestial/mage-armed-crystal.json",
+      "class": "mage",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "staff",
+      "source": "exec-b3598d5a-aad5-440f-a9de-bdfcc29ff2ee.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "rogue-armed-woods": {
+      "image": "/assets/characters/skins/celestial/rogue-armed-woods.png",
+      "atlas": "/assets/characters/skins/celestial/rogue-armed-woods.json",
+      "class": "rogue",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "dual-daggers",
+      "source": "exec-3ea1d938-47ae-4d09-90d6-059ca02c7f65.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "rogue-armed-crystal": {
+      "image": "/assets/characters/skins/celestial/rogue-armed-crystal.png",
+      "atlas": "/assets/characters/skins/celestial/rogue-armed-crystal.json",
+      "class": "rogue",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "dual-daggers",
+      "source": "exec-352b25ef-ed6a-4870-9bac-502b31f9ef3a.png",
       "frames": 36,
       "animations": [
         "idle",

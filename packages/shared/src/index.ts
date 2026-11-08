@@ -103,6 +103,7 @@ export type Player = Actor & {
   provisionRevision?: number;
   classId?: import('@ros/game-data').ClassId;
   skin?: import('@ros/game-data').SkinId | null;
+  skinConceptVersion?: number;
   classTalents?: Partial<Record<import('@ros/game-data').ClassTalent, number>>;
   classRevision?: number;
   visitedAreas?: string[];
@@ -249,6 +250,7 @@ export function createPlayer(id: string, name: string, mapId = 'woods'): Player 
     id,
     name,
     skin: 'golden-test',
+    skinConceptVersion: 2,
     appearance: 'male',
     outfit: 'sage',
     x: m.spawn.x,
@@ -1136,6 +1138,7 @@ export class World {
           'quests',
           'ownedTools',
           'equippedTools',
+          'skinConceptVersion',
           'originRevelation',
           'unlockedRecipes',
           'recipeHunts',

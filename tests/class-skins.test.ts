@@ -70,7 +70,7 @@ test('class skins require the matching class and switching to an allowed look is
   p.gold = 1000;
   for (const id of Object.keys(CLASS_SKINS)) assert.equal(canEquipSkin(undefined, id), false);
   chooseClass(p, 'knight');
-  assert.equal(p.skin, 'golden-test');
+  assert.equal(p.skin, 'knight');
   const before = playerAttributes(p),
     gold = p.gold;
   for (const id of Object.keys(CLASS_SKINS)) {
@@ -80,15 +80,15 @@ test('class skins require the matching class and switching to an allowed look is
   equipSkin(p, null);
   assert.equal(p.skin, 'golden-test');
   equipSkin(p, 'knight');
-  assert.equal(p.skin, 'golden-test');
+  assert.equal(p.skin, 'knight');
   assert.deepEqual(playerAttributes(p), before);
   assert.equal(p.gold, gold);
   chooseClass(p, 'rogue');
-  assert.equal(p.skin, 'golden-test');
+  assert.equal(p.skin, 'rogue');
   assert.equal(p.gold, 500);
   equipSkin(p, null);
   chooseClass(p, 'mage');
-  assert.equal(p.skin, 'golden-test');
+  assert.equal(p.skin, 'mage');
   assert.equal(p.gold, 0);
   assert.equal(validSkin('dragon'), false);
   assert.equal(canEquipSkin(p.classId, { skin: 'mage' }), false);
@@ -100,7 +100,7 @@ test('previously unrestricted saved class skins migrate without affecting gold, 
   p.gold = 420;
   const before = playerAttributes(p);
   assert.equal(normalizeSkin(p), true);
-  assert.equal(p.skin, 'golden-test');
+  assert.equal(p.skin, 'knight');
   assert.equal(p.gold, 420);
   assert.deepEqual(playerAttributes(p), before);
   assert.equal(normalizeSkin(p), false);
@@ -128,6 +128,7 @@ test('golden test figure is free for civilians and every class and preserves sta
   p.gold = 1000;
   p.quests = { 'crystal-class-trial': { progress: 1, claimed: true } };
   chooseClass(p, 'knight');
+  equipSkin(p, 'golden-test');
   assert.equal(p.skin, 'golden-test');
   for (const cls of ['knight', 'archer', 'mage', 'rogue'] as const)
     assert.equal(canEquipSkin(cls, 'golden-test'), true);
