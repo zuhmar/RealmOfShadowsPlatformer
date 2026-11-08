@@ -192,4 +192,6 @@ Claim the Crystal Caverns class trial to open the class carousel. Browse class s
 
 Platforms and ladders use a [cohesive terrain renderer](docs/cohesive-terrain.md): continuous ledges, matching biome materials and full-height connected rails across all nine playable maps. Distinct area layouts and collision positions are preserved.
 
+All 81 crafting recipes require [hunted recipe scrolls](docs/recipe-discovery.md), including smelting, tools and equipment. Collected scrolls permanently unlock the recipe for that character.
+
 Cooking and Alchemy now have [ten craftable recipes](docs/cooking-alchemy.md), profession XP, two Elderwood stations and consumable use from Bag or Skills → Cooking & Alchemy recipes. Meals grant temporary damage, regeneration or crit buffs; potions restore health/mana with a shared cooldown.

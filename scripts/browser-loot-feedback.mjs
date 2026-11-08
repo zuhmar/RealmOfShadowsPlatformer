@@ -73,7 +73,9 @@ try {
     .poll(async () =>
       (await nodes()).filter((n) => n.name === 'loot-item-sprite').map((n) => n.item),
     )
-    .toEqual(expect.arrayContaining(['gold', 'fang', 'wolf-pelt', 'woods-sword']));
+    .toEqual(
+      expect.arrayContaining(['gold', 'fang', 'wolf-pelt', 'woods-sword', 'recipe:iron-bar']),
+    );
   expect((await nodes()).some((n) => n.name === 'loot-rarity-glow')).toBe(true);
   expect(
     (await nodes()).some(
@@ -92,6 +94,8 @@ try {
     for (const e of t.w.events) t.game.scene.getScene('realm').events.emit('float', e);
   });
   expect((await nodes()).some((n) => n.name === 'loot-pickup-sprites')).toBe(true);
+  expect(await page.evaluate(() => window.lootTest.p.unlockedRecipes)).toContain('iron-bar');
+  expect(await page.evaluate(() => window.lootTest.p.inventory['recipe:iron-bar'] ?? 0)).toBe(0);
   expect(
     (await nodes()).some(
       (n) => typeof n.text === 'string' && /Ironwood Sword|Collected/.test(n.text),

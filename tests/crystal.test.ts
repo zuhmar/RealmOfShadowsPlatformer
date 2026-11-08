@@ -1,3 +1,4 @@
+import { ALL_RECIPES } from '@ros/game-data';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MAPS, CRYSTAL_QUESTS, CRYSTAL_FISH, FORGE_RECIPES, CLASS_PATHS } from '@ros/game-data';
@@ -123,6 +124,7 @@ test('Civilian hits cannot train combat; Crystal gathering and manually equipped
   const reward = activityReward(p, 'gather:crystal:crystal-mine', 0, 3600000);
   assert.ok(reward.items?.['crystal-ore']);
   const smith = createPlayer('s', 'Smith', 'village');
+  smith.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
   forgeAction(smith, 'accept');
   smith.level = 11;
   smith.blacksmithing = { level: 11, xp: 0 };

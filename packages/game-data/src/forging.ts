@@ -13,7 +13,7 @@ export const BRAM_QUEST = {
   title: 'A proper set of tools',
   npcId: 'bram',
   offer:
-    'You survived the Shadow Dragon and trained for years. Good tools will carry you further. Gather 100 Iron Ore and 20 Oak Logs, smelt 5 Iron Bars here, then forge your first Iron tool.',
+    'You survived the Shadow Dragon and trained for years. Good tools will carry you further. Hunt Whispering Woods monsters to discover smelting and tool recipes. Gather 100 Iron Ore and 20 Oak Logs, smelt 5 Iron Bars here, then forge your first Iron tool.',
   rewardGold: 25,
   rewardXp: 20,
 } as const;

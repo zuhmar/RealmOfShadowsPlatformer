@@ -1,3 +1,5 @@
+import { knowsRecipe } from '@ros/shared';
+import { recipeSource, recipeScroll } from '@ros/game-data';
 import { useState, useEffect } from 'react';
 import {
   POTION_COOLDOWN,
@@ -50,7 +52,9 @@ export function RecipesPanel({
         ))}
       </div>
       <h3>
-        {skill} · Lv. {state.level}
+        {skill} · Lv. {state.level} ·{' '}
+        {PROVISION_RECIPES.filter((r) => r.skill === skill && knowsRecipe(p, r.id)).length}/
+        {PROVISION_RECIPES.filter((r) => r.skill === skill).length} recipes learned
       </h3>
       <progress
         aria-label={`${skill} progress`}
@@ -65,6 +69,7 @@ export function RecipesPanel({
           ? 'Meals grant temporary buffs. Eating another meal replaces the active food buff; effects do not stack. Buff time continues while offline; offline rewards do not include food bonuses.'
           : 'Potions restore health or mana and share a 10-second cooldown. Full health or mana will not waste a potion.'}
       </p>
+      <p>Hunt monsters and collect their recipe scrolls to learn these recipes permanently.</p>
       <p>
         {near
           ? `${station.name} ready.`
@@ -79,14 +84,18 @@ export function RecipesPanel({
       {cooldown > 0 && <p role="status">Potion cooldown: {cooldown}s</p>}
       <div className="forge-recipes">
         {PROVISION_RECIPES.filter((r) => r.skill === skill).map((r) => {
+          const discovered = knowsRecipe(p, r.id);
           const locked = state.level < r.level || p.level < r.characterLevel,
             enough = Object.entries(r.cost).every(([id, n]) => (p.inventory[id] ?? 0) >= n),
             owned = p.inventory[r.id] ?? 0;
           return (
             <section key={r.id}>
-              <ItemIcon id={r.id} />
+              <ItemIcon id={discovered ? r.id : recipeScroll(r.id)} />
               <div>
                 <b>{r.name}</b>
+                <p>
+                  {discovered ? 'Recipe learned' : `Undiscovered · Find on ${recipeSource(r.id)}`}
+                </p>
                 <p>{r.description}</p>
                 <p>
                   {skill} Lv. {r.level} · Character Lv. {r.characterLevel} · +{r.xp} XP
@@ -103,11 +112,11 @@ export function RecipesPanel({
               <div className="recipe-actions">
                 <button
                   className="primary"
-                  disabled={pending || !near || locked || !enough}
+                  disabled={pending || !near || locked || !enough || !discovered}
                   onClick={() => onAction('craft', r.id)}
                   aria-label={`Craft ${r.name}`}
                 >
-                  {locked ? 'Level locked' : 'Craft'}
+                  {!discovered ? 'Find recipe' : locked ? 'Level locked' : 'Craft'}
                 </button>
                 <button
                   className="secondary"

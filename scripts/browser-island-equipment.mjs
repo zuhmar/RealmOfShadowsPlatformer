@@ -50,6 +50,12 @@ try {
     data: {
       data: {
         ...c.data,
+        unlockedRecipes: tiers.flatMap(([tier, material]) => [
+          `${material}-bar`,
+          ...['sword', 'bow', 'staff', 'dagger', 'helmet', 'armor', 'legs', 'boots'].map(
+            (part) => `${tier}-${part}`,
+          ),
+        ]),
         x: 900,
         y: 650,
         level: 100,
@@ -68,7 +74,11 @@ try {
     await expect(
       page
         .locator('.forge-recipes section')
-        .filter({ has: page.locator('svg image[href*="/islands/"]') }),
+        .filter({
+          has: page
+            .locator('b')
+            .filter({ hasText: /(?:Sword|Bow|Staff|Dagger|Helmet|Chestplate|Leggings|Boots)$/ }),
+        }),
     ).toHaveCount(8);
     const imageLoaded = await page.evaluate(async (path) => {
       const image = new Image();

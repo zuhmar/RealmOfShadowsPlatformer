@@ -1,3 +1,5 @@
+export * from './recipes';
+import { collectRecipe, rollRecipeDrop } from './recipes';
 export * from './provisions';
 import { expireFood } from './provisions';
 import { TELEPORT_CRYSTAL_DROP_CHANCE } from '@ros/game-data';
@@ -90,8 +92,12 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
-  craftingSkills?: Partial<Record<import('@ros/game-data').ProvisionSkill,{level:number;xp:number}>>;
-  foodBuff?: {recipeId:import('@ros/game-data').ProvisionId;expiresAt:number};
+  unlockedRecipes?: string[];
+  recipeHunts?: Record<string, number>;
+  craftingSkills?: Partial<
+    Record<import('@ros/game-data').ProvisionSkill, { level: number; xp: number }>
+  >;
+  foodBuff?: { recipeId: import('@ros/game-data').ProvisionId; expiresAt: number };
   potionReadyAt?: number;
   provisionRevision?: number;
   classId?: import('@ros/game-data').ClassId;
@@ -201,7 +207,12 @@ export type Projectile = {
   empowered: boolean;
   hitIds?: string[];
 };
-export { SnapshotEncoder, SnapshotDecoder, type SnapshotDelta, type SnapshotKeyframe } from './snapshot-stream';
+export {
+  SnapshotEncoder,
+  SnapshotDecoder,
+  type SnapshotDelta,
+  type SnapshotKeyframe,
+} from './snapshot-stream';
 export { equipSkin, normalizeSkin } from './skins';
 export type Snapshot = {
   projectiles?: Projectile[];
@@ -944,6 +955,15 @@ export class World {
       } as const;
       const items: { item: ItemId; quantity: number }[] =
         monster === 'wolf' ? [{ item: 'wolf-pelt', quantity: 1 }] : [];
+      const scroll = rollRecipeDrop(
+        p,
+        this.map.island,
+        !!stats.boss,
+        this.drops
+          .filter((d) => d.owner === p.id)
+          .flatMap((d) => (d.items ?? []).map((b) => b.item)),
+      );
+      if (scroll) items.push({ item: scroll, quantity: 1 });
       if (monster === 'forest-bear' && Math.random() < FOREST_BEAR_RING_CHANCE)
         items.push({ item: 'forest-guardian-ring', quantity: 1 });
       this.drops.push({
@@ -1081,15 +1101,17 @@ export class World {
         });
       }
       p.gold += d.gold;
-      p.inventory[d.item] = (p.inventory[d.item] ?? 0) + 1;
+      if (!collectRecipe(p, d.item)) p.inventory[d.item] = (p.inventory[d.item] ?? 0) + 1;
       for (const bonus of d.items ?? [])
-        p.inventory[bonus.item] = (p.inventory[bonus.item] ?? 0) + bonus.quantity;
+        if (!collectRecipe(p, bonus.item))
+          p.inventory[bonus.item] = (p.inventory[bonus.item] ?? 0) + bonus.quantity;
       this.drops = this.drops.filter((x) => x.id !== d.id);
       this.events.push({
         type: 'loot',
         x: p.x,
         y: p.y - 40,
         lootGold: d.gold,
+        lootStage: 'pickup',
         loot: [
           { item: d.item, quantity: 1 },
           ...(d.items ?? []).map((b) => ({ item: b.item, quantity: b.quantity })),
@@ -1112,6 +1134,8 @@ export class World {
           'quests',
           'ownedTools',
           'equippedTools',
+          'unlockedRecipes',
+          'recipeHunts',
           'craftingSkills',
           'foodBuff',
           'potionReadyAt',

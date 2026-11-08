@@ -1,3 +1,8 @@
+import { recipeFromScroll, GATHERING_TOOLS } from '@ros/game-data';
+import { RecipeSprite } from './RecipeSprite';
+import { ToolIcon } from './ToolIcon';
+import bars from '../public/assets/ui/recipe-bars.json';
+import scrolls from '../public/assets/ui/recipe-scrolls.json';
 import { ProvisionIcon } from './ProvisionIcon';
 import { provisionRecipe } from '@ros/game-data';
 import { assetUrl } from './assets';
@@ -11,6 +16,39 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  const recipe = recipeFromScroll(id);
+  if (recipe)
+    return (
+      <span style={{ position: 'relative', display: 'inline-block', width: 44, height: 44 }}>
+        <RecipeSprite
+          atlas={scrolls}
+          sheet="recipe-scrolls"
+          id={recipe.category}
+          label={`${recipe.name} Recipe`}
+        />
+        <span
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: 14,
+            transform: 'scale(.6)',
+            transformOrigin: 'top left',
+          }}
+        >
+          <ItemIcon id={recipe.id} />
+        </span>
+      </span>
+    );
+  if (id && Object.hasOwn(bars.frames, id))
+    return (
+      <RecipeSprite
+        atlas={bars}
+        sheet="recipe-bars"
+        id={id}
+        label={itemDefinition(id)?.name ?? id}
+      />
+    );
+  if (id && GATHERING_TOOLS.some((t) => t.id === id)) return <ToolIcon id={id} />;
   if (provisionRecipe(id)) return <ProvisionIcon id={id!} />;
   const crystalAtlas =
     id && Object.hasOwn(crystalResources.frames, id)
@@ -103,17 +141,6 @@ export function ItemIcon({ id }: { id: string | null }) {
       <img
         src={assetUrl('/assets/ui/forest-bear-key.png')}
         alt="Forest Bear Key"
-        draggable={false}
-        width="32"
-        height="32"
-        style={{ objectFit: 'contain', verticalAlign: 'middle' }}
-      />
-    );
-  if (id === 'iron-bar')
-    return (
-      <img
-        src={assetUrl('/assets/ui/iron-bar.png')}
-        alt="Iron Bar"
         draggable={false}
         width="32"
         height="32"

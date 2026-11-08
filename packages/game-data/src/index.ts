@@ -1,7 +1,9 @@
+export * from './recipes';
+import { RECIPE_SCROLL_ITEMS } from './recipes';
 export * from './provisions';
-import {PROVISION_ITEMS,PROVISION_STATIONS} from './provisions';
+import { PROVISION_ITEMS, PROVISION_STATIONS } from './provisions';
 export * from './crystal';
-import {CRYSTAL_MAPS,CRYSTAL_ITEMS,CRYSTAL_QUESTS} from './crystal';
+import { CRYSTAL_MAPS, CRYSTAL_ITEMS, CRYSTAL_QUESTS } from './crystal';
 export * from './world-map';
 export * from './classes';
 export * from './skins';
@@ -252,14 +254,14 @@ for (const [stage, name, monster, background] of [
     ],
   };
 }
-Object.assign(MAPS,CRYSTAL_MAPS);
+Object.assign(MAPS, CRYSTAL_MAPS);
 MAPS['woods-3'].portals.push({
   x: 2300,
   y: 760,
   target: 'crystal',
   label: 'Crystal Caverns',
 });
-MAPS.village.portals.push({x:900,y:450,target:'crystal',label:'Crystal Caverns'});
+MAPS.village.portals.push({ x: 900, y: 450, target: 'crystal', label: 'Crystal Caverns' });
 export const STORY = {
   title: 'The last survivor',
   prologue:
@@ -300,6 +302,7 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  ...RECIPE_SCROLL_ITEMS,
   ...PROVISION_ITEMS,
   'teleport-crystal': {
     id: 'teleport-crystal',
@@ -412,7 +415,7 @@ export const ITEMS = {
     icon: '⚔',
   },
 } as const;
-export type ItemId = keyof typeof ITEMS;
+export type ItemId = keyof typeof ITEMS | import('./recipes').RecipeScrollId;
 export const CLASSES = ['Citizen', 'Knight', 'Archer', 'Mage', 'Rogue'] as const;
 export const SKILLS = [
   'Sword',
@@ -468,7 +471,11 @@ export function fromTiled(
 }
 
 export function itemDefinition(id: string | null | undefined) {
-  return id && Object.prototype.hasOwnProperty.call(ITEMS, id) ? ITEMS[id as ItemId] : null;
+  return id && Object.prototype.hasOwnProperty.call(RECIPE_SCROLL_ITEMS, id)
+    ? RECIPE_SCROLL_ITEMS[id as import('./recipes').RecipeScrollId]
+    : id && Object.prototype.hasOwnProperty.call(ITEMS, id)
+      ? ITEMS[id as keyof typeof ITEMS]
+      : null;
 }
 export function weaponBonus(id: string | null | undefined) {
   const item = itemDefinition(id);

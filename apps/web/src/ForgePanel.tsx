@@ -1,3 +1,5 @@
+import { knowsRecipe } from '@ros/shared';
+import { recipeSource, recipeScroll } from '@ros/game-data';
 import { useState } from 'react';
 import { BRAM_QUEST, FORGE_RECIPES, itemDefinition, EQUIPMENT_TIERS } from '@ros/game-data';
 import type { Player } from '@ros/shared';
@@ -53,7 +55,10 @@ export function ForgePanel({
               Claim Bram’s reward
             </button>
           )}
-          <h3>Forge recipes</h3>
+          <h3>
+            Forge recipes · {FORGE_RECIPES.filter((r) => knowsRecipe(p, r.id)).length}/
+            {FORGE_RECIPES.length} learned
+          </h3>
           <p>
             Blacksmithing Lv. {p.blacksmithing?.level ?? 1} · {p.blacksmithing?.xp ?? 0} XP · Iron
             tools gather in 20% less time.
@@ -73,12 +78,14 @@ export function ForgePanel({
             </select>
           </label>
           <p>
-            20 ore makes 1 bar. Crafted equipment has fixed stats and cannot be identified. Each
-            tier requires its character and Blacksmithing level. Later island ores become gatherable
-            when those islands open.
+            Collect monster recipe scrolls to permanently learn crafting recipes. 20 ore makes 1
+            bar. Crafted equipment has fixed stats and cannot be identified. Each tier requires its
+            character and Blacksmithing level. Later island ores become gatherable when those
+            islands open.
           </p>
           <div className="forge-recipes">
             {FORGE_RECIPES.filter((r) => (r.tier ?? 'woods') === tier).map((recipe) => {
+              const discovered = knowsRecipe(p, recipe.id);
               const locked =
                 p.level < (recipe.level ?? 1) ||
                 (p.blacksmithing?.level ?? 1) < (recipe.level ?? 1);
@@ -88,13 +95,20 @@ export function ForgePanel({
                 );
               return (
                 <section key={recipe.id}>
-                  {recipe.kind === 'tool' ? (
+                  {!discovered ? (
+                    <ItemIcon id={recipeScroll(recipe.id)} />
+                  ) : recipe.kind === 'tool' ? (
                     <ToolIcon id={recipe.id} />
                   ) : (
                     <ItemIcon id={recipe.id} />
                   )}
                   <div>
                     <b>{recipe.name}</b>
+                    <p>
+                      {discovered
+                        ? 'Recipe learned'
+                        : `Undiscovered · Find on ${recipeSource(recipe.id)}`}
+                    </p>
                     {recipe.level && <p>Character & Blacksmithing Lv. {recipe.level}</p>}
                     <p>
                       {Object.entries(recipe.cost)
@@ -107,16 +121,18 @@ export function ForgePanel({
                   </div>
                   <button
                     className="secondary"
-                    disabled={!near || pending || !enough || !!owned || locked}
+                    disabled={!near || pending || !enough || !!owned || locked || !discovered}
                     onClick={() => onAction('craft', recipe.id)}
                   >
-                    {locked
-                      ? `Requires Lv. ${recipe.level}`
-                      : owned
-                        ? 'Owned'
-                        : recipe.kind === 'material'
-                          ? 'Smelt'
-                          : 'Forge'}
+                    {!discovered
+                      ? 'Find recipe'
+                      : locked
+                        ? `Requires Lv. ${recipe.level}`
+                        : owned
+                          ? 'Owned'
+                          : recipe.kind === 'material'
+                            ? 'Smelt'
+                            : 'Forge'}
                   </button>
                 </section>
               );

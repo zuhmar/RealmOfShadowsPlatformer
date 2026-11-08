@@ -1,3 +1,5 @@
+import { recipeFromScroll, GATHERING_TOOLS } from '@ros/game-data';
+import bars from '../public/assets/ui/recipe-bars.json';
 import { assetUrl } from './assets';
 import crystalResources from '../public/assets/ui/crystal-resources.json';
 import crystalDrops from '../public/assets/ui/crystal-loot.json';
@@ -7,6 +9,15 @@ import { GEAR_RARITY_COLORS, type Drop, type Event, type GearRarity } from '@ros
 import lootAtlas from '../public/assets/ui/woods-loot.json';
 import resourcesAtlas from '../public/assets/ui/woods-resources.json';
 export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
+  for (const name of ['recipe-scrolls', 'recipe-bars'])
+    if (!scene.textures.exists(name))
+      scene.load.atlas(name, assetUrl(`/assets/ui/${name}.png`), `/assets/ui/${name}.json`);
+  if (!scene.textures.exists('recipe-tools'))
+    scene.load.atlas(
+      'recipe-tools',
+      assetUrl('/assets/equipment/gathering-tools.png'),
+      '/assets/equipment/gathering-tools.json',
+    );
   scene.load.atlas(
     'loot-materials',
     assetUrl('/assets/ui/woods-loot.png'),
@@ -44,12 +55,32 @@ export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
       `/assets/equipment/islands/${tier.id}.json`,
     );
 }
-export function lootIcon(scene: Phaser.Scene, item: string, size = 28) {
+export function lootIcon(
+  scene: Phaser.Scene,
+  item: string,
+  size = 28,
+): Phaser.GameObjects.Container | Phaser.GameObjects.Image {
+  const recipe = recipeFromScroll(item);
+  if (recipe) {
+    const parchment = scene.add.image(0, 0, 'recipe-scrolls', recipe.category);
+    parchment.setScale(size / Math.max(parchment.width, parchment.height));
+    const badge = lootIcon(scene, recipe.id, size * 0.56).setPosition(0, size * 0.05);
+    return scene.add
+      .container(0, 0, [parchment, badge])
+      .setName('loot-item-sprite')
+      .setData('item', item);
+  }
   const gear = equipmentDefinition(item),
     kind = weaponKind(item);
   let key = 'loot-basics',
     frame: string | undefined = 'fang';
   if (item === 'gold' || item === 'fang') {
+    frame = item;
+  } else if (Object.hasOwn(bars.frames, item)) {
+    key = 'recipe-bars';
+    frame = item;
+  } else if (GATHERING_TOOLS.some((t) => t.id === item)) {
+    key = 'recipe-tools';
     frame = item;
   } else if (gear) {
     key = gear.tier === 'woods' ? 'woods-equipment' : `loot-equipment-${gear.tier}`;

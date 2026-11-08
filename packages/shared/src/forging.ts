@@ -1,3 +1,4 @@
+import { knowsRecipe } from './recipes';
 import { createCraftedGear } from './equipment';
 import { BRAM_QUEST, FORGE_RECIPES, gatheringXpNeeded } from '@ros/game-data';
 import type { Player } from './index';
@@ -5,7 +6,7 @@ export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', rec
   if (action === 'accept') {
     if (p.forgeQuest?.accepted) throw new Error('You already accepted Bram’s quest.');
     p.forgeQuest = { accepted: true, claimed: false, barsSmelted: 0, toolsCrafted: 0 };
-    return 'Bram’s quest accepted. Gather 100 Iron Ore and 20 Oak Logs.';
+    return 'Bram’s quest accepted. Hunt Woods monsters for smelting and tool recipes, then gather 100 Iron Ore and 20 Oak Logs.';
   }
   const quest = p.forgeQuest;
   if (!quest?.accepted) throw new Error('Accept Bram’s quest first.');
@@ -28,6 +29,8 @@ export function forgeAction(p: Player, action: 'accept' | 'craft' | 'claim', rec
   }
   const recipe = FORGE_RECIPES.find((r) => r.id === recipeId);
   if (!recipe) throw new Error('Unknown forge recipe.');
+  if (!knowsRecipe(p, recipe.id))
+    throw new Error('Find this recipe by hunting before crafting it.');
   if (p.level < (recipe.level ?? 1) || (p.blacksmithing?.level ?? 1) < (recipe.level ?? 1))
     throw new Error(`Requires character and Blacksmithing level ${recipe.level}.`);
   if (recipe.kind === 'tool' && p.ownedTools?.includes(recipe.id))

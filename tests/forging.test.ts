@@ -1,3 +1,4 @@
+import { ALL_RECIPES } from '@ros/game-data';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { BRAM_QUEST, FORGE_RECIPES, MAPS, WOODS_RESOURCE_NODES } from '@ros/game-data';
@@ -8,6 +9,7 @@ test('forge recipes use starter Iron material costs and never grant an automatic
     assert.deepEqual(recipe.cost, { 'iron-bar': 5, 'oak-logs': 20 });
   for (const recipe of FORGE_RECIPES.filter((r) => r.kind === 'tool' && r.id.startsWith('iron-'))) {
     const p = createPlayer('p', 'Smith', 'village');
+    p.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
     forgeAction(p, 'accept');
     p.inventory = { 'iron-bar': 5, 'oak-logs': 20 };
     forgeAction(p, 'craft', recipe.id);
@@ -20,6 +22,7 @@ test('forge recipes use starter Iron material costs and never grant an automatic
 test('shortages, forged recipe ids and duplicate tools cannot consume materials or grant XP', () => {
   const p = createPlayer('p', 'Smith', 'village');
   assert.throws(() => forgeAction(p, 'craft', 'iron-bar'));
+  p.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
   forgeAction(p, 'accept');
   p.inventory = { 'iron-ore': 19 };
   const before = JSON.stringify(p);
@@ -36,6 +39,7 @@ test('shortages, forged recipe ids and duplicate tools cannot consume materials 
 });
 test('Bram requires five smelts and a forged tool, then rewards exactly once', () => {
   const p = createPlayer('p', 'Smith', 'village');
+  p.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
   forgeAction(p, 'accept');
   p.inventory = { 'iron-ore': 100, 'oak-logs': 20 };
   assert.throws(() => forgeAction(p, 'claim'));

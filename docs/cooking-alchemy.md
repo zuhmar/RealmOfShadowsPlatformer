@@ -1,6 +1,6 @@
 # Cooking and Alchemy
 
-Open **Skills → Cooking & Alchemy recipes**, or interact with the Cooking Campfire (x1360) or Alchemy Table (x1100) on Elderwood Village’s ground. Recipes can be browsed anywhere; crafting requires the matching station. Ingredients are consumed and one item is produced per successful craft. Use owned items from the recipe book or the Bag item details.
+Open **Skills → Cooking & Alchemy recipes**, or interact with the Cooking Campfire (x1360) or Alchemy Table (x1100) on Elderwood Village’s ground. Recipes can be browsed anywhere. Find each recipe on the corresponding island’s monsters and collect its scroll to permanently unlock crafting; crafting also requires the matching station. Ingredients are consumed and one item is produced per successful craft. Use owned items from the recipe book or the Bag item details.
 
 | Recipe                  | Profession level | Ingredients      | Effect                                                  | Profession XP |
 | ----------------------- | ---------------: | ---------------- | ------------------------------------------------------- | ------------: |
@@ -29,7 +29,7 @@ Woods recipes require character level 1. Crystal recipes also require character 
 
 Recipe actions use the room’s ordered save queue, per-character action lock, a database row lock and a provision revision. Crafting rechecks location before charging ingredients. Failed or stale transactions do not charge. Client payloads cannot supply costs, effects, output amounts or timestamps. Live healing and inventory deltas preserve damage, regeneration and loot received while saving. Remote players’ snapshots hide crafting skills, food, cooldown and revision fields. Existing character JSON needs no database migration.
 
-Food/potion icons and both stations are code-native illustrations. The Alchemy Table replaces the village’s decorative training target; route/collider geometry is unchanged.
+Food/potion inventory icons use the generated `recipe-consumables` atlas; both stations remain code-native illustrations. The Alchemy Table replaces the village’s decorative training target; route/collider geometry is unchanged.
 
 ## Verification
 

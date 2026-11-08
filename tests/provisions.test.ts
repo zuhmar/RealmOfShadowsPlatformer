@@ -1,3 +1,4 @@
+import { ALL_RECIPES } from '@ros/game-data';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -20,6 +21,7 @@ import {
 import { MAPS } from '@ros/game-data';
 function player() {
   const p = createPlayer('recipes', 'Chef', 'village');
+  p.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
   p.level = 20;
   p.craftingSkills = { Cooking: { level: 20, xp: 0 }, Alchemy: { level: 20, xp: 0 } };
   return p;

@@ -1,3 +1,4 @@
+import { ALL_RECIPES } from '@ros/game-data';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -52,6 +53,7 @@ test('crafting uses each tier ore at 20:1 and increasing bars, never allows iden
     const p = createPlayer('p', 'Smith');
     p.level = 100;
     p.blacksmithing = { level: 100, xp: 0 };
+    p.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
     forgeAction(p, 'accept');
     p.inventory[tier.ore] = 20;
     forgeAction(p, 'craft', `${tier.material}-bar`);
@@ -75,6 +77,7 @@ test('crafting uses each tier ore at 20:1 and increasing bars, never allows iden
 });
 test('crafting rejects locked tiers and insufficient materials without charging', () => {
   const p = createPlayer('p', 'Smith');
+  p.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
   forgeAction(p, 'accept');
   p.inventory['crystal-bar'] = 100;
   const before = JSON.stringify(p);

@@ -1,3 +1,4 @@
+import { ALL_RECIPES } from '@ros/game-data';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { changeForge } from '../apps/server/src/forge';
@@ -28,6 +29,7 @@ test('forge transactions reject stale parallel crafts and cannot repeat claimed 
       where: { id: character.id },
       data: { data: JSON.parse(JSON.stringify(p)) },
     });
+    p.unlockedRecipes = ALL_RECIPES.map((r) => r.id);
     p = (await changeForge(p, 'accept')).next;
     const attempts = await Promise.allSettled([
       changeForge(structuredClone(p), 'craft', 'iron-bar'),

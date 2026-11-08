@@ -32,7 +32,22 @@ try {
   characterId = c.id;
   await db.character.update({
     where: { id: c.id },
-    data: { data: { ...c.data, x: 900, y: 650, inventory: { 'iron-ore': 100, 'oak-logs': 20 } } },
+    data: {
+      data: {
+        ...c.data,
+        unlockedRecipes: [
+          'iron-bar',
+          'iron-pickaxe',
+          'woods-sword',
+          'trout-skewers',
+          'greenleaf-health-potion',
+          'greenleaf-mana-potion',
+        ],
+        x: 900,
+        y: 650,
+        inventory: { 'iron-ore': 100, 'oak-logs': 20 },
+      },
+    },
   });
   await page.reload();
   await page.getByRole('button', { name: /Continue adventure/ }).click();
@@ -41,7 +56,7 @@ try {
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Bram’s Forge' })).toBeVisible();
   await page.getByRole('button', { name: 'Accept Bram’s quest', exact: true }).click();
-  await expect(page.getByText('Forge recipes', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Forge recipes/ })).toBeVisible();
   for (let i = 1; i <= 5; i++) {
     await page.getByRole('button', { name: 'Smelt', exact: true }).click();
     await expect(page.locator('.forge-panel')).toContainText(`Iron Bars smelted: ${i}/5`);

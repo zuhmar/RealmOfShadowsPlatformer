@@ -32,6 +32,7 @@ test('recipe RPC enforces stations, charges once, persists buffs/cooldowns and s
       data: {
         data: {
           ...c.data,
+          unlockedRecipes: ['trout-skewers', 'greenleaf-health-potion'],
           x: 1360,
           y: 650,
           level: 20,

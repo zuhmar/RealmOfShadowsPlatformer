@@ -34,6 +34,14 @@ try {
     data: {
       data: {
         ...c.data,
+        unlockedRecipes: [
+          'iron-bar',
+          'iron-pickaxe',
+          'woods-sword',
+          'trout-skewers',
+          'greenleaf-health-potion',
+          'greenleaf-mana-potion',
+        ],
         x: 1360,
         y: 650,
         level: 20,

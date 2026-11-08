@@ -1,3 +1,4 @@
+import { knowsRecipe } from './recipes';
 import {
   provisionRecipe,
   POTION_COOLDOWN,
@@ -22,6 +23,7 @@ export function provisionAction(p: Player, action: 'craft' | 'use', id: string, 
   if (!r) throw new Error('Unknown recipe.');
   if (p.level < r.characterLevel) throw new Error(`Requires character level ${r.characterLevel}.`);
   if (action === 'craft') {
+    if (!knowsRecipe(p, r.id)) throw new Error('Find this recipe by hunting before crafting it.');
     const state = p.craftingSkills?.[r.skill] ?? { level: 1, xp: 0 };
     if (state.level < r.level) throw new Error(`Requires ${r.skill} level ${r.level}.`);
     for (const [item, n] of Object.entries(r.cost))

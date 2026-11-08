@@ -1,3 +1,4 @@
+import { recipeFromScroll } from '@ros/game-data';
 import { RecipesPanel } from './RecipesPanel';
 import { provisionRecipe, type ProvisionSkill } from '@ros/game-data';
 import { foodEffect } from '@ros/shared';
@@ -317,6 +318,11 @@ function App() {
     next.onMessage('events', (events: Event[]) => {
       for (const event of events) {
         realmAudio.event(event, c.id);
+        if (event.playerId === c.id && event.lootStage === 'pickup') {
+          const recipes = event.loot?.map((i) => recipeFromScroll(i.item)).filter(Boolean);
+          if (recipes?.length)
+            setNotice(`Recipe learned: ${recipes.map((r) => r!.name).join(', ')}`);
+        }
         game.current?.scene.getScene('realm')?.events.emit('float', event);
       }
     });
