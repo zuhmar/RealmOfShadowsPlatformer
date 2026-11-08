@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "facing": "right",
+  "columns": 6,
+  "rows": 6,
+  "sheets": {
+    "knight-unarmed": {
+      "image": "/assets/characters/skins/celestial/knight-unarmed.png",
+      "atlas": "/assets/characters/skins/celestial/knight-unarmed.json",
+      "class": "knight",
+      "variant": "unarmed",
+      "weapon": null,
+      "source": "exec-bf0e5385-31cb-4c71-9e9d-671ef5413f95.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "climb",
+        "attack",
+        "death"
+      ]
+    },
+    "knight-armed": {
+      "image": "/assets/characters/skins/celestial/knight-armed.png",
+      "atlas": "/assets/characters/skins/celestial/knight-armed.json",
+      "class": "knight",
+      "variant": "armed",
+      "weapon": "sword",
+      "source": "exec-c1036f2b-fc0f-4520-840e-6fbb829e08e5.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "archer-unarmed": {
+      "image": "/assets/characters/skins/celestial/archer-unarmed.png",
+      "atlas": "/assets/characters/skins/celestial/archer-unarmed.json",
+      "class": "archer",
+      "variant": "unarmed",
+      "weapon": null,
+      "source": "exec-fbd9892a-0143-428d-8781-f8660427d956.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "climb",
+        "attack",
+        "death"
+      ]
+    },
+    "archer-armed": {
+      "image": "/assets/characters/skins/celestial/archer-armed.png",
+      "atlas": "/assets/characters/skins/celestial/archer-armed.json",
+      "class": "archer",
+      "variant": "armed",
+      "weapon": "bow",
+      "source": "exec-ec0dd1aa-0ca7-43b7-a27e-e2bf11ce4acf.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "mage-unarmed": {
+      "image": "/assets/characters/skins/celestial/mage-unarmed.png",
+      "atlas": "/assets/characters/skins/celestial/mage-unarmed.json",
+      "class": "mage",
+      "variant": "unarmed",
+      "weapon": null,
+      "source": "exec-ad5476d0-7299-4f8f-9e79-3e5868b8515b.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "climb",
+        "attack",
+        "death"
+      ]
+    },
+    "mage-armed": {
+      "image": "/assets/characters/skins/celestial/mage-armed.png",
+      "atlas": "/assets/characters/skins/celestial/mage-armed.json",
+      "class": "mage",
+      "variant": "armed",
+      "weapon": "staff",
+      "source": "exec-e176ea32-1845-401b-a736-2ece9df209f6.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "rogue-unarmed": {
+      "image": "/assets/characters/skins/celestial/rogue-unarmed.png",
+      "atlas": "/assets/characters/skins/celestial/rogue-unarmed.json",
+      "class": "rogue",
+      "variant": "unarmed",
+      "weapon": null,
+      "source": "exec-ee0caa58-b485-4cb5-90f6-5da4978d74c4.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "climb",
+        "attack",
+        "death"
+      ]
+    },
+    "rogue-armed": {
+      "image": "/assets/characters/skins/celestial/rogue-armed.png",
+      "atlas": "/assets/characters/skins/celestial/rogue-armed.json",
+      "class": "rogue",
+      "variant": "armed",
+      "weapon": "dual-daggers",
+      "source": "exec-2f9621b0-93ce-43ca-a706-ff1c846b6d8e.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    }
+  }
+}
