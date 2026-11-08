@@ -18,7 +18,7 @@ Sprite sheets load on demand. Their atlas metadata measures source dimensions, b
 
 ## Platforms and proportional art
 
-Crystal Caverns uses its dedicated modular ledge, ground, ladder and dock atlas across four distinct map layouts. Strips repeat at uniform scale and crop their final piece to authoritative collision dimensions. Village platforms/ladders and Woods ground/ladders also use this approach. Backgrounds use real loaded-image dimensions and crop to cover the viewport; props, portal key markers and effects retain their proportions.
+All nine playable maps now use continuous ledge silhouettes and full-height ladder rails, baked at world scale without repeated complete chunks. Their existing collider dimensions and distinct layouts are preserved. See [cohesive terrain](cohesive-terrain.md). Backgrounds use real loaded-image dimensions and crop to cover the viewport; props, portal key markers and effects retain their proportions.
 
 ## Checks and art inspection
 
@@ -27,7 +27,7 @@ Crystal Caverns uses its dedicated modular ledge, ground, ladder and dock atlas 
 - `node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-class-skins.mjs` checks the quest popup, class carousel, locked skins and save/re-entry.
 - `node scripts/browser-skin-rendering.mjs` checks the eight class/appearance combinations across starter/Woods/Crystal weapons, animation loops, unarmed ladders, gathering and original-skin restoration.
 - `node scripts/review-class-art.mjs` produces idle/attack contact sheets for visual inspection.
-- `node scripts/browser-terrain-proportions.mjs` checks all nine maps on desktop/mobile viewports.
+- `node scripts/browser-terrain.mjs` checks all nine maps on desktop/mobile viewports.
 
 Generated raster files are copied unchanged. `scripts/frame-class-art.py` reads alpha bounds to create atlas metadata; it does not composite headwear or weapons onto characters. Screenshots go to ignored `artifacts/`. Mobile checks use Chromium emulation.
 

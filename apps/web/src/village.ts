@@ -1,3 +1,4 @@
+import { terrainPlatform, terrainLadder } from './terrain';
 import { artworkStrip } from './artwork';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
@@ -31,28 +32,10 @@ export class VillageScenery {
     this.background = scene.add.image(0, 0, 'village-background').setDepth(-30);
     const ground = map.platforms.find((p) => !p.oneWay)!;
     scene.add
-      .rectangle(0, ground.y + 110, map.width, map.height + 1400, 0x654326)
+      .rectangle(0, ground.y + 110, map.width, map.height + 1400, 0x80603f)
       .setOrigin(0)
       .setDepth(-1);
-    for (const p of map.platforms) {
-      const name = p.oneWay ? 'timber-terrace' : 'grass-ground';
-      const frame = scene.textures.getFrame('village-platforms', name);
-      const height = p.oneWay ? 38 : 150;
-      const surfaceY = p.oneWay ? 5 : 18;
-      this.platforms.push(
-        ...artworkStrip(scene, {
-          texture: 'village-platforms',
-          frame: name,
-          x: p.x,
-          y: p.y,
-          length: p.width,
-          thickness: height,
-          surface: surfaceY,
-        }).map((image) =>
-          image.setData({ platformId: p.id, surfaceY: p.y, artSurfaceY: surfaceY }),
-        ),
-      );
-    }
+    for (const p of map.platforms) this.platforms.push(terrainPlatform(scene, map, p, 'village'));
     const place = (
       texture: string,
       frame: string,
@@ -89,19 +72,7 @@ export class VillageScenery {
       ['shrub', 1760, 48],
     ] as const)
       this.props.push(place('village-props', frame, x, ground.y + 2, height, 2));
-    for (const ladder of map.ladders)
-      this.ladders.push(
-        ...artworkStrip(scene, {
-          texture: 'village-props',
-          frame: 'ladder',
-          x: ladder.x,
-          y: ladder.top - 6,
-          length: ladder.bottom - ladder.top + 12,
-          thickness: 42,
-          vertical: true,
-          depth: 3,
-        }),
-      );
+    for (const ladder of map.ladders) this.ladders.push(terrainLadder(scene, ladder, 'village'));
     // Decorative paving and bridge deck lie on the existing ground, with no new colliders.
     for (const [frame, x, width] of [
       ['stone-walkway', 335, 190],
@@ -121,13 +92,18 @@ export class VillageScenery {
     const camera = scene.cameras.main;
     camera.on(Phaser.Cameras.Scene2D.Events.FOLLOW_UPDATE, this.refresh, this);
     scene.scale.on(Phaser.Scale.Events.RESIZE, this.refresh, this);
-    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    const detach = () => {
       camera.off(Phaser.Cameras.Scene2D.Events.FOLLOW_UPDATE, this.refresh, this);
       scene.scale.off(Phaser.Scale.Events.RESIZE, this.refresh, this);
-    });
+      scene.events.off(Phaser.Scenes.Events.SHUTDOWN, detach);
+      scene.events.off(Phaser.Scenes.Events.DESTROY, detach);
+    };
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, detach);
+    scene.events.once(Phaser.Scenes.Events.DESTROY, detach);
     this.refresh();
   }
   refresh() {
+    if (!this.background.scene || !this.scene.cameras.main) return;
     const camera = this.scene.cameras.main;
     const width = camera.width / camera.zoom,
       height = camera.height / camera.zoom;

@@ -1,15 +1,10 @@
-import { artworkStrip } from './artwork';
+import { terrainPlatform, terrainLadder } from './terrain';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 export function preloadCrystal(scene: Phaser.Scene, map: GameMap) {
   scene.load.image(`crystal-background:${map.background}`, assetUrl(map.background!));
-  scene.load.atlas(
-    'crystal-platforms',
-    assetUrl('/assets/tilesets/crystal-platforms.png'),
-    '/assets/tilesets/crystal-platforms.json',
-  );
   scene.load.atlas(
     'crystal-scenery',
     assetUrl('/assets/tilesets/crystal-scenery.png'),
@@ -48,6 +43,8 @@ export function cavernMentor(scene: Phaser.Scene, x: number, y: number) {
 }
 export class CrystalScenery {
   background: Phaser.GameObjects.Image;
+  platforms: Phaser.GameObjects.Image[] = [];
+  ladders: Phaser.GameObjects.Image[] = [];
   constructor(
     private scene: Phaser.Scene,
     private map: GameMap,
@@ -56,41 +53,11 @@ export class CrystalScenery {
     this.background = scene.add.image(0, 0, `crystal-background:${map.background}`).setDepth(-30);
     const ground = map.platforms.find((p) => !p.oneWay)!;
     scene.add
-      .rectangle(0, ground.y + 48, map.width, map.height + 1000, 0x10152e)
+      .rectangle(0, ground.y + 48, map.width, map.height + 1000, 0x24385c)
       .setOrigin(0)
       .setDepth(-2);
-    for (const p of map.platforms) {
-      const frame = p.id === 'ground' ? 'ground' : p.id === 'fishing-dock' ? 'dock' : 'center';
-      artworkStrip(scene, {
-        texture: 'crystal-platforms',
-        frame,
-        x: p.x,
-        y: p.y,
-        length: p.width,
-        thickness: p.id === 'ground' ? 150 : p.id === 'fishing-dock' ? 55 : 72,
-        depth: 0,
-        name: 'crystal-platform',
-      }).forEach((image) => image.setData({ platformId: p.id, surfaceY: p.y }));
-      if (p.id === 'fishing-dock') {
-        const water = scene.add
-          .image(p.x + p.width / 2, p.y + 12, 'crystal-scenery', 'fishing')
-          .setOrigin(0.5, 0)
-          .setDepth(-1);
-        water.setScale(Math.min(p.width / water.width, 160 / water.height));
-      }
-    }
-    for (const l of map.ladders)
-      artworkStrip(scene, {
-        texture: 'crystal-platforms',
-        frame: 'ladder',
-        x: l.x,
-        y: l.top - 6,
-        length: l.bottom - l.top + 12,
-        thickness: 40,
-        vertical: true,
-        depth: 3,
-        name: 'crystal-ladder',
-      });
+    for (const p of map.platforms) this.platforms.push(terrainPlatform(scene, map, p, 'crystal'));
+    for (const l of map.ladders) this.ladders.push(terrainLadder(scene, l, 'crystal'));
     const offsets =
       map.id === 'crystal-2'
         ? [350, 1400, 2200]

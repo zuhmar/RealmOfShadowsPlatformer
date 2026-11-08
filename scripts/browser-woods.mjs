@@ -36,13 +36,7 @@ try {
       return {
         platforms: w.platforms.map((p) => ({
           id: p.getData('platformId'),
-          surface:
-            p.getData('platformId') === 'fishing-dock'
-              ? p.getData('surfaceY')
-              : p.y +
-                s.cache.json.get('woods-art').atlases.platforms.alignmentHints[p.frame.name]
-                  .surfaceY *
-                  p.scaleY,
+          surface: p.getData('surfaceY'),
         })),
         resourceFrames: w.resources
           .filter((r) => r.texture?.key === 'woods-resources')
@@ -117,7 +111,7 @@ try {
   expect(mobile.soilBottom).toBeGreaterThan(mobile.v.bottom);
   expect(errors).toEqual([]);
   console.log(
-    'PASS: all woods artwork loads; eight collision-aligned platforms, seven ladders, twelve prop types; background covers map edges, canopy and mobile zoom without stretching.',
+    'PASS: continuous Woods terrain renders; eight collision-aligned platforms, seven full-height ladders, twelve prop types; background covers map edges, canopy and mobile zoom without stretching.',
   );
 } finally {
   await browser.close();

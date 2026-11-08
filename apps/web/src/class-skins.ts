@@ -185,9 +185,11 @@ export class ClassSkinVisual {
           .setData({ itemId: tool, skin: p.skin });
         if (node.skill === 'Fishing') {
           this.line.lineStyle(1, 0xf4e3ff);
-          this.line.lineBetween(this.item.x + 20, this.item.y - 25, 65, 6);
+          const bobX = (node.x + 22 - p.x) * p.facing;
+          const bobY = 30 + Math.sin(now / 180) * 2;
+          this.line.lineBetween(this.item.x + 20, this.item.y - 25, bobX, bobY);
           this.line.fillStyle(0xca9dff);
-          this.line.fillCircle(65, 6 + Math.sin(now / 180) * 2, 3);
+          this.line.fillCircle(bobX, bobY, 3);
         }
       }
     }

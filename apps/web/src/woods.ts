@@ -1,43 +1,19 @@
-import { artworkStrip } from './artwork';
+import { terrainPlatform, terrainLadder } from './terrain';
 import { assetUrl } from './assets';
-import fishingAtlas from '../public/assets/tilesets/woods-fishing-platform.json';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
-import {
-  WOODS_PROPS,
-  woodsPlatformFrame,
-  WOODS_AREA_PROPS,
-  platformArtwork,
-  backgroundArtwork,
-} from './woods-layout';
-type ArtManifest = {
-  background: { image: string; width: number; height: number };
-  atlases: Record<
-    string,
-    { image: string; atlas: string; alignmentHints?: Record<string, { surfaceY: number }> }
-  >;
-};
+import { WOODS_PROPS, WOODS_AREA_PROPS, backgroundArtwork } from './woods-layout';
 export function preloadWoods(scene: Phaser.Scene, map?: GameMap) {
   scene.load.atlas(
     'woods-resources',
     assetUrl('/assets/props/woods-resource-nodes.png'),
     '/assets/props/woods-resource-nodes.json',
   );
-  scene.load.atlas(
-    'woods-fishing',
-    assetUrl('/assets/tilesets/woods-fishing-platform.png'),
-    '/assets/tilesets/woods-fishing-platform.json',
-  );
-  scene.load.json('woods-art', '/assets/maps/whispering-woods-art.json');
   scene.load.image(
     `woods-background:${map?.background ?? '/assets/backgrounds/whispering-woods.png'}`,
     assetUrl(map?.background ?? '/assets/backgrounds/whispering-woods.png'),
   );
-  for (const [name, folder] of [
-    ['platforms', 'tilesets'],
-    ['ladders', 'tilesets'],
-    ['props', 'props'],
-  ])
+  for (const [name, folder] of [['props', 'props']])
     scene.load.atlas(
       `woods-${name}`,
       assetUrl(`/assets/${folder}/whispering-woods-${name}.png`),
@@ -51,13 +27,11 @@ export class WoodsScenery {
   ladders: Phaser.GameObjects.Image[] = [];
   props: Phaser.GameObjects.Image[] = [];
   resources: Phaser.GameObjects.GameObject[] = [];
-  manifest: ArtManifest;
   constructor(
     private scene: Phaser.Scene,
     private map: GameMap,
     onGather: (id: string) => void = () => {},
   ) {
-    this.manifest = scene.cache.json.get('woods-art') as ArtManifest;
     this.background = scene.add
       .image(
         0,
@@ -68,76 +42,12 @@ export class WoodsScenery {
     const ground = map.platforms.find((p) => !p.oneWay);
     if (ground)
       this.soil = scene.add
-        .rectangle(0, ground.y + 60, map.width, map.height + 1400, 0x483024)
+        .rectangle(0, ground.y + 60, map.width, map.height + 1400, 0x654732)
         .setOrigin(0, 0)
         .setDepth(-1);
-    for (const platform of map.platforms) {
-      if (platform.id === 'fishing-dock') {
-        const f = fishingAtlas.frames['fishing-dock'].frame,
-          a = fishingAtlas.alignment,
-          scale = platform.width / a.deckWidth;
-        this.platforms.push(
-          scene.add
-            .image(
-              platform.x - a.deckLeft * scale,
-              platform.y - a.surfaceY * scale,
-              'woods-fishing',
-              'fishing-dock',
-            )
-            .setOrigin(0)
-            .setDisplaySize(f.w * scale, f.h * scale)
-            .setDepth(0)
-            .setData({ platformId: platform.id, surfaceY: platform.y }),
-        );
-        continue;
-      }
-      const name = woodsPlatformFrame(platform);
-      const frame = scene.textures.getFrame('woods-platforms', name);
-      const surface = this.manifest.atlases.platforms.alignmentHints?.[name]?.surfaceY ?? 0;
-      const rect = platformArtwork(
-        platform,
-        map,
-        { width: frame.width, height: frame.height },
-        surface,
-      );
-      if (platform.oneWay) {
-        this.platforms.push(
-          scene.add
-            .image(rect.x, rect.y, 'woods-platforms', name)
-            .setOrigin(0)
-            .setScale(rect.width / frame.width)
-            .setDepth(0)
-            .setData({ platformId: platform.id, surfaceY: platform.y }),
-        );
-      } else {
-        this.platforms.push(
-          ...artworkStrip(scene, {
-            texture: 'woods-platforms',
-            frame: name,
-            x: platform.x,
-            y: platform.y,
-            length: platform.width,
-            thickness: rect.height,
-            surface,
-            depth: 0,
-          }).map((image) => image.setData({ platformId: platform.id, surfaceY: platform.y })),
-        );
-      }
-    }
-    map.ladders.forEach((ladder, i) => {
-      this.ladders.push(
-        ...artworkStrip(scene, {
-          texture: 'woods-ladders',
-          frame: i % 2 === 0 ? 'ladder-short' : 'ladder-tall',
-          x: ladder.x,
-          y: ladder.top - 7,
-          length: ladder.bottom - ladder.top + 14,
-          thickness: 42,
-          vertical: true,
-          depth: 3,
-        }).map((image) => image.setData({ top: ladder.top, bottom: ladder.bottom })),
-      );
-    });
+    for (const platform of map.platforms)
+      this.platforms.push(terrainPlatform(scene, map, platform, 'woods'));
+    for (const ladder of map.ladders) this.ladders.push(terrainLadder(scene, ladder, 'woods'));
     for (const prop of WOODS_AREA_PROPS[map.id] ?? WOODS_PROPS) {
       const platform = map.platforms.find((p) => p.id === prop.platform);
       if (!platform) continue;
@@ -206,13 +116,18 @@ export class WoodsScenery {
     const camera = scene.cameras.main;
     camera.on(Phaser.Cameras.Scene2D.Events.FOLLOW_UPDATE, this.refresh, this);
     scene.scale.on(Phaser.Scale.Events.RESIZE, this.refresh, this);
-    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    const detach = () => {
       camera.off(Phaser.Cameras.Scene2D.Events.FOLLOW_UPDATE, this.refresh, this);
       scene.scale.off(Phaser.Scale.Events.RESIZE, this.refresh, this);
-    });
+      scene.events.off(Phaser.Scenes.Events.SHUTDOWN, detach);
+      scene.events.off(Phaser.Scenes.Events.DESTROY, detach);
+    };
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, detach);
+    scene.events.once(Phaser.Scenes.Events.DESTROY, detach);
     this.refresh();
   }
   refresh() {
+    if (!this.background.scene || !this.scene.cameras.main) return;
     const camera = this.scene.cameras.main;
     const width = camera.width / camera.zoom,
       height = camera.height / camera.zoom;
