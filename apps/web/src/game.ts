@@ -40,6 +40,8 @@ export type Bridge = {
 };
 export function mountGame(parent: HTMLElement, bridge: Bridge) {
   parent.setAttribute('aria-busy', 'true');
+  let destroyed = false;
+  const backgroundCache: string[] = [];
   class RealmScene extends Phaser.Scene {
     map!: GameMap;
     actors = new Map<string, Phaser.GameObjects.Container>();
@@ -103,6 +105,13 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.cameras.main.setBounds(0, 0, this.map.width, this.map.height);
       this.physics.world.setBounds(0, 0, this.map.width, this.map.height);
       this.drawWorld();
+      const background = this.woods?.background.texture.key ?? this.crystal?.background.texture.key;
+      if (background) {
+        const prior = backgroundCache.indexOf(background);
+        if (prior >= 0) backgroundCache.splice(prior, 1);
+        backgroundCache.push(background);
+        while (backgroundCache.length > 3) this.textures.remove(backgroundCache.shift()!);
+      }
       this.bossWarnings = new BossWarnings(this);
       this.keys = this.input.keyboard!.addKeys(
         'A,D,W,S,SPACE,J,K,E,LEFT,RIGHT,UP,DOWN',
@@ -468,7 +477,19 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     update(time: number) {
       const s = bridge.snapshot;
-      if (s) this.sync(s);
+      if (!s) return;
+      if (s.mapId !== this.map.id) {
+        parent.setAttribute('aria-busy', 'true');
+        bridge.held = {};
+        // Replace scene objects after this update; retain the renderer, textures and clips.
+        queueMicrotask(() => {
+          if (destroyed) return;
+          game.scene.remove('realm');
+          game.scene.add('realm', new RealmScene(), true);
+        });
+        return;
+      }
+      this.sync(s);
       if (this.map.monster && WOODS_MONSTERS[this.map.monster].boss) {
         const zoom = this.scale.width < 700 ? 0.62 : 0.95;
         if (this.cameras.main.zoom !== zoom) this.cameras.main.setZoom(zoom);
@@ -516,6 +537,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       game.scale.resize(parent.clientWidth, parent.clientHeight);
   });
   resize.observe(parent);
-  game.events.once(Phaser.Core.Events.DESTROY, () => resize.disconnect());
+  game.events.once(Phaser.Core.Events.DESTROY, () => {
+    destroyed = true;
+    resize.disconnect();
+  });
   return game;
 }

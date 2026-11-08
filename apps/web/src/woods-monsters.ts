@@ -42,12 +42,13 @@ export function registerWoodsMonster(scene: Phaser.Scene, monster?: WoodsMonster
   if (!monster || monster === 'wolf') return;
   const clips = scene.cache.json.get(`${monster}-clips`) as Clips;
   for (const [name, clip] of Object.entries(clips.animations))
-    scene.anims.create({
-      key: `${monster}-${name}`,
-      frames: clip.frames.map((frame) => ({ key: monster, frame })),
-      frameRate: clip.frameRate,
-      repeat: clip.repeat,
-    });
+    if (!scene.anims.exists(`${monster}-${name}`))
+      scene.anims.create({
+        key: `${monster}-${name}`,
+        frames: clip.frames.map((frame) => ({ key: monster, frame })),
+        frameRate: clip.frameRate,
+        repeat: clip.repeat,
+      });
 }
 export class WoodsMonsterVisual {
   container: Phaser.GameObjects.Container;

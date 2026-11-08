@@ -76,7 +76,7 @@ export function preloadCharacters(scene: Phaser.Scene, players: Player[] = [], m
     scene.load.json(`citizen-atlas-${a}`, `/assets/characters/citizen-${a}.json`);
 }
 export function registerCharacters(scene: Phaser.Scene) {
-  if (scene.textures.exists('mira'))
+  if (scene.textures.exists('mira') && !scene.anims.exists('mira-idle'))
     scene.anims.create({
       key: 'mira-idle',
       frames: Array.from({ length: 6 }, (_, i) => ({ key: 'mira', frame: `idle-${i}` })),
@@ -93,7 +93,7 @@ export function registerCharacters(scene: Phaser.Scene) {
       const key = characterKey(a, outfit);
 
       for (const [name, clip] of Object.entries(clips.animations)) {
-        if (name === 'hurt') continue;
+        if (name === 'hurt' || scene.anims.exists(`${key}-${name}`)) continue;
         scene.anims.create({
           key: `${key}-${name}`,
           frames: clip.frames.map((frame) => ({ key, frame })),

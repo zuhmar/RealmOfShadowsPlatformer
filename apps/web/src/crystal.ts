@@ -4,7 +4,7 @@ import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 export function preloadCrystal(scene: Phaser.Scene, map: GameMap) {
-  scene.load.image('crystal-background', assetUrl(map.background!));
+  scene.load.image(`crystal-background:${map.background}`, assetUrl(map.background!));
   scene.load.atlas(
     'crystal-platforms',
     assetUrl('/assets/tilesets/crystal-platforms.png'),
@@ -53,7 +53,7 @@ export class CrystalScenery {
     private map: GameMap,
     onGather: (id: string) => void,
   ) {
-    this.background = scene.add.image(0, 0, 'crystal-background').setDepth(-30);
+    this.background = scene.add.image(0, 0, `crystal-background:${map.background}`).setDepth(-30);
     const ground = map.platforms.find((p) => !p.oneWay)!;
     scene.add
       .rectangle(0, ground.y + 48, map.width, map.height + 1000, 0x10152e)

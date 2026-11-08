@@ -60,3 +60,13 @@ The loading screen now reports actual artwork-loader progress. The initial modul
 For an uncached before/after artwork-entry comparison, save the previous optimized manifest to a temporary file and run `BASELINE_MANIFEST=/tmp/startup-before-manifest.json node scripts/browser-startup.mjs`. It simulates 10 Mbps with 40 ms latency, imports development modules before timing, checks readiness and actual progress, and records the payload and elapsed time in `artifacts/startup-performance.json`.
 
 In the uncached artwork-entry test above, the same unarmed Woods fixture transferred 24,419,134 → 10,475,950 artwork bytes and became playable in 19.956 → 8.713 seconds. This is a local 10 Mbps/40 ms simulation, excludes initial development-module imports and sign-in, and is not a production loading-time guarantee. The larger image-set row includes the login imagery too. Compression changes transfer sizes; decoded texture dimensions and estimated GPU memory remain unchanged.
+
+## Map travel
+
+Travel preserves the Phaser game, renderer, shared textures and animation registry for the whole play session. Each destination gets a fresh scene so characters, monsters, physics, effects, camera state and scenery listeners from the prior map are removed. Shared assets already in Phaser’s cache are reused. World backgrounds have distinct keys by image path and an LRU limit of three Woods/Crystal backgrounds; returning after eviction reloads that background only. Exiting the world still destroys the game and its texture cache.
+
+The server’s ordered save, room transfer, portal/key validation and Teleport Crystal charges are unchanged. During handoff the previous scene stops consuming snapshots/inputs, and the loading overlay remains until the destination scene is ready.
+
+Run `node scripts/browser-travel-cache.mjs` for 13 map changes through all Woods/Crystal areas plus the village. The check verifies one canvas/renderer, shared body texture identity, one scene/character, correct per-area backgrounds, the background limit, and no image requests on warm repeated travel. In the local mobile fixture, final warm Woods ↔ Spider scene changes took about 100–110 ms; that excludes backend handoff and is not a deployed-network guarantee.
+
+With the local database and server running, run `node --env-file-if-exists=apps/server/.env scripts/browser-travel-ui.mjs` to exercise real world-map teleports, canvas reuse, exact crystal charges and saved destination state.

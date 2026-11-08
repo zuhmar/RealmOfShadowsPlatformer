@@ -30,7 +30,7 @@ export function preloadWoods(scene: Phaser.Scene, map?: GameMap) {
   );
   scene.load.json('woods-art', '/assets/maps/whispering-woods-art.json');
   scene.load.image(
-    'woods-background',
+    `woods-background:${map?.background ?? '/assets/backgrounds/whispering-woods.png'}`,
     assetUrl(map?.background ?? '/assets/backgrounds/whispering-woods.png'),
   );
   for (const [name, folder] of [
@@ -58,7 +58,13 @@ export class WoodsScenery {
     onGather: (id: string) => void = () => {},
   ) {
     this.manifest = scene.cache.json.get('woods-art') as ArtManifest;
-    this.background = scene.add.image(0, 0, 'woods-background').setDepth(-30);
+    this.background = scene.add
+      .image(
+        0,
+        0,
+        `woods-background:${map.background ?? '/assets/backgrounds/whispering-woods.png'}`,
+      )
+      .setDepth(-30);
     const ground = map.platforms.find((p) => !p.oneWay);
     if (ground)
       this.soil = scene.add

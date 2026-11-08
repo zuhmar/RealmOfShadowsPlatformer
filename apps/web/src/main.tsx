@@ -320,6 +320,10 @@ function App() {
     next.onMessage('travel', (target: string) => {
       void run(async () => {
         hud.stop();
+        bridge.current.snapshot = null;
+        bridge.current.held = {};
+        host.current?.setAttribute('aria-busy', 'true');
+        setLoadingProgress(null);
         roomRef.current = null;
         await next.leave();
         setRoom(null);
@@ -443,7 +447,7 @@ function App() {
       game.current?.destroy(true);
       game.current = null;
     };
-  }, [page, snapshot?.mapId]);
+  }, [page]);
   useEffect(() => {
     const prevent = (e: KeyboardEvent) => {
       if (

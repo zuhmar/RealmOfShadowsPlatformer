@@ -11,6 +11,7 @@ export const WOLF_FRAME_SIZE = 229;
 export function registerWolfAnimations(scene: Phaser.Scene) {
   const sheet = scene.cache.json.get('wolf-config') as Sheet;
   for (const [name, clip] of Object.entries(sheet.animations)) {
+    if (scene.anims.exists(`wolf-${name}`)) continue;
     scene.anims.create({
       key: `wolf-${name}`,
       frames: scene.anims.generateFrameNumbers(WOLF_TEXTURE, { start: clip.start, end: clip.end }),
