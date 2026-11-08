@@ -1,16 +1,8 @@
 import { guardAtlasSampling } from './atlas-sampling';
 import Phaser from 'phaser';
-import {
-  CLASS_PATHS,
-  canEquipSkin,
-  equipmentDefinition,
-  starterTool,
-  weaponKind,
-  type GameMap,
-} from '@ros/game-data';
+import { equipmentDefinition, starterTool, weaponKind, type GameMap } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
-import { appearanceOf } from './character-art';
 import {
   characterAction,
   characterMotion,
@@ -43,28 +35,8 @@ function load(scene: Phaser.Scene, key: string, path: string, metadata = false, 
   }
   return false;
 }
-export function skinSheet(p: Player, unarmed = false) {
-  if (!p.skin || !canEquipSkin(p.classId, p.skin)) return null;
-  if (p.skin === 'golden-test')
-    return { key: 'skin-golden-test', path: '/assets/characters/skins/golden-test', armed: false };
-  const a = appearanceOf(p.appearance),
-    kind = weaponKind(p.weapon);
-  if (unarmed || p.climbing || p.gathering || kind === 'unarmed')
-    return {
-      key: `skin-${a}-${p.skin}`,
-      path: `/assets/characters/skins/integrated/${a}-${p.skin}`,
-      armed: false,
-    };
-  if (CLASS_PATHS[p.skin].weapon !== kind) return null;
-  const gear = equipmentDefinition(p.weapon),
-    tier = gear?.tier ?? 'starter';
-  // Other islands keep their existing equipped-weapon renderer until integrated class sheets are authored.
-  if (!['starter', 'woods', 'crystal'].includes(tier)) return null;
-  return {
-    key: `skin-${a}-${p.skin}-${tier}`,
-    path: `/assets/characters/skins/integrated/armed/${tier}/${a}-${p.skin}`,
-    armed: true,
-  };
+export function skinSheet(_p: Player, _unarmed = false) {
+  return { key: 'skin-golden-test', path: '/assets/characters/skins/golden-test', armed: false };
 }
 export function skinKey(scene: Phaser.Scene, p: Player, start = true, unarmed = false) {
   const sheet = skinSheet(p, unarmed);
@@ -90,13 +62,12 @@ function geometry(scene: Phaser.Scene, sprite: Phaser.GameObjects.Sprite, key: s
   return f;
 }
 export function preloadSkins(scene: Phaser.Scene, players: Player[], map?: GameMap) {
-  for (const p of players)
-    if (p.skin && canEquipSkin(p.classId, p.skin)) {
-      skinKey(scene, p, false, true);
-      skinKey(scene, p, false);
-      if (p.gathering && map)
-        load(scene, 'class-tools', '/assets/equipment/gathering-tools', false, false);
-    }
+  for (const p of players) {
+    skinKey(scene, p, false, true);
+    skinKey(scene, p, false);
+    if (p.gathering && map)
+      load(scene, 'class-tools', '/assets/equipment/gathering-tools', false, false);
+  }
 }
 export class ClassSkinVisual {
   container: Phaser.GameObjects.Container;
@@ -195,12 +166,7 @@ export class ClassSkinVisual {
         }
       }
     }
-    if (
-      p.skin === 'golden-test' &&
-      !node &&
-      motion !== 'climb' &&
-      weaponKind(p.weapon) !== 'unarmed'
-    ) {
+    if (!node && motion !== 'climb' && weaponKind(p.weapon) !== 'unarmed') {
       const gear = equipmentDefinition(p.weapon);
       const weaponKey = gear ? `test-weapon-${gear.tier}` : 'elderwood-weapons';
       const ready = !gear || load(this.scene, weaponKey, `/assets/equipment/islands/${gear.tier}`);

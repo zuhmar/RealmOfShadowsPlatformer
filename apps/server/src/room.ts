@@ -1,3 +1,4 @@
+import { revealOrigin } from './story.js';
 import { changeProvision } from './provisions.js';
 import { provisionRecipe, PROVISION_STATIONS } from '@ros/game-data';
 import { changeClass } from './classes.js';
@@ -640,6 +641,7 @@ export class MapRoom extends Room {
     auth: { id: string; name: string; data: unknown },
   ) {
     const p = auth.data as Player;
+    revealOrigin(p, this.world.map);
     p.auto = false;
     delete p.gathering;
     p.vx = 0;

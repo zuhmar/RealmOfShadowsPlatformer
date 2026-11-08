@@ -1,4 +1,6 @@
-# Class carousel and integrated class sprites
+# Archived class sprites and class carousel
+
+The class-specific human artwork described below is historical. The current hero and friendly NPCs use the Celestial figure; see [current character direction](character-concept.md). Class selection, terrain and combat behavior remain active, but the four paths now share that body. The rendering smoke test now validates the Celestial body, weapon overlays and held tools across legacy class/appearance data.
 
 Claiming the Cavern Mentor’s class trial opens the class-selection carousel. It displays Knight, Archer, Mage and Rogue with sprite art, weapon, training and signature details. Arrows, left/right keys, slide indicators and horizontal swipes browse it. Escape/close allows choosing later; the mentor and Skills panel offer Browse classes. First class choice remains free; later changes cost 500 gold at a mentor/Mira and refund talents.
 

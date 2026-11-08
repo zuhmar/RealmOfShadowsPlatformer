@@ -1,3 +1,4 @@
+import { Avatar } from './Avatar';
 import { assetUrl } from './assets';
 import atlas from '../public/assets/ui/player-menu.json';
 export function MenuIcon({ name }: { name: keyof typeof atlas.frames | 'skills' }) {
@@ -7,6 +8,7 @@ export function MenuIcon({ name }: { name: keyof typeof atlas.frames | 'skills' 
         <image href={assetUrl('/assets/ui/skills.png')} width="1254" height="1254" />
       </svg>
     );
+  if (name === 'character') return <Avatar />;
   const { x, y, w, h } = atlas.frames[name].frame;
   return (
     <svg viewBox={`${x} ${y} ${w} ${h}`} aria-hidden="true" focusable="false">

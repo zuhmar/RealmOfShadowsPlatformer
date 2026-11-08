@@ -29,8 +29,9 @@ export const SKINS: Record<SkinId, { name: string; description: string; required
   {
     ...CLASS_SKINS,
     'golden-test': {
-      name: 'Golden Test Figure',
-      description: 'A white training figure with a golden glow. Available to every class.',
+      name: 'Celestial',
+      description:
+        'A white-and-gold Celestial figure. The shared appearance of the hero and friendly characters.',
     },
   };
 export function validSkin(value: unknown): value is SkinId | null {

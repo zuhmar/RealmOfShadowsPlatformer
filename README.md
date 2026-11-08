@@ -188,7 +188,7 @@ Images use compact, content-addressed WebP copies with exact transparency and im
 
 ### Class selection and skins
 
-Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. Use **Character → Change skin** to switch free between your matching class skin and original look. Class headwear and current-island weapons are integrated into the sprite artwork. See [class skins and proportional terrain](docs/class-skins.md) for artwork and checks.
+Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. All four paths now share the Celestial body, with class weapons shown in the preview and equipped weapons/tools held in-game. Existing saves adopt this appearance automatically. See [character direction and story canon](docs/character-concept.md) for current artwork and [archived class skins and proportional terrain](docs/class-skins.md) for the former assets.
 
 Platforms and ladders use a [cohesive terrain renderer](docs/cohesive-terrain.md): continuous ledges, matching biome materials and full-height connected rails across all nine playable maps. Distinct area layouts and collision positions are preserved.
 
@@ -196,4 +196,4 @@ All 81 crafting recipes require [hunted recipe scrolls](docs/recipe-discovery.md
 
 Cooking and Alchemy now have [ten craftable recipes](docs/cooking-alchemy.md), profession XP, two Elderwood stations and consumable use from Bag or Skills → Cooking & Alchemy recipes. Meals grant temporary damage, regeneration or crit buffs; potions restore health/mana with a shared cooldown.
 
-The **Golden Test Figure** is a free cosmetic for every class and civilian. Open **Character → Change skin → Golden Test Figure → Wear this skin**. Its generated 36-pose sheet includes idle, walking, jumping, climbing, attacks and death; equipped weapons/tools remain visible and climbing stays unarmed. It works for either player appearance and persists through re-entry. No stats, class unlocks or equipment ownership change. See `scripts/frame-golden-test.py` for reproducible atlas metadata and `scripts/browser-golden-test.mjs` for desktop/mobile and animation checks.
+The character direction now uses **white-and-gold Celestials** for the hero and friendly NPCs, and **black-and-purple Shadow figures** for hostile humanoid NPCs. New and saved heroes adopt the Celestial appearance automatically. Creature sprites and gameplay remain unchanged. The opening story retains the destroyed hometown, years of training and hunt for the Shadow Dragon. Hidden-origin story content is gated until Celestial Realm entry; that island remains planned content. See [character direction and story canon](docs/character-concept.md) for implementation, future content limits and author spoilers.

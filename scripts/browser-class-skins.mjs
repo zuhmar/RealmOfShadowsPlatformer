@@ -69,7 +69,7 @@ try {
   const dialog = page.getByRole('dialog', { name: 'Choose your class' });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('heading', { name: 'Knight', exact: true })).toBeVisible();
-  await expect(dialog.getByRole('img', { name: 'male knight skin' })).toHaveAttribute(
+  await expect(dialog.getByRole('img', { name: 'Celestial adventurer' })).toHaveAttribute(
     'aria-busy',
     'false',
   );
@@ -91,21 +91,15 @@ try {
   await page.getByRole('button', { name: 'Character', exact: true }).click();
   await page.getByRole('button', { name: 'Change skin', exact: true }).click();
   const skins = page.getByRole('dialog', { name: 'Change your skin' });
-  await skins.getByRole('button', { name: 'View Mage', exact: true }).click();
-  await expect(skins.getByText('Requires the Mage class.')).toBeVisible();
-  await expect(skins.getByRole('button', { name: 'Wear this skin' })).toBeDisabled();
-  await skins.getByRole('button', { name: 'View Original adventurer', exact: true }).click();
-  await skins.getByRole('button', { name: 'Wear this skin' }).click();
-  await expect(skins).toBeHidden();
-  await page.getByRole('button', { name: 'Change skin', exact: true }).click();
-  await skins.getByRole('button', { name: 'View Knight', exact: true }).click();
-  await skins.getByRole('button', { name: 'Wear this skin' }).click();
-  await expect(skins).toBeHidden();
+  await skins.getByRole('button', { name: 'View Celestial', exact: true }).click();
+  await expect(skins.getByRole('button', { name: 'Currently selected' })).toBeDisabled();
+  await expect(skins.getByRole('button', { name: 'View Mage', exact: true })).toHaveCount(0);
+  await skins.getByRole('button', { name: 'Keep current look' }).click();
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   const saved = (await db.character.findUniqueOrThrow({ where: { id: p.id } })).data;
   expect(saved.classId).toBe('knight');
-  expect(saved.skin).toBe('knight');
+  expect(saved.skin).toBe('golden-test');
   expect(saved.gold).toBe(goldBeforeChoice);
   await page.getByRole('button', { name: 'Enter world' }).click();
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
@@ -113,7 +107,7 @@ try {
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   expect(errors).toEqual([]);
   console.log(
-    'PASS: quest claim opens class carousel, keyboard/mobile browsing, free class choice, class-locked free skin switch and save/re-entry.',
+    'PASS: quest claim opens class carousel, keyboard/mobile browsing, free class choice, shared Celestial appearance and save/re-entry.',
   );
 } finally {
   await browser.close();

@@ -272,12 +272,11 @@ export class CharacterVisual {
       .setScale(0.36);
     this.gatheringVisual = new Phaser.GameObjects.Graphics(scene);
     this.container.add([this.gatheringVisual, this.sprite]);
-    if (player.skin) this.skinVisual = new ClassSkinVisual(scene, this.container);
+    this.skinVisual = new ClassSkinVisual(scene, this.container);
   }
   sync(p: Player, map: GameMap, now: number) {
-    if (p.skin && !this.skinVisual)
-      this.skinVisual = new ClassSkinVisual(this.scene, this.container);
-    if (p.skin && this.skinVisual?.sync(p, map, now)) {
+    if (!this.skinVisual) this.skinVisual = new ClassSkinVisual(this.scene, this.container);
+    if (this.skinVisual?.sync(p, map, now)) {
       this.sprite.setVisible(false);
       this.gatheringVisual.clear();
       this.drawnWeapon = p.climbing ? 'unarmed' : weaponKind(p.weapon);

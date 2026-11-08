@@ -21,6 +21,7 @@ for name,col,x,y,fw,fh in boxes:
  frames[key]={'frame':{'x':x,'y':y,'w':fw,'h':fh},'rotated':False,'trimmed':True,'spriteSourceSize':{'x':sx,'y':sy,'w':fw,'h':fh},'sourceSize':{'w':vw,'h':vh}}
  anchors[key]={'hand':{'x':sx+fw*(.9 if name=='attack' and col in [2,3] else .78),'y':sy+fh*.63}}
  if name=='idle':heights.append(fh)
-meta={'image':'golden-test.png','size':{'w':w,'h':h},'sourceFrame':{'width':vw,'height':vh,'baseline':baseline,'scale':80/statistics.median(heights)},'framingVersion':2,'integratedHeadwear':True,'integratedWeapon':None,'animations':{name:{'frames':[f'{name}-{n}' for n in range(6)],'frameRate':{'idle':6,'walk':10,'jump':10,'climb':8,'attack':12,'death':8}[name],'repeat':-1 if name in ['idle','walk','climb'] else 0} for name in names},'anchors':anchors}
-target=repo/'apps/web/public/assets/characters/skins/golden-test.png';shutil.copyfile(source,target);target.with_suffix('.json').write_text(json.dumps({'frames':frames,'meta':meta},indent=2)+'\n')
+stem=sys.argv[2] if len(sys.argv)>2 else 'golden-test'
+meta={'image':stem+'.png','size':{'w':w,'h':h},'sourceFrame':{'width':vw,'height':vh,'baseline':baseline,'scale':80/statistics.median(heights)},'framingVersion':2,'integratedHeadwear':True,'integratedWeapon':None,'animations':{name:{'frames':[f'{name}-{n}' for n in range(6)],'frameRate':{'idle':6,'walk':10,'jump':10,'climb':8,'attack':12,'death':8}[name],'repeat':-1 if name in ['idle','walk','climb'] else 0} for name in names},'anchors':anchors}
+target=repo/'apps/web/public/assets/characters/skins'/f'{stem}.png';shutil.copyfile(source,target);target.with_suffix('.json').write_text(json.dumps({'frames':frames,'meta':meta},indent=2)+'\n')
 print('Framed',len(frames),'poses',im.size,'scale',meta['sourceFrame']['scale'])

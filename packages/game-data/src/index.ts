@@ -44,7 +44,14 @@ export type GameMap = {
   portals: { x: number; y: number; target: string; label: string; key?: string }[];
   spawns: { x: number; y: number; platform: string }[];
   resources?: ResourceNode[];
-  npcs: { id?: string; x: number; y: number; name: string; role: string }[];
+  npcs: {
+    id?: string;
+    x: number;
+    y: number;
+    name: string;
+    role: string;
+    allegiance?: 'celestial' | 'shadow';
+  }[];
 };
 export const RULES = {
   tick: 30,
@@ -265,7 +272,7 @@ MAPS.village.portals.push({ x: 900, y: 450, target: 'crystal', label: 'Crystal C
 export const STORY = {
   title: 'The last survivor',
   prologue:
-    'The Shadow Dragon attacked a boy’s hometown and killed everyone but him. He trained for years. Now he is ready to begin the journey to slay the Shadow Dragon.',
+    'A boy raised among the white-and-gold Celestial people lost his hometown when the Shadow Dragon attacked. Everyone he knew was killed, but he survived. After years of training, he is ready to begin the journey to slay the Shadow Dragon.',
 };
 export const MIRA_WEAPON_KIT_LEDGER = 'mira-wolves-weapon-kit-v1';
 export const QUESTS = {

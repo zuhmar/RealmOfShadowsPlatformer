@@ -58,7 +58,10 @@ try {
     return (
       s.characters.size === 8 &&
       [...s.characters.values()].every(
-        (v) => v.skinVisual?.container.visible && v.skinVisual.body.getData('integratedWeapon'),
+        (v) =>
+          v.skinVisual?.container.visible &&
+          v.skinVisual.body.texture.key === 'skin-golden-test' &&
+          v.skinVisual.item.visible,
       )
     );
   });
@@ -89,9 +92,9 @@ try {
       (tier) =>
         [...window.skinsTest.game.scene.getScene('realm').characters.values()].every(
           (v) =>
-            v.skinVisual.body.texture.key.endsWith(`-${tier}`) &&
-            v.skinVisual.body.getData('integratedWeapon') &&
-            !v.skinVisual.item.visible,
+            v.skinVisual.body.texture.key === 'skin-golden-test' &&
+            v.skinVisual.item.getData('itemId') === v.player.weapon &&
+            v.skinVisual.item.visible,
         ),
       tier,
     );
@@ -196,12 +199,15 @@ try {
   await mutate({ skin: null, gathering: undefined });
   await page.waitForFunction(() =>
     [...window.skinsTest.game.scene.getScene('realm').characters.values()].every(
-      (v) => v.sprite.visible && !v.skinVisual.container.visible,
+      (v) =>
+        !v.sprite.visible &&
+        v.skinVisual.container.visible &&
+        v.skinVisual.body.texture.key === 'skin-golden-test',
     ),
   );
   expect(errors).toEqual([]);
   console.log(
-    'PASS: eight class skins, all six-frame idle/walk/climb/attack loops, integrated headwear/weapons, held tools, unarmed climbing, original-skin restoration and uniform artwork scale.',
+    'PASS: all eight legacy class/appearance combinations use Celestial bodies, six-frame idle/walk/climb/attack loops, weapon overlays, held tools, unarmed climbing, legacy appearance migration and uniform artwork scale.',
   );
 } finally {
   await browser.close();

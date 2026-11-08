@@ -109,8 +109,8 @@ function App() {
   ]);
   const [message, setMessage] = useState('');
   const [name, setName] = useState('');
-  const [appearance, setAppearance] = useState('male');
-  const [outfit, setOutfit] = useState('sage');
+  const appearance = 'male';
+  const outfit = 'sage';
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteName, setDeleteName] = useState('');
@@ -1183,21 +1183,7 @@ function App() {
                   placeholder="What will they call you?"
                 />
               </label>
-              <label>
-                Appearance
-                <select value={appearance} onChange={(e) => setAppearance(e.target.value)}>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
-              </label>
-              <label>
-                Starting outfit
-                <select value={outfit} onChange={(e) => setOutfit(e.target.value)}>
-                  <option value="sage">Sage wanderer</option>
-                  <option value="ember">Ember traveler</option>
-                  <option value="tide">Tide explorer</option>
-                </select>
-              </label>
+              <p>Your adventurer uses the white-and-gold Celestial form.</p>
               <p>
                 Begin as a Civilian. Complete the Crystal Caverns class quest to choose your path.
               </p>
@@ -1481,6 +1467,18 @@ function App() {
                   attributes.
                 </p>
               </>
+            )}
+            {panel === 'quests' && (
+              <article>
+                <h3>{STORY.title}</h3>
+                <p>{STORY.prologue}</p>
+                {p.originRevelation && (
+                  <section>
+                    <h3>{p.originRevelation.title}</h3>
+                    <p>{p.originRevelation.text}</p>
+                  </section>
+                )}
+              </article>
             )}
             {(panel === 'quests' || panel === 'mira') && (
               <QuestPanel

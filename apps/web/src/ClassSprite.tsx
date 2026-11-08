@@ -1,7 +1,9 @@
+import { CLASS_PATHS } from '@ros/game-data';
+import weapons from '../public/assets/equipment/elderwood-weapons.json';
 import { useEffect, useState } from 'react';
 import type { SkinId } from '@ros/game-data';
 import { assetUrl } from './assets';
-import { Avatar } from './Avatar';
+
 type Frame = {
   frame: { x: number; y: number; w: number; h: number };
   spriteSourceSize: { x: number; y: number };
@@ -24,15 +26,12 @@ export function ClassSprite({
   outfit?: string;
   armedPreview?: boolean;
 }) {
-  const path =
-    skin === 'golden-test'
-      ? '/assets/characters/skins/golden-test'
-      : `/assets/characters/skins/integrated/${armedPreview ? 'armed/woods/' : ''}${appearance === 'female' ? 'female' : 'male'}-${skin}`;
+  const path = '/assets/characters/skins/golden-test';
   const [atlas, setAtlas] = useState<SkinAtlas | null>(null);
   useEffect(() => {
     let active = true;
     setAtlas(null);
-    if (skin) {
+    {
       let promise = atlases.get(path);
       if (!promise) {
         promise = fetch(`${path}.json`).then((r) => {
@@ -52,13 +51,15 @@ export function ClassSprite({
       active = false;
     };
   }, [path, skin]);
-  if (!skin) return <Avatar appearance={appearance} outfit={outfit} />;
+
   const f = atlas?.frames['idle-0'];
   const viewport = atlas ? 104 / atlas.meta.sourceFrame.scale : 256;
+  const weapon = armedPreview && skin && skin !== 'golden-test' ? CLASS_PATHS[skin].weapon : null;
+  const wf = weapon ? weapons.frames[weapon].frame : null;
   return (
     <svg
       role="img"
-      aria-label={`${appearance} ${skin} skin`}
+      aria-label="Celestial adventurer"
       aria-busy={!atlas}
       viewBox={`0 0 ${viewport} ${viewport}`}
       className="class-sprite"
@@ -75,6 +76,21 @@ export function ClassSprite({
             href={assetUrl(`${path}.png`)}
             width={atlas.meta.size.w}
             height={atlas.meta.size.h}
+          />
+        </svg>
+      )}
+      {atlas && wf && (
+        <svg
+          x={viewport * 0.61}
+          y={viewport * 0.47}
+          width={viewport * 0.28}
+          height={viewport * 0.4}
+          viewBox={`${wf.x} ${wf.y} ${wf.w} ${wf.h}`}
+        >
+          <image
+            href={assetUrl('/assets/equipment/elderwood-weapons.png')}
+            width={weapons.meta.size.w}
+            height={weapons.meta.size.h}
           />
         </svg>
       )}

@@ -36,10 +36,11 @@ try {
   await page.getByRole('button', { name: 'Character', exact: true }).click();
   await page.getByRole('button', { name: 'Change skin', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Change your skin' });
-  await dialog.getByRole('button', { name: 'View Golden Test Figure', exact: true }).click();
+  await dialog.getByRole('button', { name: 'View Celestial', exact: true }).click();
   await expect(dialog.locator('svg[aria-busy="false"]')).toBeVisible();
   await page.screenshot({ path: 'artifacts/golden-test-selection.png' });
-  await dialog.getByRole('button', { name: 'Wear this skin' }).click();
+  await expect(dialog.getByRole('button', { name: 'Currently selected' })).toBeDisabled();
+  await dialog.getByRole('button', { name: 'Keep current look' }).click();
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.waitForTimeout(1000);
   await page.screenshot({ path: 'artifacts/golden-test-village.png' });

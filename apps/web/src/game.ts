@@ -1,8 +1,9 @@
+import { preloadFactionFigures, factionFigure } from './faction-figures';
 import { provisionStation } from './provision-stations';
 import { guardAtlasSampling } from './atlas-sampling';
 import { fitArtwork } from './artwork';
 import { assetUrl } from './assets';
-import { CrystalScenery, preloadCrystal, cavernMentor } from './crystal';
+import { CrystalScenery, preloadCrystal } from './crystal';
 import { GEAR_RARITY_COLORS } from '@ros/shared';
 import { BossWarnings, bossImpact } from './boss-attacks';
 import { preloadBossEntrance, addBossEntrance } from './boss-entrances';
@@ -79,8 +80,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     }
     loadMap(loadingMap: GameMap) {
       preloadCharacters(this, bridge.snapshot?.players ?? [], loadingMap);
-      if (loadingMap.npcs.some((n) => n.id === 'bram'))
-        this.load.image('bram', assetUrl('/assets/characters/bram.png'));
+      preloadFactionFigures(this, loadingMap);
+
       preloadPortals(this, loadingMap);
       preloadWeaponEffects(this);
       preloadLoot(this, loadingMap);
@@ -261,21 +262,13 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         const c =
           npc.id === 'cooking-station' || npc.id === 'alchemy-station'
             ? provisionStation(this, npc.x, npc.y, npc.id === 'cooking-station')
-            : npc.id === 'mentor'
-              ? cavernMentor(this, npc.x, npc.y)
-              : npc.id === 'mira'
-                ? this.add
-                    .sprite(npc.x, npc.y, 'mira', 'idle-0')
-                    .setOrigin(0.5, 700 / 768)
-                    .setScale(0.11)
-                    .play('mira-idle')
-                : npc.id === 'bram'
-                  ? this.add
-                      .image(npc.x, npc.y, 'bram')
-                      .setOrigin(618 / 1254, 1240 / 1254)
-                      .setScale(90 / 1221)
-                      .setName('bram-npc')
-                  : this.character(npc.x, npc.y, 'sage', true);
+            : factionFigure(
+                this,
+                npc.x,
+                npc.y,
+                npc.allegiance ?? 'celestial',
+                npc.id === 'bram' ? 90 : 80,
+              );
         this.add
           .text(npc.x, npc.y - (npc.id === 'bram' ? 112 : 80), `${npc.name}\n${npc.role}`, {
             fontFamily: 'Georgia',

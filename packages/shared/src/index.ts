@@ -92,6 +92,7 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  originRevelation?: { title: string; text: string };
   unlockedRecipes?: string[];
   recipeHunts?: Record<string, number>;
   craftingSkills?: Partial<
@@ -247,6 +248,7 @@ export function createPlayer(id: string, name: string, mapId = 'woods'): Player 
   return {
     id,
     name,
+    skin: 'golden-test',
     appearance: 'male',
     outfit: 'sage',
     x: m.spawn.x,
@@ -1134,6 +1136,7 @@ export class World {
           'quests',
           'ownedTools',
           'equippedTools',
+          'originRevelation',
           'unlockedRecipes',
           'recipeHunts',
           'craftingSkills',
