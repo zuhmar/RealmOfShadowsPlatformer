@@ -24,14 +24,21 @@ export const CLASS_SKINS: Record<
     requiredClass: 'rogue',
   },
 };
-export function validSkin(value: unknown): value is ClassId | null {
-  return value === null || (typeof value === 'string' && Object.hasOwn(CLASS_SKINS, value));
+export type SkinId = ClassId | 'golden-test';
+export const SKINS: Record<SkinId, { name: string; description: string; requiredClass?: ClassId }> =
+  {
+    ...CLASS_SKINS,
+    'golden-test': {
+      name: 'Golden Test Figure',
+      description: 'A white training figure with a golden glow. Available to every class.',
+    },
+  };
+export function validSkin(value: unknown): value is SkinId | null {
+  return value === null || (typeof value === 'string' && Object.hasOwn(SKINS, value));
 }
 export function canEquipSkin(classId: ClassId | undefined, skin: unknown) {
   return (
     validSkin(skin) &&
-    (skin === null ||
-      !CLASS_SKINS[skin].requiredClass ||
-      CLASS_SKINS[skin].requiredClass === classId)
+    (skin === null || !SKINS[skin].requiredClass || SKINS[skin].requiredClass === classId)
   );
 }

@@ -45,6 +45,8 @@ function load(scene: Phaser.Scene, key: string, path: string, metadata = false, 
 }
 export function skinSheet(p: Player, unarmed = false) {
   if (!p.skin || !canEquipSkin(p.classId, p.skin)) return null;
+  if (p.skin === 'golden-test')
+    return { key: 'skin-golden-test', path: '/assets/characters/skins/golden-test', armed: false };
   const a = appearanceOf(p.appearance),
     kind = weaponKind(p.weapon);
   if (unarmed || p.climbing || p.gathering || kind === 'unarmed')
@@ -191,6 +193,28 @@ export class ClassSkinVisual {
           this.line.fillStyle(0xca9dff);
           this.line.fillCircle(bobX, bobY, 3);
         }
+      }
+    }
+    if (
+      p.skin === 'golden-test' &&
+      !node &&
+      motion !== 'climb' &&
+      weaponKind(p.weapon) !== 'unarmed'
+    ) {
+      const gear = equipmentDefinition(p.weapon);
+      const weaponKey = gear ? `test-weapon-${gear.tier}` : 'elderwood-weapons';
+      const ready = !gear || load(this.scene, weaponKey, `/assets/equipment/islands/${gear.tier}`);
+      const atlas = this.scene.cache.json.get(`${key}-atlas`) as SkinAtlas;
+      const anchor = atlas.meta.anchors[String(this.body.frame.name)]?.hand;
+      if (ready && anchor) {
+        this.item
+          .setVisible(true)
+          .setTexture(weaponKey, gear?.part ?? weaponKind(p.weapon))
+          .setOrigin(0.5, 0.8)
+          .setPosition((anchor.x - f.width / 2) * f.scale, (anchor.y - f.baseline) * f.scale)
+          .setScale(40 / this.item.height)
+          .setAngle(playing ? -60 : 0)
+          .setData({ itemId: p.weapon, skin: p.skin });
       }
     }
     this.body.setData({

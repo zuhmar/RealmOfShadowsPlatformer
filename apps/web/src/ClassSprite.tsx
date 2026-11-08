@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ClassId } from '@ros/game-data';
+import type { SkinId } from '@ros/game-data';
 import { assetUrl } from './assets';
 import { Avatar } from './Avatar';
 type Frame = {
@@ -19,12 +19,15 @@ export function ClassSprite({
   outfit = 'sage',
   armedPreview = false,
 }: {
-  skin: ClassId | null;
+  skin: SkinId | null;
   appearance: string;
   outfit?: string;
   armedPreview?: boolean;
 }) {
-  const path = `/assets/characters/skins/integrated/${armedPreview ? 'armed/woods/' : ''}${appearance === 'female' ? 'female' : 'male'}-${skin}`;
+  const path =
+    skin === 'golden-test'
+      ? '/assets/characters/skins/golden-test'
+      : `/assets/characters/skins/integrated/${armedPreview ? 'armed/woods/' : ''}${appearance === 'female' ? 'female' : 'male'}-${skin}`;
   const [atlas, setAtlas] = useState<SkinAtlas | null>(null);
   useEffect(() => {
     let active = true;

@@ -101,7 +101,7 @@ export type Player = Actor & {
   potionReadyAt?: number;
   provisionRevision?: number;
   classId?: import('@ros/game-data').ClassId;
-  skin?: import('@ros/game-data').ClassId | null;
+  skin?: import('@ros/game-data').SkinId | null;
   classTalents?: Partial<Record<import('@ros/game-data').ClassTalent, number>>;
   classRevision?: number;
   visitedAreas?: string[];

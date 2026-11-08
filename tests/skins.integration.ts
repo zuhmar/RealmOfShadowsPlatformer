@@ -77,6 +77,8 @@ test('skin RPC enforces class restrictions, migrates old cosmetics and saves fre
     assert.equal(me()!.gold, gold);
     assert.equal(me()!.weapon, weapon);
     assert.equal(me()!.classId, 'knight');
+    room.send('skin', 'golden-test');
+    await until(() => me()?.skin === 'golden-test');
     const saved = new Promise<void>((resolve) => room!.onMessage('saved', () => resolve()));
     room.send('logout');
     await saved;
@@ -84,7 +86,7 @@ test('skin RPC enforces class restrictions, migrates old cosmetics and saves fre
     room = undefined;
     const stored = (await db.character.findUniqueOrThrow({ where: { id: p.id } }))
       .data as unknown as typeof p;
-    assert.equal(stored.skin, 'knight');
+    assert.equal(stored.skin, 'golden-test');
     assert.equal(stored.gold, gold);
     assert.equal(stored.classId, 'knight');
   } finally {

@@ -117,3 +117,49 @@ test('Crystal knight jump crops exclude the detached strips from the next row', 
     assert.ok(f.y + f.h < 660, `${name} includes the neighboring helmet strip`);
   }
 });
+
+test('golden test figure is free for civilians and every class and preserves stats', () => {
+  const p = createPlayer('test', 'Tester');
+  const stats = playerAttributes(p);
+  equipSkin(p, 'golden-test');
+  assert.equal(p.skin, 'golden-test');
+  assert.equal(normalizeSkin(p), false);
+  assert.deepEqual(playerAttributes(p), stats);
+  p.gold = 1000;
+  p.quests = { 'crystal-class-trial': { progress: 1, claimed: true } };
+  chooseClass(p, 'knight');
+  assert.equal(p.skin, 'golden-test');
+  for (const cls of ['knight', 'archer', 'mage', 'rogue'] as const)
+    assert.equal(canEquipSkin(cls, 'golden-test'), true);
+  equipSkin(p, null);
+  assert.equal(p.skin, null);
+});
+
+test('golden figure atlas contains 36 contained frames and six playable clips without hurt', () => {
+  const atlas = JSON.parse(readFileSync(new URL('../golden-test.json', root), 'utf8'));
+  assert.equal(Object.keys(atlas.frames).length, 36);
+  assert.deepEqual(Object.keys(atlas.meta.animations), [
+    'idle',
+    'walk',
+    'jump',
+    'climb',
+    'attack',
+    'death',
+  ]);
+  for (const [name, clip] of Object.entries(atlas.meta.animations) as [string, any][]) {
+    assert.equal(clip.frames.length, 6);
+    for (const id of clip.frames) {
+      const f = atlas.frames[id];
+      assert.ok(
+        f.frame.x >= 0 &&
+          f.frame.y >= 0 &&
+          f.frame.x + f.frame.w <= atlas.meta.size.w &&
+          f.frame.y + f.frame.h <= atlas.meta.size.h,
+      );
+      assert.equal(f.spriteSourceSize.y + f.frame.h, atlas.meta.sourceFrame.baseline);
+      assert.ok(atlas.meta.anchors[id].hand);
+    }
+    assert.equal(clip.repeat, ['idle', 'walk', 'climb'].includes(name) ? -1 : 0);
+  }
+  assert.ok(atlas.meta.sourceFrame.scale > 0);
+});

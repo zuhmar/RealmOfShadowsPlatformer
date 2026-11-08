@@ -195,3 +195,5 @@ Platforms and ladders use a [cohesive terrain renderer](docs/cohesive-terrain.md
 All 81 crafting recipes require [hunted recipe scrolls](docs/recipe-discovery.md), including smelting, tools and equipment. Collected scrolls permanently unlock the recipe for that character.
 
 Cooking and Alchemy now have [ten craftable recipes](docs/cooking-alchemy.md), profession XP, two Elderwood stations and consumable use from Bag or Skills → Cooking & Alchemy recipes. Meals grant temporary damage, regeneration or crit buffs; potions restore health/mana with a shared cooldown.
+
+The **Golden Test Figure** is a free cosmetic for every class and civilian. Open **Character → Change skin → Golden Test Figure → Wear this skin**. Its generated 36-pose sheet includes idle, walking, jumping, climbing, attacks and death; equipped weapons/tools remain visible and climbing stays unarmed. It works for either player appearance and persists through re-entry. No stats, class unlocks or equipment ownership change. See `scripts/frame-golden-test.py` for reproducible atlas metadata and `scripts/browser-golden-test.mjs` for desktop/mobile and animation checks.

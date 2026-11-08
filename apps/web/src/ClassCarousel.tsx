@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   CLASS_PATHS,
-  CLASS_SKINS,
+  SKINS,
   CLASS_CHANGE_GOLD,
   canEquipSkin,
   type ClassId,
+  type SkinId,
 } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { ClassSprite } from './ClassSprite';
@@ -22,7 +23,7 @@ export function ClassCarousel({
   onClose: () => void;
   send: (type: string, value: unknown) => void;
 }) {
-  const choices: (ClassId | null)[] = mode === 'skin' ? [null, ...classes] : classes;
+  const choices: (SkinId | null)[] = mode === 'skin' ? [null, ...classes, 'golden-test'] : classes;
   const [index, setIndex] = useState(
     Math.max(0, choices.indexOf(mode === 'skin' ? (p.skin ?? null) : (p.classId ?? 'knight'))),
   );
@@ -30,8 +31,8 @@ export function ClassCarousel({
     dialog = useRef<HTMLElement>(null),
     swipe = useRef<number | null>(null);
   const id = choices[index],
-    path = id ? CLASS_PATHS[id] : null,
-    skin = id ? CLASS_SKINS[id] : null;
+    path = id && id !== 'golden-test' ? CLASS_PATHS[id] : null,
+    skin = id ? SKINS[id] : null;
   const move = (delta: number) => {
     setIndex((i) => (i + delta + choices.length) % choices.length);
     setConfirm(false);
@@ -149,7 +150,7 @@ export function ClassCarousel({
           {choices.map((choice, i) => (
             <button
               key={choice ?? 'original'}
-              aria-label={`View ${choice ? CLASS_PATHS[choice].name : 'Original adventurer'}`}
+              aria-label={`View ${choice ? (choice === 'golden-test' ? SKINS[choice].name : CLASS_PATHS[choice].name) : 'Original adventurer'}`}
               aria-current={index === i ? 'true' : undefined}
               onClick={() => {
                 setIndex(i);
@@ -168,7 +169,7 @@ export function ClassCarousel({
           </p>
         ) : (
           <p className="class-carousel-note">
-            {id && !canEquipSkin(p.classId, id)
+            {id && id !== 'golden-test' && !canEquipSkin(p.classId, id)
               ? `Requires the ${CLASS_PATHS[id].name} class.`
               : 'Free cosmetic change. Your class, equipment, training and attributes stay the same.'}
           </p>

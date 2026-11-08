@@ -30,7 +30,7 @@ export function chooseClass(p: Player, id: string) {
     throw new Error(`Changing class costs ${CLASS_CHANGE_GOLD} gold.`);
   if (p.classId) p.gold -= CLASS_CHANGE_GOLD;
   p.classId = id as ClassId;
-  if (p.skin !== null) p.skin = id as ClassId;
+  if (p.skin !== null && p.skin !== 'golden-test') p.skin = id as ClassId;
   p.classTalents = {};
   if (!canUseClassWeapon(p, p.weapon)) {
     p.weapon = null;
