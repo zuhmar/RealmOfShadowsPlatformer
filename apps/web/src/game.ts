@@ -268,6 +268,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
                 npc.y,
                 npc.allegiance ?? 'celestial',
                 npc.id === 'bram' ? 90 : 80,
+                npc.id,
               );
         this.add
           .text(npc.x, npc.y - (npc.id === 'bram' ? 112 : 80), `${npc.name}\n${npc.role}`, {

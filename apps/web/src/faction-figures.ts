@@ -1,3 +1,4 @@
+import outfits from '../public/assets/characters/skins/npc-outfits.json';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import gold from '../public/assets/characters/skins/golden-test.json';
@@ -7,10 +8,24 @@ import { guardAtlasSampling } from './atlas-sampling';
 export type Allegiance = 'celestial' | 'shadow';
 const sheet = (kind: Allegiance) => (kind === 'shadow' ? 'shadow-being' : 'golden-test');
 const definition = (kind: Allegiance) => (kind === 'shadow' ? shadow : gold);
+const hasOutfit = (id: string | undefined) => !!id && Object.hasOwn(outfits.frames, id);
 export function preloadFactionFigures(scene: Phaser.Scene, map: GameMap) {
+  if (
+    map.npcs.some((n) => n.allegiance !== 'shadow' && hasOutfit(n.id)) &&
+    !scene.textures.exists('npc-outfits')
+  )
+    scene.load.atlas(
+      'npc-outfits',
+      assetUrl('/assets/characters/skins/npc-outfits.png'),
+      '/assets/characters/skins/npc-outfits.json',
+    );
   for (const kind of new Set(
     map.npcs
-      .filter((n) => !['cooking-station', 'alchemy-station'].includes(n.id ?? ''))
+      .filter(
+        (n) =>
+          !['cooking-station', 'alchemy-station'].includes(n.id ?? '') &&
+          (n.allegiance === 'shadow' || !hasOutfit(n.id)),
+      )
       .map((n) => n.allegiance ?? 'celestial'),
   )) {
     const key = `npc-${kind}`;
@@ -28,7 +43,16 @@ export function factionFigure(
   y: number,
   kind: Allegiance = 'celestial',
   height = 80,
+  npcId?: string,
 ) {
+  if (kind === 'celestial' && hasOutfit(npcId)) {
+    guardAtlasSampling(scene.textures.get('npc-outfits'));
+    const sprite = scene.add.sprite(x, y, 'npc-outfits', npcId!).setOrigin(0.5, 1);
+    return sprite
+      .setScale(height / sprite.height)
+      .setData({ allegiance: kind, npcId, outfit: npcId })
+      .setName('celestial-npc');
+  }
   const key = `npc-${kind}`,
     atlas = definition(kind),
     f = atlas.meta.sourceFrame;
