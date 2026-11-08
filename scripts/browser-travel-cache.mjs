@@ -22,6 +22,7 @@ page.on('request', (r) => {
   if (/\.(png|webp)$/.test(r.url())) requests.push(r.url());
 });
 const report = [];
+const prepare = process.env.PREPARE_TRAVEL === '1';
 try {
   await page.goto('http://localhost:5173');
   await page.evaluate(
@@ -80,6 +81,22 @@ try {
   ];
   for (const mapId of path) {
     console.log('Travel to', mapId);
+    if (prepare) {
+      await page.evaluate((id) => {
+        const t = window.travelTest;
+        t.preparedScene = t.game.scene.getScene('realm');
+        t.bridge.prepareMap(id);
+      }, mapId);
+      await page.waitForFunction((id) => {
+        const t = window.travelTest,
+          s = t.game.scene.getScene('realm');
+        return (
+          !s.load.isLoading() &&
+          s === t.preparedScene &&
+          t.host.getAttribute('aria-busy') === 'false'
+        );
+      }, mapId);
+    }
     const start = Date.now(),
       before = requests.length;
     await page.evaluate((id) => {
@@ -127,6 +144,7 @@ try {
     expect(check.actors).toBe(1);
     expect(check.backgrounds).toBeLessThanOrEqual(3);
     if (mapId !== 'village') expect(check.background).toContain(check.expectedBackground);
+    if (prepare) expect(requests.length - before).toBe(0);
     report.push({
       mapId,
       readyMs: Date.now() - start,
@@ -140,7 +158,10 @@ try {
   expect(errors).toEqual([]);
   await mkdir('artifacts', { recursive: true });
   await page.screenshot({ path: 'artifacts/travel-cache-mobile.png' });
-  await writeFile('artifacts/travel-cache.json', JSON.stringify(report, null, 2));
+  await writeFile(
+    prepare ? 'artifacts/travel-prepared.json' : 'artifacts/travel-cache.json',
+    JSON.stringify(report, null, 2),
+  );
   console.log(JSON.stringify(report, null, 2));
   console.log(
     'PASS: one renderer across 13 travels, shared textures reused, correct backgrounds, bounded background cache and zero image reloads on warm travel.',

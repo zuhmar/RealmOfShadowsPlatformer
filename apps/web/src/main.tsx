@@ -251,11 +251,28 @@ function App() {
       await refresh();
     });
   }
-  async function join(c: Character, mapId = c.data.mapId, reconnectToken?: string, epoch?: number) {
+  async function join(
+    c: Character,
+    mapId = c.data.mapId,
+    reconnectToken?: string,
+    epoch?: number,
+    reservation?: Parameters<Client['consumeSeatReservation']>[0],
+  ) {
     const client = new Client(SERVER.replace(/^http/, 'ws'));
+    const joinOptions = { token, characterId: c.id, mapId, snapshotProtocol: 1, travelProtocol: 2 };
     const next = reconnectToken
       ? await client.reconnect(reconnectToken)
-      : await client.joinOrCreate('map', { token, characterId: c.id, mapId, snapshotProtocol: 1 });
+      : reservation
+        ? await client
+            .consumeSeatReservation(reservation)
+            .catch(() => client.joinOrCreate('map', joinOptions))
+        : await client.joinOrCreate('map', {
+            token,
+            characterId: c.id,
+            mapId,
+            snapshotProtocol: 1,
+            travelProtocol: 2,
+          });
     if (epoch !== undefined && epoch !== recoveryEpoch.current) {
       await next.leave();
       return false;
@@ -317,21 +334,42 @@ function App() {
       if (result.ok) setNotice(result.message);
       else setError(result.message);
     });
-    next.onMessage('travel', (target: string) => {
-      void run(async () => {
-        hud.stop();
-        bridge.current.snapshot = null;
-        bridge.current.held = {};
-        host.current?.setAttribute('aria-busy', 'true');
-        setLoadingProgress(null);
-        roomRef.current = null;
-        await next.leave();
-        setRoom(null);
-        setSnapshot(null);
-        bridge.current.snapshot = null;
-        await join(c, target);
-      });
-    });
+    next.onMessage(
+      'travel',
+      (
+        message:
+          | string
+          | {
+              target: string;
+              overlapLeave: boolean;
+              reservation?: Parameters<Client['consumeSeatReservation']>[0];
+            },
+      ) => {
+        const target = typeof message === 'string' ? message : message.target;
+        const overlapLeave = typeof message !== 'string' && message.overlapLeave;
+        void run(async () => {
+          hud.stop();
+          bridge.current.snapshot = null;
+          bridge.current.held = {};
+          host.current?.setAttribute('aria-busy', 'true');
+          setLoadingProgress(null);
+          roomRef.current = null;
+          const leaving = next.leave();
+          if (overlapLeave) void leaving.catch(() => {});
+          else await leaving;
+          setRoom(null);
+          setSnapshot(null);
+          bridge.current.snapshot = null;
+          await join(
+            c,
+            target,
+            undefined,
+            undefined,
+            typeof message === 'string' ? undefined : message.reservation,
+          );
+        });
+      },
+    );
     next.onError((_code, text) => {
       setQuestPending(false);
       setForgePending(false);
@@ -1170,6 +1208,7 @@ function App() {
             <ControlIcon name="close" />
           </button>
           <WorldMapPanel
+            onPreview={(id) => bridge.current.prepareMap?.(id)}
             player={p}
             onTeleport={(id) => {
               room?.send('teleport', id);

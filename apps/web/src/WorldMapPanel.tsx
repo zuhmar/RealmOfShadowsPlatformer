@@ -25,16 +25,21 @@ const MAP_SLIDES = [
 export function WorldMapPanel({
   player: p,
   onTeleport,
+  onPreview,
   onBuy,
 }: {
   player: Player;
   onTeleport: (id: string) => void;
+  onPreview?: (id: string) => void;
   onBuy: () => void;
 }) {
   const [selected, setSelected] = useState(
     () =>
       MAP_SLIDES.find((i) => p.mapId === i.id || p.mapId.startsWith(`${i.id}-`))?.id ?? 'village',
   );
+  useEffect(() => {
+    onPreview?.(selected);
+  }, [selected]);
   const swipe = useRef<{ x: number; y: number } | null>(null),
     ignoreClickUntil = useRef(0),
     carousel = useRef<HTMLDivElement>(null);
@@ -77,6 +82,12 @@ export function WorldMapPanel({
           data-area-id={id}
           className={`map-destination map-circle-button ${point ? 'map-location-button' : ''} ${p.mapId === id ? 'current' : ''}`}
           disabled={!!blocked}
+          onPointerEnter={() => {
+            if (!blocked) onPreview?.(id);
+          }}
+          onFocus={() => {
+            if (!blocked) onPreview?.(id);
+          }}
           onClick={() => onTeleport(id)}
           aria-label={`Teleport to ${label}`}
           aria-description={blocked ?? `Costs ${cost}.`}

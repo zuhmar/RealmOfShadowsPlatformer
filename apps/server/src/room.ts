@@ -4,7 +4,7 @@ import { changeEquipment } from './equipment.js';
 import { equipGear } from '@ros/shared';
 import { usePortal, applyWoodsMilestones } from '@ros/shared';
 import { changeForge } from './forge.js';
-import { Room, type Client } from '@colyseus/core';
+import { Room, matchMaker, type Client } from '@colyseus/core';
 import {
   MAPS,
   ITEMS,
@@ -41,6 +41,8 @@ export class MapRoom extends Room {
   inputTimes = new Map<string, number>();
   snapshotStreams = new Map<string, SnapshotEncoder>();
   snapshotResyncAt = new Map<string, number>();
+  fastTravel = new Set<string>();
+  travelTokens = new Map<string, string>();
   onCreate(options: { mapId?: string }) {
     const map = MAPS[options.mapId ?? 'woods'];
     if (!map) throw new Error('Unknown map');
@@ -285,7 +287,27 @@ export class MapRoom extends Room {
     this.world.players.delete(p.id);
     try {
       await this.enqueueSave(p);
-      c.send('travel', target);
+      const fast = this.fastTravel.has(c.sessionId);
+      const token = this.travelTokens.get(c.sessionId);
+      this.releaseClient(c);
+      let reservation;
+      if (token) {
+        try {
+          reservation = await matchMaker.joinOrCreate('map', {
+            token,
+            characterId: p.id,
+            mapId: target,
+            snapshotProtocol: 1,
+            travelProtocol: 2,
+          });
+        } catch {
+          // A regular authenticated join remains available if seat preparation fails.
+        }
+      }
+      c.send(
+        'travel',
+        fast ? { target, overlapLeave: true, ...(reservation ? { reservation } : {}) } : target,
+      );
     } catch {
       c.send('notice', 'Travel save failed. Please reconnect.');
       c.leave();
@@ -527,7 +549,7 @@ export class MapRoom extends Room {
 
   onJoin(
     c: Client,
-    options: { snapshotProtocol?: number },
+    options: { snapshotProtocol?: number; travelProtocol?: number; token?: string },
     auth: { id: string; name: string; data: unknown },
   ) {
     const p = auth.data as Player;
@@ -546,6 +568,9 @@ export class MapRoom extends Room {
     if (options.snapshotProtocol === 1)
       this.snapshotStreams.set(c.sessionId, new SnapshotEncoder());
     this.inputs.set(p.id, idleInput());
+    if ((options.travelProtocol ?? 0) >= 1) this.fastTravel.add(c.sessionId);
+    if (options.travelProtocol === 2 && typeof options.token === 'string')
+      this.travelTokens.set(c.sessionId, options.token);
     c.send('welcome', { id: p.id, mapId: this.world.map.id });
     this.sendSnapshot(c, Date.now(), true);
   }
@@ -616,17 +641,28 @@ export class MapRoom extends Room {
         console.info('Reconnect window closed', id);
       }
     }
+    try {
+      if (p) await this.enqueueSave(p);
+    } finally {
+      this.releaseClient(c);
+    }
+  }
+  /** Release only this session's ownership; stale room cleanup cannot unlock a new owner. */
+  releaseClient(c: Client) {
+    const id = this.characters.get(c.sessionId);
+    if (!id) return;
     this.characters.delete(c.sessionId);
     this.snapshotStreams.delete(c.sessionId);
     this.snapshotResyncAt.delete(c.sessionId);
     this.rates.delete(c.sessionId);
     this.rates.delete(`chat:${c.sessionId}`);
-    try {
-      if (p) await this.enqueueSave(p);
-    } finally {
-      activeCharacters.delete(id);
-    }
+    this.fastTravel.delete(c.sessionId);
+    this.travelTokens.delete(c.sessionId);
+    this.inputs.delete(id);
+    this.inputTimes.delete(id);
+    activeCharacters.delete(id);
   }
+
   async onDispose() {
     await this.saves;
   }

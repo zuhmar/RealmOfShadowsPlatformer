@@ -36,12 +36,14 @@ export type Bridge = {
   blocked?: boolean;
   send: (type: string, data: unknown) => void;
   onReady?: () => void;
+  prepareMap?: (id: string) => void;
   onLoadProgress?: (percent: number) => void;
 };
 export function mountGame(parent: HTMLElement, bridge: Bridge) {
   parent.setAttribute('aria-busy', 'true');
   let destroyed = false;
   const backgroundCache: string[] = [];
+  const prepared = new Set<string>();
   class RealmScene extends Phaser.Scene {
     map!: GameMap;
     actors = new Map<string, Phaser.GameObjects.Container>();
@@ -58,6 +60,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     village?: VillageScenery;
     miraMarker?: Phaser.GameObjects.Text;
     bossWarnings!: BossWarnings;
+    nextPrepareAt = 3000;
     constructor() {
       super('realm');
     }
@@ -71,7 +74,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         for (const key of this.textures.getTextureKeys())
           guardAtlasSampling(this.textures.get(key));
       });
-      const loadingMap = MAPS[bridge.snapshot?.mapId ?? 'village'];
+      this.loadMap(MAPS[bridge.snapshot?.mapId ?? 'village']);
+    }
+    loadMap(loadingMap: GameMap) {
       preloadCharacters(this, bridge.snapshot?.players ?? [], loadingMap);
       if (loadingMap.npcs.some((n) => n.id === 'bram'))
         this.load.image('bram', assetUrl('/assets/characters/bram.png'));
@@ -91,7 +96,54 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         });
       }
     }
+    backgroundKey(map: GameMap) {
+      if (map.island === 'Whispering Woods')
+        return `woods-background:${map.background ?? '/assets/backgrounds/whispering-woods.png'}`;
+      if (map.island === 'Crystal Caverns') return `crystal-background:${map.background}`;
+      return 'village-background';
+    }
+    rememberBackground(map: GameMap) {
+      const key = this.backgroundKey(map);
+      if (key === 'village-background' || !this.textures.exists(key)) return;
+      const prior = backgroundCache.indexOf(key);
+      if (prior >= 0) backgroundCache.splice(prior, 1);
+      backgroundCache.push(key);
+      while (backgroundCache.length > 3) {
+        const oldest = backgroundCache.shift()!;
+        if (this.map && oldest === this.backgroundKey(this.map)) backgroundCache.push(oldest);
+        else this.textures.remove(oldest);
+      }
+    }
+    prepareMap(id: string) {
+      const target = MAPS[id],
+        p = bridge.snapshot?.players.find((p) => p.id === bridge.id);
+      const connection = (navigator as Navigator & { connection?: { saveData?: boolean } })
+        .connection;
+      if (
+        !target ||
+        !p ||
+        target.id === this.map.id ||
+        p.level < target.requiredLevel ||
+        connection?.saveData ||
+        this.load.isLoading()
+      )
+        return;
+      if (prepared.has(id) && this.textures.exists(this.backgroundKey(target))) return;
+      let failed = false;
+      const error = () => {
+        failed = true;
+      };
+      this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, error);
+      this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+        this.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, error);
+        if (!failed) prepared.add(id);
+        this.rememberBackground(target);
+      });
+      this.loadMap(target);
+      this.load.start();
+    }
     create() {
+      this.nextPrepareAt = this.time.now + 3000;
       if (this.textures.exists(WOLF_TEXTURE)) registerWolfAnimations(this);
       registerWeaponEffects(this);
       registerWoodsMonster(this, MAPS[bridge.snapshot?.mapId ?? 'village'].monster);
@@ -105,13 +157,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.cameras.main.setBounds(0, 0, this.map.width, this.map.height);
       this.physics.world.setBounds(0, 0, this.map.width, this.map.height);
       this.drawWorld();
-      const background = this.woods?.background.texture.key ?? this.crystal?.background.texture.key;
-      if (background) {
-        const prior = backgroundCache.indexOf(background);
-        if (prior >= 0) backgroundCache.splice(prior, 1);
-        backgroundCache.push(background);
-        while (backgroundCache.length > 3) this.textures.remove(backgroundCache.shift()!);
-      }
+      this.rememberBackground(this.map);
       this.bossWarnings = new BossWarnings(this);
       this.keys = this.input.keyboard!.addKeys(
         'A,D,W,S,SPACE,J,K,E,LEFT,RIGHT,UP,DOWN',
@@ -490,6 +536,19 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         return;
       }
       this.sync(s);
+      if (this.time.now >= this.nextPrepareAt && !this.load.isLoading()) {
+        this.nextPrepareAt = this.time.now + 1000;
+        const p = s.players.find((p) => p.id === bridge.id);
+        const portal =
+          p &&
+          this.map.portals.find(
+            (portal) =>
+              Math.abs(portal.x - p.x) < 400 &&
+              Math.abs(portal.y - p.y) < 220 &&
+              (!portal.key || (p.inventory[portal.key] ?? 0) > 0),
+          );
+        if (portal) this.prepareMap(portal.target);
+      }
       if (this.map.monster && WOODS_MONSTERS[this.map.monster].boss) {
         const zoom = this.scale.width < 700 ? 0.62 : 0.95;
         if (this.cameras.main.zoom !== zoom) this.cameras.main.setZoom(zoom);
@@ -532,6 +591,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     render: { antialias: true },
     audio: { noAudio: true },
   });
+  const prepare = (id: string) => {
+    const scene = game.scene.getScene('realm') as RealmScene | undefined;
+    if (scene?.sys.isActive()) scene.prepareMap(id);
+  };
+  bridge.prepareMap = prepare;
   const resize = new ResizeObserver(() => {
     if (parent.clientWidth && parent.clientHeight)
       game.scale.resize(parent.clientWidth, parent.clientHeight);
@@ -539,6 +603,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
   resize.observe(parent);
   game.events.once(Phaser.Core.Events.DESTROY, () => {
     destroyed = true;
+    if (bridge.prepareMap === prepare) delete bridge.prepareMap;
     resize.disconnect();
   });
   return game;

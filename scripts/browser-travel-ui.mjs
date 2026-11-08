@@ -16,10 +16,28 @@ const page = await browser.newPage({
   hasTouch: true,
 });
 let userId, id;
+let matchmakingRequests = 0;
+page.on('request', (request) => {
+  if (
+    request.method() === 'POST' &&
+    new URL(request.url()).pathname.endsWith('/matchmake/joinOrCreate/map')
+  )
+    matchmakingRequests++;
+});
 const errors = [],
   report = [];
-page.on('pageerror', (e) => { errors.push(e.message); console.log(e.stack); });
+page.on('pageerror', (e) => {
+  errors.push(e.message);
+  console.log(e.stack);
+});
 try {
+  if (process.env.LEGACY_TRAVEL === '1') {
+    await page.route('**/matchmake/joinOrCreate/map', (route) => {
+      const body = route.request().postDataJSON();
+      body.travelProtocol = 0;
+      return route.continue({ postData: JSON.stringify(body) });
+    });
+  }
   const response = await fetch('http://localhost:2567/api/guest', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -61,6 +79,16 @@ try {
   await page.evaluate(() => {
     window.originalTravelCanvas = document.querySelector('.phaser-host canvas');
   });
+  if (process.env.TRAVEL_LATENCY_MS) {
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Network.enable');
+    await cdp.send('Network.emulateNetworkConditions', {
+      offline: false,
+      latency: Number(process.env.TRAVEL_LATENCY_MS),
+      downloadThroughput: 1250000,
+      uploadThroughput: 1250000,
+    });
+  }
   for (const [mapId, title] of [
     ['woods', 'Wolf Hollow'],
     ['woods-2', 'Silkshade Glade'],
@@ -96,6 +124,8 @@ try {
   expect(saved.inventory['teleport-crystal']).toBe(6);
   expect(saved.gold).toBe(100);
   expect(errors).toEqual([]);
+  expect(matchmakingRequests).toBe(process.env.LEGACY_TRAVEL === '1' ? 5 : 1);
+  console.log('Matchmaking requests:', matchmakingRequests);
   console.log(JSON.stringify(report, null, 2));
   console.log(
     'PASS: four real UI teleports preserve one canvas, charge one crystal each and save the destination.',
