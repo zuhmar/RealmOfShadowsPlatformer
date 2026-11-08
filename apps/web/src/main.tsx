@@ -108,6 +108,7 @@ function App() {
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteName, setDeleteName] = useState('');
+  const [loadingProgress, setLoadingProgress] = useState<number | null>(null);
   const host = useRef<HTMLDivElement>(null);
   const game = useRef<ReturnType<(typeof import('./game'))['mountGame']> | null>(null);
   const roomRef = useRef<Room | null>(null);
@@ -413,6 +414,10 @@ function App() {
   useEffect(() => {
     if (page !== 'game' || !room || !host.current) return;
     let disposed = false;
+    setLoadingProgress(null);
+    bridge.current.onLoadProgress = (percent) => {
+      if (!disposed) setLoadingProgress(percent);
+    };
     void import('./game')
       .then(({ mountGame }) => {
         if (!disposed && host.current) game.current = mountGame(host.current, bridge.current);
@@ -773,7 +778,11 @@ function App() {
                   ✦
                 </span>
                 <h2>Preparing your adventure…</h2>
-                <p>The shadows await.</p>
+                <p>
+                  {loadingProgress === null
+                    ? 'Opening the realm…'
+                    : `Loading artwork… ${loadingProgress}%`}
+                </p>
                 <div className="loading-trail" aria-hidden="true">
                   <span />
                 </div>

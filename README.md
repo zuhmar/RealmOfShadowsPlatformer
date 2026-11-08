@@ -184,7 +184,7 @@ Elderwood’s island art matches the existing green-roofed buildings: cottages, 
 
 ### Performance delivery
 
-Images use lossless, content-addressed WebP copies with immutable delivery caching. Armed/gathering sheets and outfit colors load on demand. Multiplayer clients negotiate field-level snapshot deltas with periodic full-state recovery; legacy full snapshots remain supported. Phaser receives every update while React skips unchanged HUD state and coalesces bursts. See [performance measurements and repeatable checks](docs/performance.md) for the local 24-player and mobile-emulation results and their limits.
+Images use compact, content-addressed WebP copies with exact transparency and immutable delivery caching; UI remains lossless. Armed/gathering sheets and outfit colors load on demand. Multiplayer clients negotiate field-level snapshot deltas with periodic full-state recovery; legacy full snapshots remain supported. Phaser receives every update while React skips unchanged HUD state and coalesces bursts. See [performance measurements and repeatable checks](docs/performance.md) for the local 24-player and mobile-emulation results and their limits.
 
 ### Class selection and skins
 

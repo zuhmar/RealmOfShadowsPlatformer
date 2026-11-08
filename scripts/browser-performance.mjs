@@ -140,7 +140,7 @@ try {
     measurementSeconds: 5,
     initialSourceImageBytes: sourceBytes,
     initialDeliveryImageBytes: deliveryBytes,
-    losslessImageReductionPercent: +(100 * (1 - deliveryBytes / sourceBytes)).toFixed(1),
+    imageReductionPercent: +(100 * (1 - deliveryBytes / sourceBytes)).toFixed(1),
     initialArmedOrGatheringSheets: 0,
     scope:
       'Chromium mobile emulation with 24 actors and 10 monsters, after warmup. Frame/heap/decoded-texture estimates are local measurements, not physical-phone or production-capacity results.',

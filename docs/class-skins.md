@@ -14,7 +14,7 @@ The current set contains 32 male/female sprite atlases under `characters/skins/i
 
 Unarmed sheets contain idle, walk, jump, climb, attack and defeat poses; old hurt cells are unused. Armed sheets contain idle, walk, jump, class-appropriate attacks and defeat poses. Climbing switches to the unarmed integrated-headwear sheet. Gathering retains actual equipped tools through the existing tool renderer, on the headwear-integrated body. Higher-island class weapon sheets are future artwork; the existing original-adventurer weapon renderer remains available for those tiers.
 
-Sprite sheets load on demand. Their atlas metadata measures source dimensions, baselines and animation-row boundaries; all rendered images retain uniform scale. The original source references remain for authoring and compatibility with already-loaded older clients. Optimized delivery uses lossless WebP copies.
+Sprite sheets load on demand. Their atlas metadata measures source dimensions, baselines and animation-row boundaries; all rendered images retain uniform scale. The original source references remain for authoring and compatibility with already-loaded older clients. Optimized delivery uses quality-88 WebP copies with identical alpha bytes and original dimensions; source PNGs remain unchanged.
 
 ## Platforms and proportional art
 

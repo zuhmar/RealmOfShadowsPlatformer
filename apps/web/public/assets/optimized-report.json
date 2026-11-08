@@ -1,6 +1,6 @@
 {
   "images": 198,
   "originalBytes": 365382011,
-  "deliveryBytes": 261298876,
-  "encoding": "lossless WebP; original dimensions and RGBA pixels retained"
+  "deliveryBytes": 98932584,
+  "encoding": "WebP quality 88, exact alpha and original dimensions; UI remains lossless"
 }

@@ -36,6 +36,7 @@ export type Bridge = {
   blocked?: boolean;
   send: (type: string, data: unknown) => void;
   onReady?: () => void;
+  onLoadProgress?: (percent: number) => void;
 };
 export function mountGame(parent: HTMLElement, bridge: Bridge) {
   parent.setAttribute('aria-busy', 'true');
@@ -59,6 +60,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       super('realm');
     }
     preload() {
+      const progress = (value: number) => bridge.onLoadProgress?.(Math.round(value * 100));
+      this.load.on(Phaser.Loader.Events.PROGRESS, progress);
+      this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+        this.load.off(Phaser.Loader.Events.PROGRESS, progress);
+      });
       this.load.on(Phaser.Loader.Events.COMPLETE, () => {
         for (const key of this.textures.getTextureKeys())
           guardAtlasSampling(this.textures.get(key));

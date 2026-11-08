@@ -1816,7 +1816,7 @@ footer i {
   background:
     radial-gradient(ellipse at 50% 40%, #6b258655, #0c0619dd 75%),
     linear-gradient(#160a27aa, #0b0617ed),
-    url('/assets/optimized/d31a914a16397d9ebe98.webp') center / cover;
+    url('/assets/optimized/b8e3751b4e540e8eefab.webp') center / cover;
   color: #f3dfff;
   text-align: center;
 }
@@ -2603,7 +2603,7 @@ body:has(.app.playing) {
   inset: 0;
   background:
     linear-gradient(90deg, #10091ce6 0%, #10091c60 47%, #10091c14 100%),
-    url('/assets/optimized/d31a914a16397d9ebe98.webp') center / cover;
+    url('/assets/optimized/b8e3751b4e540e8eefab.webp') center / cover;
   mask-image: none;
 }
 .hero {
@@ -2796,7 +2796,7 @@ footer {
   .landing-art {
     background-position: 65% center;
     background-image:
-      linear-gradient(#10091c48, #10091cd9), url('/assets/optimized/d31a914a16397d9ebe98.webp');
+      linear-gradient(#10091c48, #10091cd9), url('/assets/optimized/b8e3751b4e540e8eefab.webp');
   }
   .hero {
     padding: 16px 6% 35px;
