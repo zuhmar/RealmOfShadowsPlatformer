@@ -1,3 +1,5 @@
+import { ProvisionIcon } from './ProvisionIcon';
+import { provisionRecipe } from '@ros/game-data';
 import { assetUrl } from './assets';
 import crystalResources from '../public/assets/ui/crystal-resources.json';
 import crystalDrops from '../public/assets/ui/crystal-loot.json';
@@ -9,6 +11,7 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  if (provisionRecipe(id)) return <ProvisionIcon id={id!} />;
   const crystalAtlas =
     id && Object.hasOwn(crystalResources.frames, id)
       ? crystalResources

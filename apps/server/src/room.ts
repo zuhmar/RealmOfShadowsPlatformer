@@ -1,3 +1,5 @@
+import { changeProvision } from './provisions.js';
+import { provisionRecipe, PROVISION_STATIONS } from '@ros/game-data';
 import { changeClass } from './classes.js';
 import { canUseClassWeapon, useTeleport, initializeTeleport } from '@ros/shared';
 import { changeEquipment } from './equipment.js';
@@ -194,6 +196,14 @@ export class MapRoom extends Room {
         delete p.gathering;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: 'mentor' });
+      } else if (PROVISION_STATIONS.some((station) => nearNpc(p, this.world.map, station.id))) {
+        const station = PROVISION_STATIONS.find((station) =>
+          nearNpc(p, this.world.map, station.id),
+        )!;
+        p.auto = false;
+        delete p.gathering;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: station.id });
       } else if (payload?.npcId === 'mentor')
         c.send('notice', 'Climb to the Cavern Mentor’s ledge to speak.');
       else if (payload?.npcId === 'bram') c.send('notice', 'Walk closer to Bram.');
@@ -205,6 +215,7 @@ export class MapRoom extends Room {
         else void this.travel(c);
       }
     });
+    this.onMessage('provision', (c, payload) => this.provision(c, payload));
     this.onMessage('forge', (c, payload) => this.forge(c, payload));
     this.onMessage('equipTool', (c, id) => {
       const p = this.player(c);
@@ -377,6 +388,82 @@ export class MapRoom extends Room {
           false,
           error instanceof Error ? error.message : 'Could not save the quest. Try again.',
         ),
+      )
+      .finally(() => this.questTasks.delete(p.id));
+  }
+  provision(c: Client, payload: unknown) {
+    const result = (ok: boolean, message: string) => {
+      if (this.clients.includes(c)) c.send('provisionResult', { ok, message });
+    };
+    const p = this.player(c);
+    if (!p) {
+      result(false, 'Please wait for the current action.');
+      return;
+    }
+    if (!this.rate(c, 100)) {
+      result(false, 'Please wait before another recipe action.');
+      return;
+    }
+    const value = payload as { action?: unknown; recipeId?: unknown } | null;
+    if (
+      !value ||
+      typeof value.action !== 'string' ||
+      !['craft', 'use'].includes(value.action) ||
+      typeof value.recipeId !== 'string'
+    ) {
+      result(false, 'Unknown recipe action.');
+      return;
+    }
+    const action = value.action as 'craft' | 'use',
+      id = value.recipeId,
+      recipe = provisionRecipe(id);
+    if (!recipe) {
+      result(false, 'Unknown recipe.');
+      return;
+    }
+    const station = PROVISION_STATIONS.find((s) => s.skill === recipe.skill)!;
+    const atStation = () =>
+      this.world.map.id === 'village' && nearNpc(p, this.world.map, station.id);
+    if (action === 'craft' && !atStation()) {
+      result(false, `Visit the ${station.name} in Elderwood Village.`);
+      return;
+    }
+    if (action === 'craft') {
+      p.auto = false;
+      delete p.gathering;
+      this.inputs.set(p.id, idleInput());
+    }
+    const task = this.saves
+      .catch(() => {})
+      .then(async () => {
+        if (action === 'craft' && !atStation()) throw new Error(`Stand near the ${station.name}.`);
+        const before = structuredClone(p),
+          { next, message } = await changeProvision(before, action, id);
+        // Preserve combat damage, regeneration and loot received while the durable action was saving.
+        for (const item of new Set([
+          ...Object.keys(before.inventory),
+          ...Object.keys(next.inventory),
+        ])) {
+          const delta = (next.inventory[item] ?? 0) - (before.inventory[item] ?? 0);
+          if (delta) {
+            p.inventory[item] = (p.inventory[item] ?? 0) + delta;
+            if (p.inventory[item] === 0) delete p.inventory[item];
+          }
+        }
+        p.craftingSkills = next.craftingSkills;
+        p.provisionRevision = next.provisionRevision;
+        p.foodBuff = next.foodBuff;
+        p.potionReadyAt = next.potionReadyAt;
+        const stats = playerAttributes(p);
+        p.hp = Math.min(stats.maxHealth, p.hp + Math.max(0, next.hp - before.hp));
+        p.mp = Math.min(stats.maxMana, p.mp + Math.max(0, next.mp - before.mp));
+        result(true, message);
+      });
+    this.questTasks.set(p.id, task);
+    this.saves = task.catch(() => {});
+    void task
+      .catch((error) =>
+        result(false, error instanceof Error ? error.message : 'Could not save recipe action.'),
       )
       .finally(() => this.questTasks.delete(p.id));
   }

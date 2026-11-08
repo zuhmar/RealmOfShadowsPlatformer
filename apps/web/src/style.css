@@ -3388,3 +3388,81 @@ footer {
     transform: translateY(52px);
   }
 }
+
+.recipe-tabs,
+.recipe-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.recipes-panel .forge-recipes section {
+  align-items: start;
+}
+.recipes-panel progress {
+  width: 100%;
+}
+.food-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  font-size: 11px;
+  padding: 0;
+  vertical-align: middle;
+  color: #c7e7a1;
+}
+.food-active svg {
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 600px) {
+  .recipes-panel .forge-recipes section {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+  .recipe-actions {
+    grid-column: 2;
+  }
+}
+
+.app.playing .recipes-panel button {
+  color: #eadfff;
+}
+.app.playing .recipes-panel button.primary {
+  color: #f4d08b;
+  font-weight: 700;
+}
+.app.playing .recipes-panel button[aria-pressed='true'] {
+  color: #ddb5ff;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.app.playing .recipes-panel button:disabled {
+  color: #baaccb;
+  opacity: 0.65;
+}
+.app.playing .recipes-panel button:not(:disabled):hover {
+  text-decoration: underline;
+}
+.recipes-panel .forge-recipes p {
+  font-size: 12px;
+  line-height: 1.45;
+}
+.recipes-panel progress {
+  height: 8px;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #382747;
+  accent-color: #b971ea;
+}
+.recipes-panel progress::-webkit-progress-bar {
+  background: #382747;
+  border-radius: 8px;
+}
+.recipes-panel progress::-webkit-progress-value {
+  background: linear-gradient(90deg, #8953ce, #d6a0f5);
+  border-radius: 8px;
+}
+.recipes-panel progress::-moz-progress-bar {
+  background: #b971ea;
+}

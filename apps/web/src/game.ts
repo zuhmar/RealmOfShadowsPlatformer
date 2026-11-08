@@ -1,3 +1,4 @@
+import { provisionStation } from './provision-stations';
 import { guardAtlasSampling } from './atlas-sampling';
 import { fitArtwork } from './artwork';
 import { assetUrl } from './assets';
@@ -258,21 +259,23 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       for (const npc of m.npcs) {
         const c =
-          npc.id === 'mentor'
-            ? cavernMentor(this, npc.x, npc.y)
-            : npc.id === 'mira'
-              ? this.add
-                  .sprite(npc.x, npc.y, 'mira', 'idle-0')
-                  .setOrigin(0.5, 700 / 768)
-                  .setScale(0.11)
-                  .play('mira-idle')
-              : npc.id === 'bram'
+          npc.id === 'cooking-station' || npc.id === 'alchemy-station'
+            ? provisionStation(this, npc.x, npc.y, npc.id === 'cooking-station')
+            : npc.id === 'mentor'
+              ? cavernMentor(this, npc.x, npc.y)
+              : npc.id === 'mira'
                 ? this.add
-                    .image(npc.x, npc.y, 'bram')
-                    .setOrigin(618 / 1254, 1240 / 1254)
-                    .setScale(90 / 1221)
-                    .setName('bram-npc')
-                : this.character(npc.x, npc.y, 'sage', true);
+                    .sprite(npc.x, npc.y, 'mira', 'idle-0')
+                    .setOrigin(0.5, 700 / 768)
+                    .setScale(0.11)
+                    .play('mira-idle')
+                : npc.id === 'bram'
+                  ? this.add
+                      .image(npc.x, npc.y, 'bram')
+                      .setOrigin(618 / 1254, 1240 / 1254)
+                      .setScale(90 / 1221)
+                      .setName('bram-npc')
+                  : this.character(npc.x, npc.y, 'sage', true);
         this.add
           .text(npc.x, npc.y - (npc.id === 'bram' ? 112 : 80), `${npc.name}\n${npc.role}`, {
             fontFamily: 'Georgia',
@@ -284,6 +287,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           })
           .setOrigin(0.5);
         c.setDepth(8);
+        if (npc.id === 'cooking-station' || npc.id === 'alchemy-station')
+          this.add
+            .zone(npc.x, npc.y - 30, 80, 80)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => bridge.send('interact', { npcId: npc.id }));
         if (npc.id === 'bram')
           this.add
             .zone(npc.x, npc.y - 40, 80, 100)

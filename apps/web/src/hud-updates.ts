@@ -22,6 +22,8 @@ export function hudSignature(s: Snapshot, id: string) {
     ),
     s.wolves.find((w) => w.special)?.special,
     Math.max(0, Math.ceil((classSkillCooldown(p) - (s.time - p.lastSkill)) / 1000)),
+    p.foodBuff ? Math.max(0, Math.ceil((p.foodBuff.expiresAt - s.time) / 1000)) : 0,
+    Math.max(0, Math.ceil(((p.potionReadyAt ?? 0) - s.time) / 1000)),
     p.gathering ? Math.max(0, Math.ceil((p.gathering.finishAt - s.time) / 1000)) : 0,
   ]);
 }

@@ -1,3 +1,4 @@
+import { foodEffect } from './provisions';
 import { canUseClassWeapon } from './classes';
 import {
   weaponKind,
@@ -42,11 +43,12 @@ export function playerAttributes(p: Player) {
   const rank = (skill: CombatSkill) =>
     Math.max(0, Math.min(99, (p.combatSkills?.[skill]?.level ?? 1) - 1));
   const offense = active ? rank(active) : 0,
-    gear = gearAttributes(p);
+    gear = gearAttributes(p),
+    food = foodEffect(p);
   return {
     activeSkill: active,
     trainingDamage: offense * 2,
-    critChance: Math.min(0.3, gear.critChance),
+    critChance: Math.min(0.3, gear.critChance + (food?.effect === 'crit' ? food.amount : 0)),
     critDamage: Math.min(2.5, 1.5 + gear.critDamage),
     dodgeChance: Math.min(0.25, gear.dodgeChance),
     blockChance: Math.min(0.3, gear.blockChance),
@@ -54,7 +56,7 @@ export function playerAttributes(p: Player) {
     armor: Math.min(30, gear.armor),
     maxHealth: maxHp(p.level) + gear.health,
     maxMana: 50 + gear.mana,
-    healthRegen: 3 + gear.healthRegen,
+    healthRegen: 3 + gear.healthRegen + (food?.effect === 'regen' ? food.amount : 0),
     manaRegen: 1.5 + gear.manaRegen,
   };
 }
@@ -63,5 +65,6 @@ export const attackPower = (p: Player) =>
     (damage(p.level, attackBonus(p)) +
       playerAttributes(p).trainingDamage +
       (activeCombatSkill(p) ? (p.classTalents?.mastery ?? 0) * 2 : 0)) *
-      WEAPON_DAMAGE_SCALE[weaponKind(p.weapon)],
+      WEAPON_DAMAGE_SCALE[weaponKind(p.weapon)] *
+      (1 + (foodEffect(p)?.effect === 'damage' ? foodEffect(p)!.amount : 0)),
   );

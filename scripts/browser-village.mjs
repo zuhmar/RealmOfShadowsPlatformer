@@ -56,6 +56,9 @@ try {
         buildings: v.buildings.map((i) => i.frame.name),
         props: v.props.map((i) => i.frame.name),
         ladders: v.ladders.length,
+        stations: s.children.list
+          .filter((node) => ['cooking-station', 'alchemy-station'].includes(node.name))
+          .map((node) => node.name),
         bodies: s.floor.getChildren().length,
         surfaces: [...new Map(v.platforms.map((i) => [i.getData('platformId'), i])).values()].map(
           (i) => ({
@@ -73,7 +76,8 @@ try {
       };
     });
     expect(state.buildings).toEqual(['guide-cottage', 'blacksmith', 'inn', 'market-stall']);
-    expect(state.props.length).toBeGreaterThanOrEqual(13);
+    expect(state.props.length).toBeGreaterThanOrEqual(12);
+    expect(state.stations).toEqual(['cooking-station', 'alchemy-station']);
     expect(state.ladders).toBeGreaterThanOrEqual(1);
     expect(state.bodies).toBe(2);
     expect(state.surfaces[0].y).toBeCloseTo(650, 4);

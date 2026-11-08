@@ -66,7 +66,6 @@ export class VillageScenery {
       ['barrel', 750, 43],
       ['crate', 800, 40],
       ['anvil', 1020, 48],
-      ['training-target', 1100, 82],
       ['flower-planter', 1310, 38],
       ['signpost', 1670, 66],
       ['shrub', 1760, 48],

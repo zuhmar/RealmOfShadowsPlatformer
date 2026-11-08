@@ -1,3 +1,6 @@
+import { RecipesPanel } from './RecipesPanel';
+import { provisionRecipe, type ProvisionSkill } from '@ros/game-data';
+import { foodEffect } from '@ros/shared';
 import { ClassSprite } from './ClassSprite';
 import { canEquipSkin } from '@ros/game-data';
 import { ClassCarousel } from './ClassCarousel';
@@ -96,6 +99,8 @@ function App() {
   const [cosmeticDialog, setCosmeticDialog] = useState<'class' | 'skin' | null>(null);
   const offeredClass = useRef(new Set<string>());
   const previousClass = useRef<{ id: string; classId?: string } | null>(null);
+  const [recipePending, setRecipePending] = useState(false);
+  const [recipeSkill, setRecipeSkill] = useState<ProvisionSkill>('Cooking');
   const [forgePending, setForgePending] = useState(false);
   const [questPending, setQuestPending] = useState(false);
   const [chat, setChat] = useState<{ name: string; text: string }[]>([
@@ -323,6 +328,15 @@ function App() {
       if (npc.id === 'mira') setPanel('mira');
       if (npc.id === 'bram') setPanel('bram');
       if (npc.id === 'mentor') setPanel('crystal-quests');
+      if (npc.id === 'cooking-station' || npc.id === 'alchemy-station') {
+        setRecipeSkill(npc.id === 'cooking-station' ? 'Cooking' : 'Alchemy');
+        setPanel('recipes');
+      }
+    });
+    next.onMessage('provisionResult', (result: { ok: boolean; message: string }) => {
+      setRecipePending(false);
+      if (result.ok) setNotice(result.message);
+      else setError(result.message);
     });
     next.onMessage('forgeResult', (result: { ok: boolean; message: string }) => {
       setForgePending(false);
@@ -371,6 +385,7 @@ function App() {
       },
     );
     next.onError((_code, text) => {
+      setRecipePending(false);
       setQuestPending(false);
       setForgePending(false);
       setError(text ?? 'Connection error');
@@ -378,6 +393,7 @@ function App() {
     next.onLeave(() => {
       hud.stop();
       if (roomRef.current !== next) return;
+      setRecipePending(false);
       roomRef.current = null;
       setRoom(null);
       setQuestPending(false);
@@ -418,6 +434,11 @@ function App() {
     return true;
   }
 
+  function recipeAction(action: 'craft' | 'use', recipeId: string) {
+    if (recipePending || !roomRef.current) return;
+    setRecipePending(true);
+    roomRef.current.send('provision', { action, recipeId });
+  }
   async function play(c: Character) {
     await run(async () => {
       const reward = await api(`/characters/${c.id}/claim`, 'POST', {});
@@ -509,8 +530,15 @@ function App() {
       !!connectionStatus ||
       panel === 'mira' ||
       panel === 'bram' ||
-      panel === 'crystal-quests';
-    if (cosmeticDialog || panel === 'mira' || panel === 'bram' || panel === 'crystal-quests')
+      panel === 'crystal-quests' ||
+      panel === 'recipes';
+    if (
+      cosmeticDialog ||
+      panel === 'mira' ||
+      panel === 'bram' ||
+      panel === 'crystal-quests' ||
+      panel === 'recipes'
+    )
       bridge.current.held = {};
   }, [panel, connectionStatus, cosmeticDialog]);
   function isolateControlInput(e: React.SyntheticEvent) {
@@ -849,7 +877,26 @@ function App() {
                     </div>
                     {statBar('HP', p.hp, playerAttributes(p).maxHealth, 'hp')}
                     {statBar('MP', p.mp, playerAttributes(p).maxMana, 'mp')}
-                    <div className="profile-gold">◈ {p.gold.toLocaleString()} gold</div>
+                    <div className="profile-gold">
+                      ◈ {p.gold.toLocaleString()} gold{' '}
+                      {foodEffect(p, snapshot?.time) && (
+                        <button
+                          className="food-active"
+                          onClick={() => setPanel('recipes')}
+                          title={`${provisionRecipe(p.foodBuff!.recipeId)?.name}: ${provisionRecipe(p.foodBuff!.recipeId)?.description}`}
+                          aria-label="Active food buff"
+                        >
+                          <ItemIcon id={p.foodBuff!.recipeId} />
+                          {Math.max(
+                            0,
+                            Math.ceil(
+                              (p.foodBuff!.expiresAt - (snapshot?.time ?? Date.now())) / 1000,
+                            ),
+                          )}
+                          s
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <nav className="profile-menu" aria-label="Player menus">
@@ -1249,6 +1296,7 @@ function App() {
                     bram: 'Bram’s Forge',
                     map: 'Beyond the Elderwood.',
                     settings: 'Hunt your way.',
+                    recipes: 'Cooking & Alchemy',
                   } as Record<string, string>
                 )[panel]
               }
@@ -1283,6 +1331,19 @@ function App() {
                               <div className="item-detail">
                                 <strong>{item.name}</strong>
                                 <p>{item.description}</p>
+                                {provisionRecipe(item.id) && (
+                                  <button
+                                    className="primary"
+                                    disabled={
+                                      recipePending ||
+                                      (item.type === 'potion' &&
+                                        (p.potionReadyAt ?? 0) > (snapshot?.time ?? Date.now()))
+                                    }
+                                    onClick={() => recipeAction('use', item.id)}
+                                  >
+                                    {item.type === 'food' ? 'Eat' : 'Drink'}
+                                  </button>
+                                )}
                                 {item.type === 'weapon' && (
                                   <button
                                     className="primary"
@@ -1315,8 +1376,20 @@ function App() {
                   send={bridge.current.send}
                   onBrowse={() => setCosmeticDialog('class')}
                 />
+                <button className="primary" onClick={() => setPanel('recipes')}>
+                  Cooking & Alchemy recipes
+                </button>
                 <SkillsPanel player={p} />
               </>
+            )}
+            {panel === 'recipes' && (
+              <RecipesPanel
+                key={recipeSkill}
+                player={p}
+                initialSkill={recipeSkill}
+                pending={recipePending}
+                onAction={recipeAction}
+              />
             )}
             {panel === 'character' && (
               <>

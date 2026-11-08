@@ -92,13 +92,13 @@ export const WOODS_RESOURCE_ITEMS = Object.fromEntries(
       'greenleaf',
       'Greenleaf',
       'Common',
-      'Medicinal leaves gathered in Whispering Woods. Used for future Alchemy recipes.',
+      'Medicinal leaves gathered in Whispering Woods. Brew health and mana potions at the Alchemy Table in Elderwood Village.',
     ],
     ...WOODS_FISH.map((f) => [
       f.id,
       f.name,
       f.rarity,
-      `Caught in Whispering Woods at Fishing level ${f.level}. Used for future Cooking recipes.`,
+      `Caught in Whispering Woods at Fishing level ${f.level}. Cook temporary buff meals at the Cooking Campfire in Elderwood Village.`,
     ]),
   ].map(([id, name, rarity, description]) => [
     id,

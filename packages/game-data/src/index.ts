@@ -1,3 +1,5 @@
+export * from './provisions';
+import {PROVISION_ITEMS,PROVISION_STATIONS} from './provisions';
 export * from './crystal';
 import {CRYSTAL_MAPS,CRYSTAL_ITEMS,CRYSTAL_QUESTS} from './crystal';
 export * from './world-map';
@@ -135,6 +137,7 @@ export const MAPS: Record<string, GameMap> = {
     npcs: [],
   },
 };
+MAPS.village.npcs.push(...PROVISION_STATIONS);
 export const ISLANDS = [
   {
     id: 'woods',
@@ -297,6 +300,7 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  ...PROVISION_ITEMS,
   'teleport-crystal': {
     id: 'teleport-crystal',
     name: 'Teleport Crystal',

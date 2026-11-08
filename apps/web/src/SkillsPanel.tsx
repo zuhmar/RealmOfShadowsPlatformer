@@ -45,9 +45,10 @@ export function SkillsPanel({ player: p }: { player: Player }) {
         ))}
       </div>
       <p>
-        Identify and equip weapons or armor to gain attributes. Training only increases base damage.
-        Crits deal extra damage. Dodge avoids basic attacks; block and armor reduce them. Boss
-        red-zone slams must still be avoided by moving or jumping clear.
+        Identify and equip weapons or armor to gain permanent attributes. Cooking adds temporary
+        buffs. Training only increases base damage. Crits deal extra damage. Dodge avoids basic
+        attacks; block and armor reduce them. Boss red-zone slams must still be avoided by moving or
+        jumping clear.
       </p>
       <h3>Combat training</h3>
       <div className="skills-grid">
@@ -80,14 +81,16 @@ export function SkillsPanel({ player: p }: { player: Player }) {
       </div>
       <h3>Gathering & crafting</h3>
       <div className="skills-grid">
-        {[...GATHERING_SKILLS, 'Blacksmithing'].map((name) => {
+        {[...GATHERING_SKILLS, 'Blacksmithing', 'Cooking', 'Alchemy'].map((name) => {
           const state =
-            name === 'Blacksmithing'
-              ? (p.blacksmithing ?? { level: 1, xp: 0 })
-              : (p.gatheringSkills?.[name as (typeof GATHERING_SKILLS)[number]] ?? {
-                  level: 1,
-                  xp: 0,
-                });
+            name === 'Cooking' || name === 'Alchemy'
+              ? (p.craftingSkills?.[name] ?? { level: 1, xp: 0 })
+              : name === 'Blacksmithing'
+                ? (p.blacksmithing ?? { level: 1, xp: 0 })
+                : (p.gatheringSkills?.[name as (typeof GATHERING_SKILLS)[number]] ?? {
+                    level: 1,
+                    xp: 0,
+                  });
           return (
             <article className="training-card" key={name}>
               <h4>

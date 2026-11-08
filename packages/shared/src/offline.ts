@@ -52,7 +52,8 @@ export function activityReward(
   const monsterId = map.monster ?? (map.id === 'woods' ? 'wolf' : undefined);
   if (job === 'hunt' && monsterId) {
     const monster = WOODS_MONSTERS[monsterId];
-    const dps = (attackPower(p) * 1000) / weaponProfile(p.weapon).cooldown;
+    const dps =
+      (attackPower({ ...p, foodBuff: undefined }) * 1000) / weaponProfile(p.weapon).cooldown;
     const kills = Math.floor(minutes * Math.min(8, (dps * 60) / monster.hp) * 0.35);
     const skill = activeCombatSkill(p);
     return {

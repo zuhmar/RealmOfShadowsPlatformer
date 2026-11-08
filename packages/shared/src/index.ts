@@ -1,3 +1,5 @@
+export * from './provisions';
+import { expireFood } from './provisions';
 import { TELEPORT_CRYSTAL_DROP_CHANCE } from '@ros/game-data';
 export * from './teleport';
 export * from './equipment-comparison';
@@ -88,6 +90,10 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  craftingSkills?: Partial<Record<import('@ros/game-data').ProvisionSkill,{level:number;xp:number}>>;
+  foodBuff?: {recipeId:import('@ros/game-data').ProvisionId;expiresAt:number};
+  potionReadyAt?: number;
+  provisionRevision?: number;
   classId?: import('@ros/game-data').ClassId;
   skin?: import('@ros/game-data').ClassId | null;
   classTalents?: Partial<Record<import('@ros/game-data').ClassTalent, number>>;
@@ -550,6 +556,7 @@ export class World {
         p.grounded = true;
         p.platform = 'ground';
       }
+      expireFood(p, now);
       if (now - p.lastHit > 6000)
         p.hp = Math.min(playerAttributes(p).maxHealth, p.hp + dt * playerAttributes(p).healthRegen);
       p.mp = Math.min(playerAttributes(p).maxMana, p.mp + dt * playerAttributes(p).manaRegen);
@@ -1105,6 +1112,10 @@ export class World {
           'quests',
           'ownedTools',
           'equippedTools',
+          'craftingSkills',
+          'foodBuff',
+          'potionReadyAt',
+          'provisionRevision',
           'forgeRevision',
           'forgeQuest',
           'blacksmithing',

@@ -191,3 +191,5 @@ Images use compact, content-addressed WebP copies with exact transparency and im
 Claim the Crystal Caverns class trial to open the class carousel. Browse class sprites and details, then choose your path. Use **Character → Change skin** to switch free between your matching class skin and original look. Class headwear and current-island weapons are integrated into the sprite artwork. See [class skins and proportional terrain](docs/class-skins.md) for artwork and checks.
 
 Platforms and ladders use a [cohesive terrain renderer](docs/cohesive-terrain.md): continuous ledges, matching biome materials and full-height connected rails across all nine playable maps. Distinct area layouts and collision positions are preserved.
+
+Cooking and Alchemy now have [ten craftable recipes](docs/cooking-alchemy.md), profession XP, two Elderwood stations and consumable use from Bag or Skills → Cooking & Alchemy recipes. Meals grant temporary damage, regeneration or crit buffs; potions restore health/mana with a shared cooldown.
