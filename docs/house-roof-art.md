@@ -13,3 +13,10 @@ peak, while player movement retains the existing interior collision bounds.
 Validation: typecheck, production build, exact-alpha WebP verification, and the
 three-size desktop/mobile housing renderer check. Roof screenshots are saved
 under `artifacts/*-house-roof.png` by `scripts/browser-house-interiors.mjs`.
+
+The exterior now uses the actual Elderwood Village background and the shared
+`village` terrain renderer for a grass-and-earth foundation. Plaster is limited
+to the house rectangle. The generated `house-window.png` retains the oak frame
+and purple curtains with four fully transparent pane openings. An inverted
+geometry mask opens the plaster behind the panes, revealing the same outdoor
+image that is visible beside the house; no painted scenery is baked into glass.

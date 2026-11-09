@@ -1,3 +1,4 @@
+import { terrainPlatform } from './terrain';
 import Phaser from 'phaser';
 import { HOUSE_LAYOUTS, houseSize, CARPENTRY_RECIPES, type GameMap } from '@ros/game-data';
 import type { Player } from '@ros/shared';
@@ -5,6 +6,10 @@ import { assetUrl } from './assets';
 import { preloadHousing } from './housing';
 export function preloadHouseInterior(scene: Phaser.Scene) {
   preloadHousing(scene);
+  if (!scene.textures.exists('house-outdoors'))
+    scene.load.image('house-outdoors', assetUrl('/assets/backgrounds/elderwood-village.png'));
+  if (!scene.textures.exists('house-window'))
+    scene.load.image('house-window', assetUrl('/assets/props/house-window.png'));
   if (!scene.textures.exists('house-sky'))
     scene.load.image('house-sky', assetUrl('/assets/backgrounds/house-sky.png'));
   for (const key of ['house-wall-edge', 'house-roof']) {
@@ -26,6 +31,8 @@ export class HouseInterior {
   private backdrop: Phaser.GameObjects.TileSprite;
   private sky: Phaser.GameObjects.Image;
   private roofBase: number;
+  private outdoors: Phaser.GameObjects.Image;
+  private soil: Phaser.GameObjects.Rectangle;
   constructor(
     private scene: Phaser.Scene,
     private map: GameMap,
@@ -35,10 +42,40 @@ export class HouseInterior {
     const bounds = map.interiorBounds!;
     this.roofBase = bounds.top - 10;
     this.sky = scene.add.image(0, 0, 'house-sky').setOrigin(0).setDepth(-41).setName('house-sky');
-    this.backdrop = scene.add
-      .tileSprite(0, 0, scene.scale.width, scene.scale.height, 'house-plaster')
+    this.outdoors = scene.add
+      .image(0, 0, 'house-outdoors')
       .setOrigin(0)
       .setDepth(-40)
+      .setName('house-outdoors');
+    this.soil = scene.add
+      .rectangle(0, bounds.bottom + 118, map.width, map.height, 0x80603f)
+      .setOrigin(0)
+      .setDepth(-35)
+      .setName('house-outside-soil');
+    terrainPlatform(
+      scene,
+      map,
+      {
+        id: 'house-foundation',
+        x: -120,
+        y: bounds.bottom + 28,
+        width: map.width + 240,
+        oneWay: false,
+      },
+      'village',
+    )
+      .setDepth(-30)
+      .setName('house-foundation');
+    this.backdrop = scene.add
+      .tileSprite(
+        64,
+        this.roofBase - 8,
+        map.width - 128,
+        bounds.bottom - this.roofBase + 36,
+        'house-plaster',
+      )
+      .setOrigin(0)
+      .setDepth(-29)
       .setTileScale(0.6)
       .setName('house-backdrop');
     const strip = (
@@ -78,6 +115,8 @@ export class HouseInterior {
     roof.setScale(map.width / roof.width);
     const cameraTop = Math.min(0, this.roofBase - roof.displayHeight - 80);
     scene.cameras.main.setBounds(0, cameraTop, map.width, map.height - cameraTop);
+    const openings = scene.make.graphics({ x: 0, y: 0 });
+    openings.fillStyle(0xffffff);
     for (const y of layout.floors) {
       strip(64, y - 80, map.width - 128, 80, 'wainscot-strip', -25, 'house-wainscot');
       strip(64, y - 86, map.width - 128, 8, 'floor-strip', -24, 'house-wall-trim');
@@ -87,10 +126,26 @@ export class HouseInterior {
         .setDepth(-1);
       strip(32, y, map.width - 64, 28, 'floor-strip', 0, 'house-floor');
       for (let x = 360; x < map.width - 200; x += 400) {
-        const im = scene.add.image(x, y - 100, 'house-interior', 'window').setOrigin(0.5, 1);
-        im.setScale(110 / im.height).setDepth(-20);
+        const im = scene.add.image(x, y - 100, 'house-window').setOrigin(0.5, 1);
+        const scale = 110 / 957;
+        im.setScale(scale).setDepth(-20).setName('house-window');
+        // Open the plaster behind the transparent panes, preserving curtains and mullions.
+        openings.fillRect(
+          x + (500 - 768) * scale,
+          y - 100 + (180 - 1024) * scale,
+          540 * scale,
+          620 * scale,
+        );
       }
     }
+    const windowMask = openings.createGeometryMask();
+    windowMask.setInvertAlpha(true);
+    this.backdrop.setMask(windowMask);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.backdrop.clearMask();
+      windowMask.destroy();
+      openings.destroy();
+    });
     for (const l of map.ladders) {
       scene.add
         .rectangle(l.x, l.top + 12, 60, 24, 0x3d271e)
@@ -138,13 +193,10 @@ export class HouseInterior {
       h = Math.ceil((view.height || camera.height / camera.zoom) + 128);
     this.sky.setPosition(view.x - 64, view.y - 64);
     this.sky.setScale(Math.max(w / this.sky.width, h / this.sky.height));
-    const plasterTop = Math.max(view.y - 64, this.roofBase - 8);
-    const plasterHeight = Math.max(1, view.y - 64 + h - plasterTop);
-    this.backdrop.setPosition(view.x - 64, plasterTop);
-    if (this.backdrop.width !== w || this.backdrop.height !== plasterHeight)
-      this.backdrop.setSize(w, plasterHeight);
-    this.backdrop.tilePositionX = this.backdrop.x;
-    this.backdrop.tilePositionY = this.backdrop.y;
+    this.outdoors.setPosition(view.x - 64, view.y - 64);
+    this.outdoors.setScale(Math.max(w / this.outdoors.width, h / this.outdoors.height));
+    this.soil.setPosition(view.x - 64, this.map.interiorBounds!.bottom + 118);
+    this.soil.setSize(w, Math.max(h, view.bottom - this.soil.y + 128));
   }
   update(p: Player | undefined) {
     const furniture = p?.housingView?.furniture ?? p?.housing?.furniture ?? [],

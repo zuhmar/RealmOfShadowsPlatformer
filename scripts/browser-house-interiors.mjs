@@ -122,12 +122,21 @@ try {
         roofUniform: roof.scaleX === roof.scaleY,
         edges: edges.map((e) => e.displayTexture.key),
         plasterBelowRoof: plaster.y >= roof.y - 8,
+        plasterInsideWalls: plaster.x === 64 && plaster.width === s.map.width - 128 &&
+          plaster.getBounds().bottom <= s.map.interiorBounds.bottom + 28,
+        windowOpenings: !!plaster.mask?.invertAlpha,
+        outdoorTexture: s.children.getByName('house-outdoors').texture.key,
+        foundationTheme: s.children.getByName('house-foundation').getData('theme'),
       };
     });
     expect(shell.roofTexture).toBe('house-roof');
     expect(shell.roofUniform).toBe(true);
     expect(shell.edges).toEqual(['house-wall-edge', 'house-wall-edge']);
     expect(shell.plasterBelowRoof).toBe(true);
+    expect(shell.plasterInsideWalls).toBe(true);
+    expect(shell.windowOpenings).toBe(true);
+    expect(shell.outdoorTexture).toBe('house-outdoors');
+    expect(shell.foundationTheme).toBe('village');
 
     await page.waitForTimeout(200);
     await page.screenshot({ path: `artifacts/${size}-house-interior.png` });
