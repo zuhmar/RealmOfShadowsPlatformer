@@ -82,3 +82,31 @@ For local running, copy `.env.example` to `.env` in this folder and populate it
 privately. Tests use mocks and do not contact Discord. A live check requires
 inviting the bot and setting credentials. The application does not log tokens
 or incoming message contents.
+
+## One-time setup without hosting
+
+A worker is not required to create the server layout. The REST-only command
+below runs once and exits:
+
+```sh
+npm run setup:once -w @ros/discord-bot
+npm run setup:once -w @ros/discord-bot -- --apply
+```
+
+The first command is an offline preview. Applying requires a privately configured
+`DISCORD_BOT_TOKEN`, your `DISCORD_GUILD_ID`, and `DISCORD_APPLICATION_ID`.
+`GAME_URL` is optional for this command; if omitted, no game link is invented.
+It preserves inherited proxy settings and verifies the bot identity and setup
+permissions before making changes. It creates the same channels and roles,
+adds starter rules/welcome text, and exits without registering interactive
+commands or leaving class buttons that cannot respond. Existing resources are
+reused without deleting or changing their permissions.
+
+Channels, roles, and posted text remain in Discord after this command exits.
+Automatic welcomes, live role buttons, and slash moderation require a running
+bot; they are not activated by a one-time setup.
+
+For a managed cloud session, add the token only through private environment
+settings as `DISCORD_BOT_TOKEN`, with allowed destination `discord.com`. Review
+and save/publish the environment changes, then start/resume a session using the
+updated environment. Never put the token in chat or a repository file.

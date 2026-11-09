@@ -136,3 +136,24 @@ test('self-assignment never accepts a privileged or managed class role', () => {
     false,
   );
 });
+
+test('one-time setup previews offline and refuses to apply without private credentials', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const path = new URL('../src/setup-once.mjs', import.meta.url);
+  const { fileURLToPath } = await import('node:url');
+  const preview = spawnSync(process.execPath, [fileURLToPath(path)], {
+    encoding: 'utf8',
+    env: { PATH: process.env.PATH },
+    timeout: 10000,
+  });
+  assert.equal(preview.status, 0);
+  assert.match(preview.stdout, /Preview only/);
+  assert.match(preview.stdout, /START HERE/);
+  const apply = spawnSync(process.execPath, [fileURLToPath(path), '--apply'], {
+    encoding: 'utf8',
+    env: { PATH: process.env.PATH },
+    timeout: 10000,
+  });
+  assert.equal(apply.status, 1);
+  assert.match(apply.stderr, /must be configured/);
+});

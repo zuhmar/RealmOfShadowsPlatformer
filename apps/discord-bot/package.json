@@ -5,9 +5,11 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env src/index.mjs",
     "invite": "node --env-file-if-exists=.env src/invite.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "setup:once": "node --env-file-if-exists=.env src/setup-once.mjs"
   },
   "dependencies": {
-    "discord.js": "^14.28.1"
+    "discord.js": "^14.28.1",
+    "undici": "^6.29.1"
   }
 }
