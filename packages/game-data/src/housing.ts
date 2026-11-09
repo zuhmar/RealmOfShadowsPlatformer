@@ -92,3 +92,14 @@ export function houseSize(mapId: string): PlotSize | undefined {
     ? (size as PlotSize)
     : undefined;
 }
+
+/** Shared geometry for visible walls and authoritative actor bounds. */
+export function houseInteriorBounds(size: PlotSize) {
+  const layout = HOUSE_LAYOUTS[size];
+  return {
+    left: 64,
+    right: layout.width - 64,
+    top: layout.floors[layout.floors.length - 1] - 260,
+    bottom: layout.floors[0],
+  };
+}

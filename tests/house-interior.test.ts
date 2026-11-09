@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MAPS, HOUSE_LAYOUTS } from '@ros/game-data';
-import { createPlayer, World, idleInput, changeHousing } from '@ros/shared';
+import {
+  createPlayer,
+  World,
+  idleInput,
+  changeHousing,
+  moveActor,
+  constrainHouseActor,
+} from '@ros/shared';
 test('bigger houses have wider rooms, more connected floors and more furniture capacity', () => {
   const sizes = ['small', 'medium', 'large'] as const;
   for (let i = 0; i < sizes.length; i++) {
@@ -53,4 +60,39 @@ test('only the owner places furniture inside, with floor-specific collision and 
     () => changeHousing(p, { action: 'place', id: 'oak-chair', x: 100 }),
     /Enter your house/,
   );
+});
+
+test('house movement remains inside visible walls on every floor and recovers invalid saved positions', () => {
+  for (const size of ['small', 'medium', 'large']) {
+    const map = MAPS[`house-${size}`],
+      b = map.interiorBounds!;
+    for (const floor of map.platforms) {
+      const p = createPlayer('p', 'Edges', map.id);
+      p.y = floor.y;
+      p.platform = floor.id;
+      p.grounded = true;
+      for (let i = 0; i < 700; i++)
+        moveActor(p, { ...idleInput(), right: true }, map, 1 / 30, i * 34);
+      assert.equal(p.x, b.right - 28);
+      assert.equal(p.vx, 0);
+      assert.equal(p.y, floor.y);
+      for (let i = 0; i < 700; i++)
+        moveActor(p, { ...idleInput(), left: true }, map, 1 / 30, i * 34);
+      assert.equal(p.x, b.left + 28);
+      assert.equal(p.vx, 0);
+      assert.equal(p.y, floor.y);
+      p.y = b.top + 81;
+      p.vy = -900;
+      p.grounded = false;
+      moveActor(p, idleInput(), map, 1 / 30, 100);
+      assert.ok(p.y >= b.top + 80);
+      assert.ok(p.vy >= 0);
+      p.x = -500;
+      p.y = b.bottom + 500;
+      constrainHouseActor(p, map);
+      assert.equal(p.x, b.left + 28);
+      assert.equal(p.y, b.bottom);
+      assert.equal(p.platform, 'ground');
+    }
+  }
 });

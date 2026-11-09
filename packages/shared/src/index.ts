@@ -297,6 +297,26 @@ export function grantXp(p: Player, amount: number) {
   }
   return levels;
 }
+/** Keep feet and body inside the same geometry that draws the house shell. */
+export function constrainHouseActor(p: Actor, map: GameMap) {
+  const b = map.interiorBounds;
+  if (!b) return;
+  const x = Math.max(b.left + 28, Math.min(b.right - 28, p.x));
+  if (x !== p.x) p.vx = 0;
+  p.x = x;
+  if (p.y < b.top + 80) {
+    p.y = b.top + 80;
+    p.vy = Math.max(0, p.vy);
+    p.climbing = false;
+  }
+  if (p.y > b.bottom) {
+    p.y = b.bottom;
+    p.vy = 0;
+    p.grounded = true;
+    p.platform = 'ground';
+    p.climbing = false;
+  }
+}
 export function moveActor(p: Actor, input: Input, map: GameMap, dt: number, now: number) {
   const oldY = p.y;
   const ladder = map.ladders
@@ -363,6 +383,7 @@ export function moveActor(p: Actor, input: Input, map: GameMap, dt: number, now:
     p.grounded = true;
   }
   if (p.grounded) p.climbing = false;
+  constrainHouseActor(p, map);
 }
 export function platformRoute(
   map: GameMap,

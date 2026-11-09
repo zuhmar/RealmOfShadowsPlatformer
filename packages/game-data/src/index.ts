@@ -1,5 +1,5 @@
 export * from './housing';
-import { CARPENTRY_ITEMS, HOUSE_LAYOUTS } from './housing';
+import { CARPENTRY_ITEMS, HOUSE_LAYOUTS, houseInteriorBounds } from './housing';
 export * from './recipes';
 import { RECIPE_SCROLL_ITEMS } from './recipes';
 export * from './provisions';
@@ -35,6 +35,7 @@ export type GameMap = {
   name: string;
   island: string;
   requiredLevel: number;
+  interiorBounds?: { left: number; right: number; top: number; bottom: number };
   monster?: WoodsMonster;
   background?: string;
   bossEntrance?: { theme: PortalTheme; x: number; y: number; platform: string };
@@ -159,14 +160,15 @@ for (const [size, layout] of Object.entries(HOUSE_LAYOUTS)) {
     name: `${size[0].toUpperCase() + size.slice(1)} House`,
     island: 'Player Housing',
     requiredLevel: 1,
+    interiorBounds: houseInteriorBounds(size as keyof typeof HOUSE_LAYOUTS),
     width: layout.width,
     height: layout.height,
     spawn: { x: 170, y: floors[0] },
     platforms: floors.map((y, i) => ({
       id: i === 0 ? 'ground' : `floor-${i}`,
-      x: i === 0 ? 0 : 40,
+      x: 64,
       y,
-      width: i === 0 ? layout.width : layout.width - 80,
+      width: layout.width - 128,
       oneWay: i > 0,
     })),
     ladders: floors.slice(1).map((y, i) => ({

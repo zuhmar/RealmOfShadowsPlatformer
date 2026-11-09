@@ -119,6 +119,46 @@
         "w": 418,
         "h": 417
       }
+    },
+    "floor-strip": {
+      "frame": {
+        "x": 559,
+        "y": 280,
+        "w": 415,
+        "h": 81
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 415,
+        "h": 81
+      },
+      "sourceSize": {
+        "w": 415,
+        "h": 81
+      }
+    },
+    "wainscot-strip": {
+      "frame": {
+        "x": 61,
+        "y": 356,
+        "w": 363,
+        "h": 72
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 363,
+        "h": 72
+      },
+      "sourceSize": {
+        "w": 363,
+        "h": 72
+      }
     }
   },
   "meta": {

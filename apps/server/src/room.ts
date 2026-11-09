@@ -1,3 +1,4 @@
+import { constrainHouseActor } from '@ros/shared';
 import { houseSize, HOUSE_LAYOUTS } from '@ros/game-data';
 import { persistHousing } from './housing.js';
 import { housingView, nearHousing } from '@ros/shared';
@@ -747,6 +748,7 @@ export class MapRoom extends Room {
     auth: { id: string; name: string; data: unknown },
   ) {
     const p = auth.data as Player;
+    constrainHouseActor(p, this.world.map);
     revealOrigin(p, this.world.map);
     p.auto = false;
     delete p.gathering;

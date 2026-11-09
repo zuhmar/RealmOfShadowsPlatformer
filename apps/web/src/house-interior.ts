@@ -1,10 +1,12 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { HOUSE_LAYOUTS, houseSize, CARPENTRY_RECIPES, type GameMap } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 import { preloadHousing } from './housing';
 export function preloadHouseInterior(scene: Phaser.Scene) {
   preloadHousing(scene);
+  if (!scene.textures.exists('house-plaster'))
+    scene.load.image('house-plaster', assetUrl('/assets/backgrounds/house-plaster.png'));
   if (!scene.textures.exists('house-interior'))
     scene.load.atlas(
       'house-interior',
@@ -15,42 +17,61 @@ export function preloadHouseInterior(scene: Phaser.Scene) {
 export class HouseInterior {
   private items: Phaser.GameObjects.Image[] = [];
   private signature = '';
+  private backdrop: Phaser.GameObjects.TileSprite;
   constructor(
     private scene: Phaser.Scene,
     private map: GameMap,
     exit: () => void,
   ) {
     const layout = HOUSE_LAYOUTS[houseSize(map.id)!];
-    scene.add.rectangle(0, 0, map.width, map.height, 0x291a28).setOrigin(0).setDepth(-40);
-    for (const y of layout.floors) {
-      scene.add
-        .rectangle(40, y - 260, map.width - 80, 260, 0x76502f)
+    const bounds = map.interiorBounds!;
+    this.backdrop = scene.add
+      .tileSprite(0, 0, scene.scale.width, scene.scale.height, 'house-plaster')
+      .setOrigin(0)
+      .setDepth(-40)
+      .setTileScale(0.6)
+      .setName('house-backdrop');
+    const strip = (
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      frame: string,
+      depth: number,
+      name: string,
+    ) => {
+      const f = scene.textures.getFrame('house-interior', frame);
+      return scene.add
+        .tileSprite(x, y, width, height, 'house-interior', frame)
         .setOrigin(0)
-        .setDepth(-35);
+        .setTileScale(height / f.height)
+        .setDepth(depth)
+        .setName(name);
+    };
+    strip(32, bounds.top - 28, map.width - 64, 28, 'floor-strip', 1, 'house-ceiling');
+    scene.add
+      .rectangle(0, 0, 64, map.height, 0x6a4125)
+      .setOrigin(0)
+      .setDepth(-18)
+      .setName('house-left-wall');
+    scene.add
+      .rectangle(map.width - 64, 0, 64, map.height, 0x6a4125)
+      .setOrigin(0)
+      .setDepth(-18)
+      .setName('house-right-wall');
+    for (const y of layout.floors) {
+      strip(64, y - 80, map.width - 128, 80, 'wainscot-strip', -25, 'house-wainscot');
+      strip(64, y - 86, map.width - 128, 8, 'floor-strip', -24, 'house-wall-trim');
       scene.add
-        .rectangle(40, y, map.width - 80, 28, 0x895428)
+        .rectangle(32, y, map.width - 64, 28, 0x895428)
         .setOrigin(0)
         .setDepth(-1);
-      const f = scene.textures.getFrame('house-interior', 'wall'),
-        scale = 260 / f.height;
-      scene.add
-        .tileSprite(40, y - 260, map.width - 80, 260, 'house-interior', 'wall')
-        .setOrigin(0)
-        .setTileScale(scale)
-        .setDepth(-30)
-        .setName('house-wall');
-      const floor = scene.textures.getFrame('house-interior', 'floor');
-      scene.add
-        .tileSprite(40, y, map.width - 80, 28, 'house-interior', 'floor')
-        .setOrigin(0)
-        .setTileScale(28 / floor.height)
-        .setDepth(0)
-        .setName('house-floor');
-      for (const x of [40, map.width - 40]) {
+      strip(32, y, map.width - 64, 28, 'floor-strip', 0, 'house-floor');
+      for (const x of [32, map.width - 32]) {
         const beam = scene.add.image(x, y, 'house-interior', 'beam').setOrigin(0.5, 1);
         beam
-          .setScale(270 / beam.height)
-          .setDepth(-15)
+          .setScale(280 / beam.height)
+          .setDepth(4)
           .setName('house-beam');
       }
       for (let x = 360; x < map.width - 200; x += 400) {
@@ -68,6 +89,14 @@ export class HouseInterior {
         .setDepth(3)
         .setName('house-ladder');
     }
+    const refresh = () => this.refresh();
+    const camera = scene.cameras.main;
+    camera.on(Phaser.Cameras.Scene2D.Events.FOLLOW_UPDATE, refresh);
+    scene.scale.on(Phaser.Scale.Events.RESIZE, refresh);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      camera.off(Phaser.Cameras.Scene2D.Events.FOLLOW_UPDATE, refresh);
+      scene.scale.off(Phaser.Scale.Events.RESIZE, refresh);
+    });
     const door = scene.add.image(110, layout.floors[0], 'house-interior', 'door').setOrigin(0.5, 1);
     door
       .setScale(135 / door.height)
@@ -88,6 +117,17 @@ export class HouseInterior {
       })
       .setOrigin(0.5)
       .setDepth(6);
+  }
+  refresh() {
+    const camera = this.scene.cameras.main;
+    if (!camera || !this.backdrop.scene) return;
+    const view = camera.worldView;
+    const w = Math.ceil((view.width || camera.width / camera.zoom) + 128),
+      h = Math.ceil((view.height || camera.height / camera.zoom) + 128);
+    this.backdrop.setPosition(view.x - 64, view.y - 64);
+    if (this.backdrop.width !== w || this.backdrop.height !== h) this.backdrop.setSize(w, h);
+    this.backdrop.tilePositionX = this.backdrop.x;
+    this.backdrop.tilePositionY = this.backdrop.y;
   }
   update(p: Player | undefined) {
     const furniture = p?.housingView?.furniture ?? p?.housing?.furniture ?? [],

@@ -122,13 +122,27 @@ test('private interiors support invitation-checked entry, floors, placement, rev
     await until(() => hero().housing?.furniture.length === 1);
     assert.equal(hero().housing?.furniture[0].floor, 0);
     const ladder = HOUSE_LAYOUTS.medium.width - 160;
+    timer = setInterval(() => inside.send('input', { left: true }), 100);
+    inside.send('input', { left: true });
+    await until(() => hero().x <= 92);
+    await pause(300);
+    assert.equal(hero().x, 92);
+    assert.equal(hero().vx, 0);
+    clearInterval(timer);
     timer = setInterval(() => inside.send('input', { right: true }), 100);
     inside.send('input', { right: true });
-    await until(() => hero().x >= ladder - 15);
+    await until(() => hero().x >= HOUSE_LAYOUTS.medium.width - 92);
+    await pause(300);
+    assert.equal(hero().x, HOUSE_LAYOUTS.medium.width - 92);
+    assert.equal(hero().vx, 0);
+    clearInterval(timer);
+    timer = setInterval(() => inside.send('input', { left: true }), 100);
+    inside.send('input', { left: true });
+    await until(() => hero().x <= ladder + 10);
     clearInterval(timer);
     timer = setInterval(() => inside.send('input', { up: true }), 100);
     inside.send('input', { up: true });
-    await until(() => hero().y <= 501);
+    await until(() => hero().platform === 'floor-1' && hero().grounded);
     clearInterval(timer);
     timer = undefined;
     inside.send('input', {});
@@ -202,6 +216,10 @@ test('private interiors support invitation-checked entry, floors, placement, rev
     assert.equal(saved.mapId, 'house-medium');
     assert.equal(saved.housing?.furniture.length, 2);
     assert.equal(saved.housingView, undefined);
+    await db.character.update({
+      where: { id: a.p.id },
+      data: { data: json({ ...saved, x: -500, y: 2000 }) },
+    });
     const resume = await client.joinOrCreate('map', {
       mapId: saved.mapId,
       houseOwnerId: a.p.id,
@@ -212,6 +230,8 @@ test('private interiors support invitation-checked entry, floors, placement, rev
     rooms.push(resume);
     const rs = listen(resume);
     await until(() => rs.s?.players.some((p) => p.id === a.p.id) === true);
+    assert.equal(rs.s!.players.find((p) => p.id === a.p.id)?.x, 92);
+    assert.equal(rs.s!.players.find((p) => p.id === a.p.id)?.y, HOUSE_LAYOUTS.medium.floors[0]);
     await resume.leave(true);
     await pause(150);
     const fresh = (await db.character.findUniqueOrThrow({ where: { id: a.p.id } }))

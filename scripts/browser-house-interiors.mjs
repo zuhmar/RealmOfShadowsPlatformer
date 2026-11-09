@@ -56,6 +56,39 @@ try {
       () => window.interiorTest.host.getAttribute('aria-busy') === 'false',
     );
     const n = { small: 1, medium: 2, large: 3 }[size];
+    await page.waitForFunction(() => {
+      const s = window.interiorTest.game.scene.getScene('realm'),
+        b = s.children.getByName('house-backdrop')?.getBounds(),
+        v = s.cameras.main.worldView;
+      return b && b.left <= v.left && b.right >= v.right && b.top <= v.top && b.bottom >= v.bottom;
+    });
+    expect(
+      await page.evaluate(
+        () =>
+          window.interiorTest.game.scene.getScene('realm').children.getByName('house-backdrop')
+            .displayTexture.key,
+      ),
+    ).toBe('house-plaster');
+    await page.evaluate(() => {
+      const t = window.interiorTest,
+        p = t.bridge.snapshot.players[0];
+      p.x = -500;
+      p.y = -500;
+    });
+    await page.waitForFunction(() => {
+      const s = window.interiorTest.game.scene.getScene('realm'),
+        v = s.characters.get('owner')?.container,
+        b = s.map.interiorBounds;
+      return v && v.x >= b.left + 28 && v.y >= b.top + 80;
+    });
+    await page.evaluate(() => {
+      const t = window.interiorTest,
+        s = t.game.scene.getScene('realm'),
+        p = t.bridge.snapshot.players[0];
+      p.x = s.map.spawn.x;
+      p.y = s.map.spawn.y;
+    });
+
     await expect
       .poll(() =>
         page.evaluate(
@@ -82,10 +115,17 @@ try {
     await page.screenshot({ path: `artifacts/${size}-house-interior.png` });
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(150);
+  await page.waitForFunction(() => {
+    const s = window.interiorTest.game.scene.getScene('realm'),
+      b = s.children.getByName('house-backdrop').getBounds(),
+      v = s.cameras.main.worldView;
+    return b.left <= v.left && b.right >= v.right && b.top <= v.top && b.bottom >= v.bottom;
+  });
   await page.screenshot({ path: 'artifacts/house-interior-mobile.png' });
   expect(errors).toEqual([]);
   console.log(
-    'PASS: generated interior assets, three proportional maps, one/two/three floors, ladders and furniture per floor, desktop/mobile.',
+    'PASS: generated interior assets, three proportional maps, full-viewport backdrop, bounded character rendering, one/two/three floors, ladders and furniture per floor, desktop/mobile.',
   );
 } finally {
   await browser.close();

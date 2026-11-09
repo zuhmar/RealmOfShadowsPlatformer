@@ -1,3 +1,4 @@
+import { constrainHouseActor } from '@ros/shared';
 import { HouseInterior, preloadHouseInterior } from './house-interior';
 import { houseSize } from '@ros/game-data';
 import { craftingStation } from './crafting-stations';
@@ -423,7 +424,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
                   : '…',
         );
       }
-      for (const p of s.players) {
+      for (const state of s.players) {
+        const p = this.map.interiorBounds ? { ...state } : state;
+        constrainHouseActor(p, this.map);
         const key = p.id;
         alive.add(key);
         let visual = this.characters.get(key);
@@ -594,6 +597,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.woods?.refresh();
       this.crystal?.refresh();
       this.village?.refresh();
+      this.interior?.refresh();
       if (!this.keys) return;
       const focus = document.activeElement?.tagName;
       const typing = focus === 'INPUT' || focus === 'TEXTAREA' || focus === 'SELECT';
