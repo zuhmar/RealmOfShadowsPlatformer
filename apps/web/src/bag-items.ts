@@ -14,9 +14,11 @@ export function bagStacks(p: Pick<Player, 'inventory' | 'gear' | 'equippedGear'>
       g.source,
       g.name,
       g.level,
-      g.rarity,
+      g.identified ? g.rarity : 'unidentified',
       g.identified,
-      Object.entries(g.attributes ?? {}).sort(([a], [b]) => a.localeCompare(b)),
+      Object.entries(g.identified ? (g.attributes ?? {}) : {}).sort(([a], [b]) =>
+        a.localeCompare(b),
+      ),
     ]);
     let stack = groups.get(key);
     if (!stack) {

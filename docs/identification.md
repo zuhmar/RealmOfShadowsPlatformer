@@ -1,0 +1,15 @@
+# Identification anywhere and concealed rarity
+
+Uncommon–Legendary monster equipment can be identified from its Bag popup on any map. Only ownership, sufficient gold and the existing identification rules are required. No NPC proximity or class/character-level gate is added. Crafted/Common equipment remains ready to use and cannot be identified. Selling gear and buying Teleport Crystals still require Bram.
+
+The fee is **75 × ceil(item equipment level / 10)** gold, with a minimum 75. It uses item level rather than player level or rarity: level 1–10 costs 75, 11–20 costs 150, 21–30 costs 225, 31–40 costs 300, 41–50 costs 375, 51–60 costs 450, 61–70 costs 525, up to 750 for level 91–100 gear. Current Shadowforged gear requires level 61 and therefore costs 525 even if its owner reaches 100. Later content must be playtested when implemented; this is a progression rule, not a claim of a completed level-100 economy pass.
+
+For Woods, 75 gold represents roughly 10–15 normal monster kills. Identifying the expected 11.5 equipment drops from the required quest kills costs about 863 gold against 1,755 gold earned through first clear, before additional hunting and sales. Crystal identification costs 150, roughly 6–13 normal kills at 12–25 gold each. Each additional ten-level gear tier adds 75. This makes identification a deliberate expense while preserving starter weapons and ready-to-use crafted gear.
+
+Before identification, equipment uses neutral slot borders and an unknown-rarity label, including accessible names and item-popup metadata. Rarity filters do not classify unidentified gear. All equivalent unidentified pieces stack together irrespective of hidden rarity; their underlying IDs and rolls stay separate. Identifying one reveals and separates that instance.
+
+Drop/pickup messages and sprite glows omit unknown rarities. The pre-identification sale quote is also rarity-independent: 8 gold per ten-level item tier. Identified sale values retain existing rarity scaling and monster identification premiums. At current rarity weights, expected Woods identified resale is about 20 gold against a 75-gold fee; a lucky valuable piece is a reward, while random identification has no positive expected gold-only return. Crafted sale rules remain unchanged.
+
+The server owns gold, hidden rarity, attribute generation and durable state. Identification uses the existing locked transaction/revision checks so duplicate clicks cannot charge or roll twice. No schema migration is needed. This change conceals rarity in the normal UI and loot presentation; it does not introduce a separate encrypted inventory protocol.
+
+Checks: `npm test`, `npm run typecheck`, `npm run build`, `tests/equipment.integration.ts`, `tests/identify-anywhere.integration.ts`, `scripts/browser-bag.mjs`, `scripts/browser-equipment-management.mjs`, and `scripts/browser-loot-feedback.mjs`. Coverage includes a real Woods-room identification, insufficient gold, duplicate requests, persistence, Bram-only sales, equal mystery prices, hidden grouping and reveal, popup labels and loot glows.

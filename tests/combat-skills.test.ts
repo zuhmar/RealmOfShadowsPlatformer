@@ -89,10 +89,10 @@ test('projectiles retain originating training after a weapon swap', () => {
 });
 test('rarities identify once into one through four distinct attributes and charge once', () => {
   for (const [roll, count, cost] of [
-    [0, 1, 25],
+    [0, 1, 75],
     [0.7, 2, 75],
-    [0.95, 3, 200],
-    [0.999, 4, 500],
+    [0.95, 3, 75],
+    [0.999, 4, 75],
   ]) {
     const p = createPlayer('p', 'Tester'),
       g = createGear('elderwood-blade', 1, () => roll);

@@ -16,9 +16,9 @@ Dagger damage is scaled to 70% to account for its fast attack interval; bow uses
 - Wolves 15, spiders 30, boars 60, boss 1. No quest count reductions or boss multipliers.
 - Starting at level one with no extra kills or offline XP, the required kills finish the stages at levels 3, 5, 7 and 8. Leveling while gathering or repeating fights may change this.
 - The chain gives 1,755 gold from required kills, quest turn-ins and the first-clear bonus, before additional hunting or gear sales.
-- Normal equipment chance remains 10%, and the bear guarantees one: 11.5 expected pieces from the required kills. At the current rarity weights, expected identification fees total about 684 gold; actual luck and player choices vary substantially.
+- Normal equipment chance remains 10%, and the bear guarantees one: 11.5 expected pieces from the required kills. At the current rarity-independent identification fee, expected fees total about 863 gold; actual luck and player choices vary substantially.
 - 20 ore makes one bar. Each Woods piece costs five bars: 400 ore for four armor pieces, 800 for all eight designs. With a 1–3 yield averaging two resources per three-second cycle, gathering all eight takes about 20 active minutes with wood tools or 16 with an equipped Iron tool, excluding travel, initial tool crafting and other gathering.
-- Equipped pieces cannot be sold. Woods sale values before identification are 4/8/20/50/125 gold for Common/Uncommon/Rare/Epic/Legendary; identified monster gear gains 25%. Crafted gear gets no identification premium. Sale proceeds stay below identification fees, avoiding profitable identification-only rerolls or a free crafted-gold loop.
+- Equipped pieces cannot be sold. Unidentified Woods gear sells for 8 gold regardless of rarity. Identified sale values use the existing rarity table and a 25% monster identification premium; crafted gear gets no identification premium. Expected identified resale at the current rarity weights is below the 75-gold fee. See [identification](identification.md) for pricing and spoiler concealment.
 
 No normal-monster health, skill XP rates, resource yields, crafting costs, drop odds or key odds were changed. These measurements support the current first-island economy; real player sessions should guide later class and encounter tuning.
 

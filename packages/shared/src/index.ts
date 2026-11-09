@@ -234,7 +234,7 @@ export type Event = {
   type: 'hit' | 'kill' | 'level' | 'loot' | 'respawn' | 'skill' | 'bossAttack';
   radius?: number;
   critical?: boolean;
-  gear?: Pick<Gear, 'name' | 'rarity'>;
+  gear?: Pick<Gear, 'name'> & { rarity?: Gear['rarity'] };
   lootStage?: 'drop' | 'pickup';
   loot?: { item: string; quantity: number; rarity?: Gear['rarity'] }[];
   lootGold?: number;
@@ -1009,11 +1009,20 @@ export class World {
           type: 'loot',
           x: w.x,
           y: w.y - 90,
-          text: `${droppedGear.rarity} ${droppedGear.name} dropped!`,
+          text: `${droppedGear.identified ? droppedGear.rarity : 'Unidentified'} ${droppedGear.name} dropped!`,
           playerId: p.id,
-          gear: { name: droppedGear.name, rarity: droppedGear.rarity },
+          gear: {
+            name: droppedGear.name,
+            rarity: droppedGear.identified ? droppedGear.rarity : undefined,
+          },
           lootStage: 'drop',
-          loot: [{ item: droppedGear.base, quantity: 1, rarity: droppedGear.rarity }],
+          loot: [
+            {
+              item: droppedGear.base,
+              quantity: 1,
+              rarity: droppedGear.identified ? droppedGear.rarity : undefined,
+            },
+          ],
         });
     }
   }
@@ -1102,11 +1111,17 @@ export class World {
           type: 'loot',
           x: p.x,
           y: p.y - 110,
-          text: `Collected ${d.gear.rarity} ${d.gear.name}`,
+          text: `Collected ${d.gear.identified ? d.gear.rarity : 'unidentified'} ${d.gear.name}`,
           playerId: p.id,
-          gear: { name: d.gear.name, rarity: d.gear.rarity },
+          gear: { name: d.gear.name, rarity: d.gear.identified ? d.gear.rarity : undefined },
           lootStage: 'pickup',
-          loot: [{ item: d.gear.base, quantity: 1, rarity: d.gear.rarity }],
+          loot: [
+            {
+              item: d.gear.base,
+              quantity: 1,
+              rarity: d.gear.identified ? d.gear.rarity : undefined,
+            },
+          ],
         });
       }
       p.gold += d.gold;

@@ -76,7 +76,7 @@ try {
     .toEqual(
       expect.arrayContaining(['gold', 'fang', 'wolf-pelt', 'woods-sword', 'recipe:iron-bar']),
     );
-  expect((await nodes()).some((n) => n.name === 'loot-rarity-glow')).toBe(true);
+  expect((await nodes()).some((n) => n.name === 'loot-rarity-glow')).toBe(false);
   expect(
     (await nodes()).some(
       (n) => typeof n.text === 'string' && /Ironwood Sword|dropped!|Collected/.test(n.text),
@@ -120,7 +120,7 @@ try {
   await page.screenshot({ path: 'artifacts/epic-gear-pickup.png' });
   expect(errors).toEqual([]);
   console.log(
-    'PASS: item sprites, rarity glows, no loot-name text and owner-only pickup sprites render in Phaser.',
+    'PASS: item sprites, concealed unidentified rarity, no loot-name text and owner-only pickup sprites render in Phaser.',
   );
 } finally {
   await browser.close();

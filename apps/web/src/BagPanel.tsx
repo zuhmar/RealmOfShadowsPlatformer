@@ -138,7 +138,7 @@ export function BagPanel({
                   style={{
                     gridColumn: i < 3 ? 1 : 3,
                     gridRow: (i % 3) + 1,
-                    borderColor: g ? GEAR_RARITY_COLORS[g.rarity] : undefined,
+                    borderColor: g?.identified ? GEAR_RARITY_COLORS[g.rarity] : undefined,
                   }}
                   aria-label={`${label}: ${g?.name ?? itemDefinition(base)?.name ?? 'Empty'}`}
                   onClick={() => setSelected(g ? { gearId: g.id } : { item: base ?? undefined })}
@@ -164,10 +164,10 @@ export function BagPanel({
                   disabled={!s}
                   aria-label={
                     s
-                      ? `${g?.name ?? itemDefinition(s.item)?.name ?? s.item}, ${s.quantity}${g ? `, ${g.rarity}${g.identified ? '' : ' unidentified'}` : ''}`
+                      ? `${g?.name ?? itemDefinition(s.item)?.name ?? s.item}, ${s.quantity}${g ? (g.identified ? `, ${g.rarity}` : ', unidentified') : ''}`
                       : 'Empty inventory slot'
                   }
-                  style={{ borderColor: g ? GEAR_RARITY_COLORS[g.rarity] : undefined }}
+                  style={{ borderColor: g?.identified ? GEAR_RARITY_COLORS[g.rarity] : undefined }}
                   onClick={() => s && setSelected(g ? { gearId: g.id } : { item: s.item })}
                 >
                   {s && (

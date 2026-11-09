@@ -33,11 +33,9 @@ export type Gear = {
   identified: boolean;
   attributes?: Partial<Record<GearAttribute, number>>;
 };
+/** Price follows equipment level only, so the quote never reveals hidden rarity. */
 export const identifyCost = (g: Gear) =>
-  g.source === 'crafted' || g.rarity === 'Common'
-    ? 0
-    : [25, 75, 200, 500][GEAR_RARITIES.indexOf(g.rarity as (typeof GEAR_RARITIES)[number])] *
-      Math.max(1, Math.ceil(g.level / 10));
+  g.source === 'crafted' || g.rarity === 'Common' ? 0 : 75 * Math.max(1, Math.ceil(g.level / 10));
 export function createGear(base: string, level: number, random = Math.random): Gear {
   const roll = random(),
     rarity = roll < 0.65 ? 'Uncommon' : roll < 0.9 ? 'Rare' : roll < 0.985 ? 'Epic' : 'Legendary';
@@ -170,7 +168,9 @@ export const GEAR_RARITY_COLORS: Record<GearRarity, string> = {
   Legendary: '#f4bf55',
 };
 export function gearSellValue(g: Gear) {
-  const base = { Common: 4, Uncommon: 8, Rare: 20, Epic: 50, Legendary: 125 }[g.rarity];
+  const base = !g.identified
+    ? 8
+    : { Common: 4, Uncommon: 8, Rare: 20, Epic: 50, Legendary: 125 }[g.rarity];
   return Math.floor(
     base *
       Math.max(1, Math.ceil(g.level / 10)) *

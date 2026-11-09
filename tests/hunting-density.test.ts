@@ -45,5 +45,5 @@ test('collection sends sprite identifiers and quantities without changing owners
   assert.equal(p.gold, d.gold);
   const gear = w.events.find((e) => e.lootStage === 'pickup');
   assert.equal(gear?.loot?.[0].item, d.gear!.base);
-  assert.equal(gear?.loot?.[0].rarity, d.gear!.rarity);
+  assert.equal(gear?.loot?.[0].rarity, undefined);
 });

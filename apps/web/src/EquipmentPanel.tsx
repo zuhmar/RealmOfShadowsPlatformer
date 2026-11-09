@@ -34,7 +34,9 @@ export function EquipmentPanel({
     [confirmSale, setConfirmSale] = useState<string | null>(null);
   const atBram = p.mapId === 'village' && nearNpc(p, MAPS.village, 'bram');
   const visible = (p.gear ?? []).filter((g) =>
-    gearId ? g.id === gearId : rarity === 'All' || g.rarity === rarity,
+    gearId
+      ? g.id === gearId
+      : rarity === 'All' || (g.identified ? g.rarity === rarity : rarity === 'Unidentified'),
   );
   return (
     <section className="equipment-panel">
@@ -58,9 +60,9 @@ export function EquipmentPanel({
       </div>
       <h3>Equipment & identification</h3>
       <p>
-        Uncommon, Rare, Epic and Legendary monster drops reveal 1, 2, 3 or 4 attributes at Bram.
-        Crafted equipment has fixed stats and is ready to equip. Sell unwanted, unequipped gear to
-        Bram.
+        Uncommon, Rare, Epic and Legendary monster drops reveal 1, 2, 3 or 4 attributes when
+        identified. Crafted equipment has fixed stats and is ready to equip. Sell unwanted,
+        unequipped gear to Bram.
       </p>
       <label className="gear-filter">
         Rarity
@@ -72,7 +74,7 @@ export function EquipmentPanel({
             setConfirmSale(null);
           }}
         >
-          {['All', 'Common', ...GEAR_RARITIES].map((name) => (
+          {['All', 'Unidentified', 'Common', ...GEAR_RARITIES].map((name) => (
             <option key={name}>{name}</option>
           ))}
         </select>
@@ -95,9 +97,11 @@ export function EquipmentPanel({
           return (
             <article
               className={`training-card gear-card ${equipped ? 'gear-equipped' : ''}`}
-              data-rarity={g.rarity}
+              data-rarity={g.identified ? g.rarity : 'Unidentified'}
               key={g.id}
-              style={{ borderColor: GEAR_RARITY_COLORS[g.rarity as GearRarity] }}
+              style={{
+                borderColor: g.identified ? GEAR_RARITY_COLORS[g.rarity as GearRarity] : undefined,
+              }}
             >
               <h4>
                 <span aria-hidden="true">
@@ -110,7 +114,7 @@ export function EquipmentPanel({
                 {g.name}
               </h4>
               <p>
-                {g.rarity} · {g.slot} · Lv. {g.level} ·{' '}
+                {g.identified ? g.rarity : 'Unknown rarity'} · {g.slot} · Lv. {g.level} ·{' '}
                 {g.source === 'crafted'
                   ? 'Crafted · Fixed stats'
                   : g.identified
@@ -157,14 +161,10 @@ export function EquipmentPanel({
                 </>
               ) : (
                 <>
-                  <p>Identify to reveal and compare hidden attributes.</p>
-                  <p>
-                    {atBram
-                      ? `Bram’s fee: ${identifyCost(g)} gold`
-                      : 'Visit Bram in Elderwood Village to identify.'}
-                  </p>
+                  <p>Identify to reveal its rarity and attributes.</p>
+                  <p>{`Identification fee: ${identifyCost(g)} gold · Available anywhere`}</p>
                   <button
-                    disabled={!atBram || p.gold < identifyCost(g)}
+                    disabled={p.gold < identifyCost(g)}
                     onClick={() => send('identify', g.id)}
                   >
                     Identify {g.name} · {identifyCost(g)} gold

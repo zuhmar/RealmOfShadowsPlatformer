@@ -31,7 +31,7 @@ test('identification locks gold and rolls once across duplicate or stale request
     assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
     const saved = (await db.character.findUniqueOrThrow({ where: { id: c.id } }))
       .data as unknown as Player;
-    assert.equal(saved.gold, 500);
+    assert.equal(saved.gold, 925);
     assert.equal(Object.keys(saved.gear![0].attributes!).length, 4);
     await assert.rejects(() => changeEquipment(saved, saved.gear![0].id));
     await assert.rejects(() => changeEquipment(saved, 'unowned'));
@@ -45,7 +45,7 @@ test('identification locks gold and rolls once across duplicate or stale request
     assert.equal(sales.filter((r) => r.status === 'fulfilled').length, 1);
     const sold = (await db.character.findUniqueOrThrow({ where: { id: c.id } }))
       .data as unknown as Player;
-    assert.equal(sold.gold, 500 + proceeds);
+    assert.equal(sold.gold, 925 + proceeds);
     assert.deepEqual(sold.gear, []);
     await assert.rejects(() => changeEquipment(sold, saved.gear![0].id, 'sell'));
     assert.equal(

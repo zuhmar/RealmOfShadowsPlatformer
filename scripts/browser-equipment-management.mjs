@@ -110,10 +110,10 @@ try {
   );
   await expect(rare.getByLabel('Compare Ironwood Chestplate')).toContainText('Crit chance +10.0%');
   await page.getByRole('button', { name: 'Close item details', exact: true }).click();
-  await page
-    .getByRole('button', { name: 'Ironwood Helmet, 1, Epic unidentified', exact: true })
-    .click();
-  await expect(page.locator('.gear-card[data-rarity="Epic"] .gear-comparison')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Ironwood Helmet, 1, unidentified', exact: true }).click();
+  await expect(page.locator('.gear-card[data-rarity="Unidentified"] .gear-comparison')).toHaveCount(
+    0,
+  );
   await page.getByRole('button', { name: 'Close item details', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Chest: Ironwood Chestplate', exact: true }),
@@ -155,7 +155,7 @@ try {
     page.getByRole('button', { name: 'Chest: Ironwood Chestplate', exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Ironwood Helmet, 1, Epic unidentified', exact: true }),
+    page.getByRole('button', { name: 'Ironwood Helmet, 1, unidentified', exact: true }),
   ).toBeVisible();
   await expect(page.locator('.bag-heading')).toContainText('125 gold');
   await close();

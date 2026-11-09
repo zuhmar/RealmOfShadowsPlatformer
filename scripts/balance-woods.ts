@@ -130,7 +130,7 @@ console.log(
       economy: {
         totalGoldThroughFirstClear: totalGold,
         expectedGearFrom105NormalsAndBoss: 11.5,
-        expectedIdentificationCost: 11.5 * (0.65 * 25 + 0.25 * 75 + 0.085 * 200 + 0.015 * 500),
+        expectedIdentificationCost: 11.5 * 75,
         armorOre: 4 * 5 * 20,
         full8PieceOre: 8 * 5 * 20,
         expectedGatherMinutesFullSetWood: (((8 * 5 * 20) / 2) * 3) / 60,

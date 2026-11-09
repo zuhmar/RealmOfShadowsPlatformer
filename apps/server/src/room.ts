@@ -528,11 +528,11 @@ export class MapRoom extends Room {
   identify(c: Client, id: unknown, action: 'identify' | 'sell' | 'buyCrystal' = 'identify') {
     const p = this.player(c);
     if (!p || typeof id !== 'string' || !this.rate(c, 100)) return;
-    if (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'bram')) {
-      c.send(
-        'notice',
-        'Visit Bram in Elderwood Village for equipment services and Teleport Crystals.',
-      );
+    if (
+      action !== 'identify' &&
+      (this.world.map.id !== 'village' || !nearNpc(p, this.world.map, 'bram'))
+    ) {
+      c.send('notice', 'Visit Bram in Elderwood Village to sell gear or buy Teleport Crystals.');
       return;
     }
     p.auto = false;
@@ -541,8 +541,8 @@ export class MapRoom extends Room {
     const task = this.saves
       .catch(() => {})
       .then(async () => {
-        if (!nearNpc(p, this.world.map, 'bram'))
-          throw new Error('Stand near Bram to identify or sell gear.');
+        if (action !== 'identify' && !nearNpc(p, this.world.map, 'bram'))
+          throw new Error('Stand near Bram to sell gear or buy Teleport Crystals.');
         const next = await changeEquipment(structuredClone(p), id, action);
         p.gear = next.gear;
         p.inventory = next.inventory;

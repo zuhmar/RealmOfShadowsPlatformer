@@ -27,15 +27,21 @@ test('sales pay once, preserve other instances, reject unowned and equipped item
   assert.throws(() => sellGear(p, b.id), /own/);
   assert.equal(p.gold, 100 + value);
 });
-test('selling cannot recoup identification fees or create a crafted-gold shortcut', () => {
+test('unidentified sale prices conceal rarity and average identification resale stays below fees', () => {
   const p = createPlayer('p', 'Seller');
-  for (const roll of [0, 0.7, 0.95, 0.999]) {
+  let expectedResale = 0;
+  for (const [roll, weight] of [
+    [0, 0.65],
+    [0.7, 0.25],
+    [0.95, 0.085],
+    [0.999, 0.015],
+  ]) {
     const g = createGear('woods-sword', 1, () => roll);
-    assert.ok(
-      gearSellValue(g) <
-        { Uncommon: 25, Rare: 75, Epic: 200, Legendary: 500 }[g.rarity as 'Uncommon'],
-    );
+    assert.equal(gearSellValue(g), 8);
+    g.identified = true;
+    expectedResale += gearSellValue(g) * weight;
   }
+  assert.ok(expectedResale < 75);
   assert.equal(gearSellValue(createCraftedGear('woods-sword')), 4);
 });
 test('comparisons include gains, losses, weapon skill changes, caps and never mutate equipment', () => {
@@ -59,7 +65,7 @@ test('comparisons include gains, losses, weapon skill changes, caps and never mu
   b.level = 10;
   assert.deepEqual(compareGear(p, b), []);
 });
-test('unidentified loot has owner-addressed named rarity feedback on drop and collection', () => {
+test('unidentified loot names its owner item without rarity spoilers on drop and collection', () => {
   const w = new World(MAPS.woods),
     p = createPlayer('p', 'Hunter');
   const original = Math.random;
@@ -74,7 +80,9 @@ test('unidentified loot has owner-addressed named rarity feedback on drop and co
   const event = w.events.find((e) => e.lootStage === 'drop');
   assert.equal(event?.playerId, p.id);
   assert.ok(event?.text.includes(drop.gear!.name));
-  assert.equal(event?.gear?.rarity, drop.gear!.rarity);
+  assert.equal(event?.gear?.rarity, undefined);
+  assert.equal(event?.loot?.[0].rarity, undefined);
+  assert.ok(!event?.text.includes(drop.gear!.rarity));
   p.x = drop.x;
   p.y = drop.y;
   w.collect(p, 11000);

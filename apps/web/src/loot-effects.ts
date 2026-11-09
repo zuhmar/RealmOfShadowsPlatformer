@@ -166,7 +166,15 @@ export function groundLoot(scene: Phaser.Scene, drop: Drop, localPlayer: string)
     ...(drop.gold > 0 ? [{ item: 'gold', quantity: drop.gold }] : []),
     { item: drop.item, quantity: 1 },
     ...(drop.items ?? []).map((i) => ({ item: i.item, quantity: i.quantity })),
-    ...(drop.gear ? [{ item: drop.gear.base, quantity: 1, rarity: drop.gear.rarity }] : []),
+    ...(drop.gear
+      ? [
+          {
+            item: drop.gear.base,
+            quantity: 1,
+            rarity: drop.gear.identified ? drop.gear.rarity : undefined,
+          },
+        ]
+      : []),
   ];
   const container = iconRow(scene, items, 26)
     .setPosition(drop.x, drop.y - 20)

@@ -191,7 +191,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           .text(e.x, e.y, e.text, {
             fontFamily: 'Georgia',
             fontSize: e.type === 'level' ? '25px' : e.gear ? '20px' : '18px',
-            color: e.gear
+            color: e.gear?.rarity
               ? GEAR_RARITY_COLORS[e.gear.rarity]
               : e.critical
                 ? '#ffc85f'

@@ -135,9 +135,9 @@ try {
   await expect(
     bag.getByRole('button', { name: 'Ironwood Helmet, 1, Common', exact: true }),
   ).toBeVisible();
-  await bag
-    .getByRole('button', { name: 'Ironwood Boots, 1, Rare unidentified', exact: true })
-    .click();
+  await bag.getByRole('button', { name: 'Ironwood Boots, 1, unidentified', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Item details' })).toContainText('Unknown rarity');
+  await expect(page.getByRole('dialog', { name: 'Item details' })).not.toContainText('Rare ·');
   await bag.getByRole('button', { name: /Identify Ironwood Boots/ }).click();
   await expect(
     bag.getByRole('button', { name: 'Equip Ironwood Boots', exact: true }),
