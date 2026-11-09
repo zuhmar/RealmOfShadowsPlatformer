@@ -110,3 +110,19 @@ For a managed cloud session, add the token only through private environment
 settings as `DISCORD_BOT_TOKEN`, with allowed destination `discord.com`. Review
 and save/publish the environment changes, then start/resume a session using the
 updated environment. Never put the token in chat or a repository file.
+
+## Publish the complete showcase on request
+
+```sh
+npm run publish:once -w @ros/discord-bot
+npm run publish:once -w @ros/discord-bot -- --apply
+```
+
+The first command previews the operation without connecting. Applying uploads
+`welcome-banner.png` and `server-icon.png` to #welcome, then the full 72-card
+library to #showcase with section headings. It posts without member/role pings,
+spaces uploads, and verifies every remote attachment afterward. Marked posts
+are reused on retry after scanning channel history; a scan limit stops the run
+rather than guessing and duplicating posts. This command posts the icon as an
+image; it does not change the Discord server icon. It requires the same private
+credentials as one-time setup and no permanent hosting.

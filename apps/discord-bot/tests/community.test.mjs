@@ -157,3 +157,22 @@ test('one-time setup previews offline and refuses to apply without private crede
   assert.equal(apply.status, 1);
   assert.match(apply.stderr, /must be configured/);
 });
+
+test('full-library publishing is preview-only by default and requires credentials to apply', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const { fileURLToPath } = await import('node:url');
+  const path = fileURLToPath(new URL('../src/publish-once.mjs', import.meta.url));
+  for (const [args, status, expected] of [
+    [[], 0, /72 cards/],
+    [['--apply'], 1, /Configure private bot token/],
+  ]) {
+    const result = spawnSync(process.execPath, [path, ...args], {
+      encoding: 'utf8',
+      env: { PATH: process.env.PATH },
+      timeout: 10000,
+    });
+    assert.ifError(result.error);
+    assert.equal(result.status, status);
+    assert.match(result.stdout + result.stderr, expected);
+  }
+});
