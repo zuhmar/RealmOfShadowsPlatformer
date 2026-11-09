@@ -103,7 +103,7 @@ try {
         visible: v.skinVisual.container.visible,
       };
     });
-    expect(result.texture).toBe('skin-golden-test');
+    expect(result.texture).toBe(name === 'idle' ? 'skin-base-sword-woods' : 'skin-golden-test');
     expect(result.visible).toBe(true);
     await expect
       .poll(
@@ -125,7 +125,7 @@ try {
         window.golden.game.scene.getScene('realm').characters.get('golden-preview').skinVisual.item
           .visible,
     ),
-  ).toBe(true);
+  ).toBe(false);
   expect(errors).toEqual([]);
   console.log(
     'PASS: civilian skin selection, saved re-entry, desktop/mobile, animated movement/jump/climb/attack and weapon renderer.',

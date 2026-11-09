@@ -1,0 +1,236 @@
+{
+  "version": 2,
+  "facing": "right",
+  "columns": 6,
+  "rows": 6,
+  "sheets": {
+    "sword-crystal": {
+      "image": "/assets/characters/skins/base-armed/sword-crystal.png",
+      "atlas": "/assets/characters/skins/base-armed/sword-crystal.json",
+      "body": "celestial-base",
+      "weaponKind": "sword",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "sword",
+      "source": "exec-ac1f6d8e-fc6c-456b-85bc-9be88d9972b2.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "bow-woods": {
+      "image": "/assets/characters/skins/base-armed/bow-woods.png",
+      "atlas": "/assets/characters/skins/base-armed/bow-woods.json",
+      "body": "celestial-base",
+      "weaponKind": "bow",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "bow",
+      "source": "exec-eabd4a24-e4dd-433e-85eb-92559010488e.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "staff-woods": {
+      "image": "/assets/characters/skins/base-armed/staff-woods.png",
+      "atlas": "/assets/characters/skins/base-armed/staff-woods.json",
+      "body": "celestial-base",
+      "weaponKind": "staff",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "staff",
+      "source": "exec-c48ce9e7-c6a9-4d72-8f60-0f1946ba2963.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "sword-starter": {
+      "image": "/assets/characters/skins/base-armed/sword-starter.png",
+      "atlas": "/assets/characters/skins/base-armed/sword-starter.json",
+      "body": "celestial-base",
+      "weaponKind": "sword",
+      "variant": "armed",
+      "tier": "starter",
+      "weapon": "sword",
+      "source": "exec-96da33a0-0551-43ec-8da4-f0c32e5d682e.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "dagger-woods": {
+      "image": "/assets/characters/skins/base-armed/dagger-woods.png",
+      "atlas": "/assets/characters/skins/base-armed/dagger-woods.json",
+      "body": "celestial-base",
+      "weaponKind": "dagger",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "dual-daggers",
+      "source": "exec-a86ecb01-8c3a-4be2-a0d7-8a24cb44ae17.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "sword-woods": {
+      "image": "/assets/characters/skins/base-armed/sword-woods.png",
+      "atlas": "/assets/characters/skins/base-armed/sword-woods.json",
+      "body": "celestial-base",
+      "weaponKind": "sword",
+      "variant": "armed",
+      "tier": "woods",
+      "weapon": "sword",
+      "source": "exec-bbf85d71-aac6-4080-bc75-2a54f4ce82bc.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "dagger-crystal": {
+      "image": "/assets/characters/skins/base-armed/dagger-crystal.png",
+      "atlas": "/assets/characters/skins/base-armed/dagger-crystal.json",
+      "body": "celestial-base",
+      "weaponKind": "dagger",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "dual-daggers",
+      "source": "exec-72c0ffc5-8e46-49da-9e1d-31f7c5b7f13c.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "bow-crystal": {
+      "image": "/assets/characters/skins/base-armed/bow-crystal.png",
+      "atlas": "/assets/characters/skins/base-armed/bow-crystal.json",
+      "body": "celestial-base",
+      "weaponKind": "bow",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "bow",
+      "source": "exec-1a38c87b-ccec-4b04-8d1f-765584a568f2.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "staff-starter": {
+      "image": "/assets/characters/skins/base-armed/staff-starter.png",
+      "atlas": "/assets/characters/skins/base-armed/staff-starter.json",
+      "body": "celestial-base",
+      "weaponKind": "staff",
+      "variant": "armed",
+      "tier": "starter",
+      "weapon": "staff",
+      "source": "exec-f0242942-05c3-404f-a4c8-cf2bdb17073a.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "bow-starter": {
+      "image": "/assets/characters/skins/base-armed/bow-starter.png",
+      "atlas": "/assets/characters/skins/base-armed/bow-starter.json",
+      "body": "celestial-base",
+      "weaponKind": "bow",
+      "variant": "armed",
+      "tier": "starter",
+      "weapon": "bow",
+      "source": "exec-915e7212-d390-4df0-a96a-92c52417572f.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "staff-crystal": {
+      "image": "/assets/characters/skins/base-armed/staff-crystal.png",
+      "atlas": "/assets/characters/skins/base-armed/staff-crystal.json",
+      "body": "celestial-base",
+      "weaponKind": "staff",
+      "variant": "armed",
+      "tier": "crystal",
+      "weapon": "staff",
+      "source": "exec-b54f020f-1828-477f-b1f8-8ba1b3def93c.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    },
+    "dagger-starter": {
+      "image": "/assets/characters/skins/base-armed/dagger-starter.png",
+      "atlas": "/assets/characters/skins/base-armed/dagger-starter.json",
+      "body": "celestial-base",
+      "weaponKind": "dagger",
+      "variant": "armed",
+      "tier": "starter",
+      "weapon": "dual-daggers",
+      "source": "exec-63f7f990-8d29-40d8-927b-33927e81c728.png",
+      "frames": 36,
+      "animations": [
+        "idle",
+        "walk",
+        "jump",
+        "attack",
+        "skill",
+        "death"
+      ]
+    }
+  }
+}

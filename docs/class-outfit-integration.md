@@ -10,7 +10,7 @@ On first entry with the new concept version, existing class characters adopt the
 
 ## Weapons and animation
 
-`classSkinSheet` in game-data selects by equipped weapon, not by the current map. Each class has an unarmed sheet, a starter armed sheet and two active-island armed sheets (`-armed-woods`, `-armed-crystal`). Woods art matches the Ironwood equipment designs; Crystal art matches cyan crystal/purple gem equipment designs. Rogue holds two matching daggers visually while using the existing single weapon equipment slot and existing damage rules.
+`classSkinSheet` in game-data selects by equipped weapon, not by the current map. The bare Celestial body also selects baked starter/Woods/Crystal sheets for all four weapon types via `baseSkinSheet`. Each class has an unarmed sheet, a starter armed sheet and two active-island armed sheets (`-armed-woods`, `-armed-crystal`). Woods art matches the Ironwood equipment designs; Crystal art matches cyan crystal/purple gem equipment designs. Rogue holds two matching daggers visually while using the existing single weapon equipment slot and existing damage rules.
 
 Climbing, gathering and actual unarmed states use the unarmed class sheet. Gathering tools still follow the server-selected equipped tool, including automatic wooden starters. Armed sheets have baked weapons; extra weapon overlays are hidden. If an armed texture is still loading, the renderer uses the unarmed class body or bare Celestial fallback with a matching weapon overlay until it arrives. Unsupported later-island weapons also use this overlay path rather than displaying an incorrect baked starter weapon.
 

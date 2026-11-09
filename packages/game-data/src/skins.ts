@@ -65,7 +65,7 @@ export function classSkinSheet(
     !Object.hasOwn(CLASS_SKINS, skin) ||
     !canEquipSkin(p.classId, skin)
   )
-    return { key: 'skin-golden-test', path: '/assets/characters/skins/golden-test', armed: false };
+    return baseSkinSheet(p, forceUnarmed);
   const cls = skin as ClassId,
     kind = weaponKind(p.weapon),
     tier = equipmentDefinition(p.weapon)?.tier ?? 'starter';
@@ -77,4 +77,26 @@ export function classSkinSheet(
     ['starter', 'woods', 'crystal'].includes(tier);
   const id = `${cls}-${armed ? 'armed' : 'unarmed'}${armed && tier !== 'starter' ? `-${tier}` : ''}`;
   return { key: `skin-celestial-${id}`, path: `/assets/characters/skins/celestial/${id}`, armed };
+}
+
+/** Base/Civilian bodies can try every weapon before class selection. */
+export function baseSkinSheet(
+  p: { weapon?: string | null; climbing?: boolean; gathering?: unknown },
+  forceUnarmed = false,
+) {
+  const kind = weaponKind(p.weapon),
+    tier = equipmentDefinition(p.weapon)?.tier ?? 'starter';
+  if (
+    forceUnarmed ||
+    p.climbing ||
+    p.gathering ||
+    kind === 'unarmed' ||
+    !['starter', 'woods', 'crystal'].includes(tier)
+  )
+    return { key: 'skin-golden-test', path: '/assets/characters/skins/golden-test', armed: false };
+  return {
+    key: `skin-base-${kind}-${tier}`,
+    path: `/assets/characters/skins/base-armed/${kind}-${tier}`,
+    armed: true,
+  };
 }

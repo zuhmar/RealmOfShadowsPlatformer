@@ -1,3 +1,4 @@
+import { baseSkinSheet } from '@ros/game-data';
 import { useEffect, useState } from 'react';
 import type { SkinId } from '@ros/game-data';
 import { assetUrl } from './assets';
@@ -18,16 +19,18 @@ export function ClassSprite({
   appearance,
   outfit = 'sage',
   armedPreview = false,
+  weapon,
 }: {
   skin: SkinId | null;
   appearance: string;
   outfit?: string;
   armedPreview?: boolean;
+  weapon?: string | null;
 }) {
   const path =
     skin && skin !== 'golden-test'
       ? `/assets/characters/skins/celestial/${skin}-${armedPreview ? 'armed' : 'unarmed'}`
-      : '/assets/characters/skins/golden-test';
+      : baseSkinSheet({ weapon }, !armedPreview).path;
   const [atlas, setAtlas] = useState<SkinAtlas | null>(null);
   useEffect(() => {
     let active = true;

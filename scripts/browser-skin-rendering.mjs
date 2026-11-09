@@ -207,7 +207,9 @@ try {
       (v) =>
         !v.sprite.visible &&
         v.skinVisual.container.visible &&
-        v.skinVisual.body.texture.key === 'skin-golden-test',
+        v.skinVisual.body.texture.key ===
+          `skin-base-${v.player.weapon.replace('crystal-', '')}-crystal` &&
+        !v.skinVisual.item.visible,
     ),
   );
   expect(errors).toEqual([]);

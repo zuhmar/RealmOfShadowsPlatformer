@@ -117,7 +117,13 @@ export function ClassCarousel({
           </button>
           <div className="class-carousel-content" key={id ?? 'civilian'}>
             <div className={`class-preview class-preview-${id ?? 'civilian'}`}>
-              <ClassSprite armedPreview skin={id} appearance={p.appearance} outfit={p.outfit} />
+              <ClassSprite
+                armedPreview
+                skin={id}
+                appearance={p.appearance}
+                outfit={p.outfit}
+                weapon={id === 'golden-test' ? p.weapon : undefined}
+              />
             </div>
             <h3>{mode === 'class' ? path?.name : (skin?.name ?? 'Original adventurer')}</h3>
             <p>
