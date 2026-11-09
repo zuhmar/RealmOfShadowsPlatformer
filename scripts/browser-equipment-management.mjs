@@ -23,7 +23,11 @@ const leave = async () => {
   await expect(page.locator('.site-header')).toBeVisible();
 };
 const openBag = async () => page.getByRole('button', { name: 'Bag', exact: true }).click();
-const close = async () => page.getByRole('button', { name: 'Close bag', exact: true }).click();
+const close = async () => {
+  if (await page.getByRole('button', { name: 'Close item details', exact: true }).count())
+    await page.getByRole('button', { name: 'Close item details', exact: true }).click();
+  await page.getByRole('button', { name: 'Close bag', exact: true }).click();
+};
 try {
   await page.goto('http://localhost:5173');
   await page.getByRole('button', { name: 'Play as guest' }).click();
@@ -97,16 +101,20 @@ try {
     common = page.locator('.gear-card[data-rarity="Common"]');
   await page.getByRole('button', { name: 'Chest: Ironwood Chestplate', exact: true }).click();
   await expect(common.getByRole('button', { name: /Sell to Bram/ })).toBeDisabled();
+  if (await page.getByRole('button', { name: 'Close item details', exact: true }).count())
+    await page.getByRole('button', { name: 'Close item details', exact: true }).click();
   await page.getByRole('button', { name: 'Ironwood Chestplate, 1, Rare', exact: true }).click();
   await expect(rare.getByRole('button', { name: /Sell to Bram/ })).toBeDisabled();
   await expect(rare.getByLabel('Compare Ironwood Chestplate')).toContainText(
     'Maximum health −20.0',
   );
   await expect(rare.getByLabel('Compare Ironwood Chestplate')).toContainText('Crit chance +10.0%');
+  await page.getByRole('button', { name: 'Close item details', exact: true }).click();
   await page
     .getByRole('button', { name: 'Ironwood Helmet, 1, Epic unidentified', exact: true })
     .click();
   await expect(page.locator('.gear-card[data-rarity="Epic"] .gear-comparison')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Close item details', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Chest: Ironwood Chestplate', exact: true }),
   ).toBeVisible();
@@ -119,6 +127,8 @@ try {
   await page.getByRole('button', { name: /Continue adventure/ }).click();
   await enter();
   await openBag();
+  if (await page.getByRole('button', { name: 'Close item details', exact: true }).count())
+    await page.getByRole('button', { name: 'Close item details', exact: true }).click();
   await page.getByRole('button', { name: 'Ironwood Chestplate, 1, Rare', exact: true }).click();
   await rare.getByRole('button', { name: 'Sell to Bram · 25 gold', exact: true }).click();
   await rare.getByRole('button', { name: 'Cancel sale', exact: true }).click();
@@ -127,6 +137,8 @@ try {
   await rare.getByRole('button', { name: 'Confirm sale · 25 gold', exact: true }).click();
   await expect(rare).toHaveCount(0);
   await expect(page.locator('.bag-heading')).toContainText('125 gold');
+  if (await page.getByRole('button', { name: 'Close item details', exact: true }).count())
+    await page.getByRole('button', { name: 'Close item details', exact: true }).click();
   await page.getByRole('button', { name: 'Chest: Ironwood Chestplate', exact: true }).click();
   await expect(common.getByRole('button', { name: /Sell to Bram/ })).toBeDisabled();
   await page.setViewportSize({ width: 1440, height: 900 });

@@ -107,6 +107,14 @@ try {
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
   await page.getByRole('button', { name: 'Bag', exact: true }).click();
   const bag = page.getByRole('dialog', { name: 'Your bag' });
+  const closeItem = () =>
+    page.getByRole('button', { name: 'Close item details', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Item details' })).toHaveCount(0);
+  await bag.getByRole('button', { name: 'Oak Logs, 1234', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Item details' })).toContainText('Oak Logs');
+  await page.keyboard.press('Escape');
+  await expect(bag).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Item details' })).toHaveCount(0);
   await expect(bag).toBeVisible();
   await expect(bag.locator('.bag-player [aria-busy="false"]')).toBeVisible();
   await expect(bag.locator('.bag-player image')).toHaveAttribute('href', /optimized|sword-crystal/);
@@ -120,6 +128,7 @@ try {
   ).toBeVisible();
   await bag.getByRole('button', { name: 'Ironwood Helmet, 2, Common', exact: true }).click();
   await bag.getByRole('button', { name: 'Equip Ironwood Helmet', exact: true }).click();
+  await closeItem();
   await expect(
     bag.getByRole('button', { name: 'Head: Ironwood Helmet', exact: true }),
   ).toBeVisible();
@@ -133,8 +142,11 @@ try {
   await expect(
     bag.getByRole('button', { name: 'Equip Ironwood Boots', exact: true }),
   ).toBeVisible();
+  await page.screenshot({ path: 'artifacts/bag-item-popup-desktop.png' });
+  await closeItem();
   await bag.getByRole('button', { name: 'Forest Guardian Ring, 2', exact: true }).click();
   await bag.getByRole('button', { name: 'Equip Forest Guardian Ring', exact: true }).click();
+  await closeItem();
   await expect(
     bag.getByRole('button', { name: 'Accessory: Forest Guardian Ring', exact: true }),
   ).toBeVisible();
@@ -143,12 +155,15 @@ try {
   await page.screenshot({ path: 'artifacts/bag-mobile.png' });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await bag.getByRole('button', { name: 'Greenleaf Health Potion, 3', exact: true }).click();
+  await page.screenshot({ path: 'artifacts/bag-item-popup-mobile.png' });
   await bag.getByRole('button', { name: 'Drink Greenleaf Health Potion', exact: true }).click();
+  await closeItem();
   await expect(
     bag.getByRole('button', { name: 'Greenleaf Health Potion, 2', exact: true }),
   ).toBeVisible();
   await bag.getByRole('button', { name: 'Elderwood Bow, 4', exact: true }).click();
   await bag.getByRole('button', { name: 'Equip Elderwood Bow', exact: true }).click();
+  await closeItem();
   await expect(
     bag.getByRole('button', { name: 'Weapon: Elderwood Bow', exact: true }),
   ).toBeVisible();
@@ -173,7 +188,7 @@ try {
   expect(saved.data.gear.length).toBe(3);
   expect(saved.data.accessory).toBe('forest-guardian-ring');
   console.log(
-    'PASS: open bag layout, actual player/weapon sprite, six equipped slots, stacked materials/gear, equip, identify, sell, consume, accessory, keyboard close, desktop/mobile and saved state.',
+    'PASS: open bag layout, actual player/weapon sprite, six equipped slots, stacked materials/gear, equip, identify, sell, consume, accessory, separate item popups, nested Escape closing, desktop/mobile and saved state.',
   );
 } finally {
   await browser.close();

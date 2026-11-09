@@ -3698,3 +3698,55 @@ footer {
     right: 3px;
   }
 }
+
+.bag-item-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #08031180;
+  backdrop-filter: blur(3px);
+}
+.bag-item-dialog {
+  position: relative;
+  width: min(100%, 440px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid #a878d0;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #29183cf5, #140b23fc);
+  box-shadow: 0 12px 50px #080411aa;
+  outline: none;
+}
+.bag-item-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 1;
+  padding: 2px;
+}
+.bag-item-icon {
+  display: flex;
+  justify-content: center;
+  margin: 0 40px 12px;
+}
+.bag-item-icon svg {
+  width: 56px;
+  height: 56px;
+}
+.bag-item-dialog .gear-card h4 {
+  margin: 8px 0;
+}
+.app.playing .bag-item-dialog button:not(.bag-item-close) {
+  padding: 8px 12px;
+  border: 1px solid #9870ba;
+  border-radius: 8px;
+  background: #42265b;
+}
+.app.playing .bag-item-dialog button:disabled {
+  opacity: 0.45;
+}
