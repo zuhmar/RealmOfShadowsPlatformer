@@ -67,6 +67,11 @@ try {
   await expect(
     page.getByRole('heading', { name: 'Small plot · Unbuilt', exact: true }),
   ).toBeVisible();
+  await expect(page.getByLabel('Next house construction step')).toContainText('Plot claimed');
+  await expect(page.getByRole('button', { name: 'Build Foundation', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.screenshot({ path: 'artifacts/claimed-housing-plot.png' });
+  await page.getByRole('button', { name: 'Housing', exact: true }).click();
   for (const stage of ['Foundation', 'Walls', 'Finished']) {
     await page.waitForTimeout(850);
     await page.getByRole('button', { name: `Build ${stage}`, exact: true }).click();
@@ -74,14 +79,26 @@ try {
       page.getByRole('heading', { name: `Small plot · ${stage}`, exact: true }),
     ).toBeVisible();
   }
-  const table = page
-    .locator('.housing-options article')
-    .filter({ has: page.getByRole('heading', { name: 'Oak Table', exact: true }) });
+  await page.getByRole('button', { name: 'Craft', exact: true }).click();
+  await page.getByRole('button', { name: /^Oak Table/ }).click();
+  const table = page.getByLabel('Selected Carpentry recipe');
+  await page.getByLabel('Craft quantity').fill('3');
+  await expect(table).toContainText('15 Oak Plank');
   await page.waitForTimeout(850);
-  await table.getByRole('button', { name: 'Craft', exact: true }).click();
-  await expect(table).toContainText('1 owned');
+  await page.getByRole('button', { name: 'Craft 3 × Oak Table', exact: true }).click();
+  await expect(table).toContainText('3 owned');
+  await page.screenshot({ path: 'artifacts/housing-batch-crafting-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: 'artifacts/housing-batch-crafting-mobile.png' });
+  expect(
+    await page
+      .locator('.housing-open-modal')
+      .evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).toBe('rgba(0, 0, 0, 0)');
+  await page.setViewportSize({ width: 1200, height: 850 });
+  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
   await page.waitForTimeout(850);
-  await table.getByRole('button', { name: 'Place at 0', exact: true }).click();
+  await page.getByRole('button', { name: 'Place Oak Table at 0', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Return to bag', exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/housing-panel-desktop.png' });
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();

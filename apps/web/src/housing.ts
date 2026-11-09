@@ -11,7 +11,17 @@ export class HousingScenery {
   private signature = '';
   constructor(private scene: Phaser.Scene) {}
   update(p: Player | undefined) {
-    const view = p?.housingView,
+    const view =
+        p?.housingView ??
+        (p?.housing
+          ? {
+              ownerId: p.id,
+              ownerName: p.name,
+              size: p.housing.size,
+              stage: p.housing.stage,
+              furniture: p.housing.furniture,
+            }
+          : undefined),
       signature = JSON.stringify(view ?? null);
     if (signature === this.signature) return;
     this.signature = signature;
@@ -39,6 +49,29 @@ export class HousingScenery {
     this.objects.push(label);
     if (!view) return;
     const width = HOUSING_PLOTS[view.size].width;
+    if (view.stage === 0) {
+      const markers = this.scene.add.graphics().setDepth(3).setName('housing-plot-markers');
+      markers
+        .lineStyle(2, 0xe4bb6b, 0.8)
+        .lineBetween(center - width / 2, y - 4, center + width / 2, y - 4);
+      for (const x of [center - width / 2, center + width / 2]) {
+        markers.fillStyle(0x5c3826).fillRect(x - 5, y - 30, 10, 30);
+        markers.lineStyle(2, 0x26182a).strokeRect(x - 5, y - 30, 10, 30);
+        markers.fillStyle(0xf4cd7c).fillTriangle(x, y - 30, x + 24, y - 23, x, y - 16);
+      }
+      const hint = this.scene.add
+        .text(center, y + 38, 'Plot claimed · Build Foundation in Home', {
+          fontFamily: 'Georgia',
+          fontSize: '14px',
+          color: '#ffe9af',
+          stroke: '#24152f',
+          strokeThickness: 4,
+        })
+        .setOrigin(0.5, 0)
+        .setDepth(6)
+        .setName('housing-build-hint');
+      this.objects.push(markers, hint);
+    }
     const add = (
       id: string,
       x: number,

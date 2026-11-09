@@ -107,3 +107,30 @@ test('houses and invites stay private, guests see only the invited house and rev
   assert.equal(housingView(p, guest), undefined);
   assert.ok(housingView(p, p));
 });
+
+test('batch Carpentry conserves materials, matches single-craft XP and rejects invalid or unaffordable quantities atomically', () => {
+  const p = owner();
+  p.carpentry = { level: 10, xp: 0 };
+  const singles = structuredClone(p);
+  changeHousing(p, { action: 'craft', id: 'oak-chest', quantity: 5 });
+  for (let i = 0; i < 5; i++) changeHousing(singles, { action: 'craft', id: 'oak-chest' });
+  assert.equal(p.inventory['oak-chest'], 5);
+  assert.equal(p.inventory['oak-plank'], 1960);
+  assert.equal(p.inventory['iron-bar'], 95);
+  assert.deepEqual(p.inventory, singles.inventory);
+  assert.deepEqual(p.carpentry, singles.carpentry);
+  for (const quantity of [0, -1, 1.5, 1001, NaN, Infinity]) {
+    const before = structuredClone(p);
+    assert.throws(
+      () => changeHousing(p, { action: 'craft', id: 'oak-chest', quantity }),
+      /quantity/,
+    );
+    assert.deepEqual(p, before);
+  }
+  const before = structuredClone(p);
+  assert.throws(
+    () => changeHousing(p, { action: 'craft', id: 'oak-chest', quantity: 1000 }),
+    /materials/,
+  );
+  assert.deepEqual(p, before);
+});

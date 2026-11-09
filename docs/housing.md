@@ -23,3 +23,11 @@ Housing actions are serialized with other durable room actions. A locked charact
 `assets/ui/housing.{png,json}` contains Small/Medium/Large houses, a construction frame, table, chair, bed and chest. Generated original: `/workspace/generated_images/exec-055bfbe9-e448-419a-a963-dbafec962d2d.png`. PNG bytes are unchanged; atlas bounds isolate the silhouettes. Foundation uses the construction sprite's masonry crop at runtime. Rendering preserves proportions. UI delivery WebP is lossless.
 
 Checks: `npm test`, `npm run typecheck`, `npm run build`, `npm run test:integration`, and `node --env-file-if-exists=apps/server/.env scripts/browser-housing.mjs`. Housing tests cover costs, levels, discovery, upgrades, inventory conservation, invalid/overlapping placement, remote snapshot privacy, unauthorized visits/edits, revocation, saves/re-entry and concurrent duplicate writes. The browser journey builds through the real UI, crafts/places furniture, upgrades, checks mobile overflow and confirms saved state.
+
+## Plot feedback and batch crafting
+
+Claimed but unbuilt plots display survey stakes, a boundary line and a Build Foundation hint, including existing saved plots. Build is separate from claiming: the menu puts the next construction stage before plot upgrades. The renderer can derive the owner’s view from their private saved housing data while waiting for a view payload. No materials or ownership are reset.
+
+The housing popup has an open background and Build/Craft/Decorate/Guests tabs. Crafting uses a recipe catalog, selected recipe details, quantity input, 1/5/10/Max presets, total ingredients and total XP. Mobile uses a horizontally scrolling recipe strip. Each batch is limited to 1–1000; server validation checks the full multiplied cost before deducting anything, then adds all outputs and XP in one transaction. The default omitted quantity remains one for older clients. Placement remains one furniture item at a time.
+
+`browser-plot-feedback.mjs` verifies visible stage-zero markers and foundation replacement; the live housing journey checks three-item crafting and the open desktop/mobile layout. Housing unit tests compare batch inventory/XP with repeated single crafts, reject invalid/unaffordable quantities without mutations, and the concurrent transaction test verifies only one batch is charged.

@@ -676,7 +676,7 @@ export class MapRoom extends Room {
   housing(c: Client, value: unknown) {
     const p = this.player(c);
     if (!p || !this.rate(c, 100) || !value || typeof value !== 'object') return;
-    const v = value as { action?: unknown; id?: unknown; x?: unknown };
+    const v = value as { action?: unknown; id?: unknown; x?: unknown; quantity?: unknown };
     if (!nearHousing(p)) {
       c.send('notice', 'Climb to the housing platform in central Elderwood.');
       return;
@@ -712,7 +712,16 @@ export class MapRoom extends Room {
         p.carpentry = next.carpentry;
         p.inventory = next.inventory;
         p.housingRevision = next.housingRevision;
-        c.send('notice', 'Housing saved.');
+        c.send(
+          'notice',
+          v.action === 'plot'
+            ? 'Plot claimed! Next, build the foundation from Home.'
+            : v.action === 'build'
+              ? p.housing?.stage === 3
+                ? 'Your house is complete! You can now place furniture.'
+                : 'Construction saved. Continue with the next house stage in Home.'
+              : 'Housing saved.',
+        );
       });
     this.questTasks.set(p.id, task);
     this.saves = task.catch(() => {});

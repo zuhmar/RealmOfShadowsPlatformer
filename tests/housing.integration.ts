@@ -109,14 +109,14 @@ test('private houses persist atomically; invitations, visits and revocation are 
     const fresh = (await db.character.findUniqueOrThrow({ where: { id: a.p.id } }))
       .data as unknown as Player;
     const results = await Promise.allSettled([
-      persistHousing(fresh, { action: 'craft', id: 'oak-chair' }),
-      persistHousing(fresh, { action: 'craft', id: 'oak-chair' }),
+      persistHousing(fresh, { action: 'craft', id: 'oak-chair', quantity: 3 }),
+      persistHousing(fresh, { action: 'craft', id: 'oak-chair', quantity: 3 }),
     ]);
     assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
     const after = (await db.character.findUniqueOrThrow({ where: { id: a.p.id } }))
       .data as unknown as Player;
-    assert.equal(after.inventory['oak-chair'], 1);
-    assert.equal(after.inventory['oak-plank'], fresh.inventory['oak-plank'] - 3);
+    assert.equal(after.inventory['oak-chair'], 3);
+    assert.equal(after.inventory['oak-plank'], fresh.inventory['oak-plank'] - 9);
   } finally {
     for (const room of rooms)
       try {

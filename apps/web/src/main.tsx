@@ -1286,8 +1286,8 @@ function App() {
         />
       )}
       {panel && panel !== 'map' && panel !== 'inventory' && p && (
-        <div className="modal-backdrop">
-          <section className="modal wide">
+        <div className={`modal-backdrop ${panel === 'housing' ? 'housing-open-backdrop' : ''}`}>
+          <section className={`modal wide ${panel === 'housing' ? 'housing-open-modal' : ''}`}>
             <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
               <ControlIcon name="close" />
             </button>

@@ -53,7 +53,10 @@ function train(p: Player, xp: number) {
   }
   if (s.level >= 100) s.xp = 0;
 }
-export function changeHousing(p: Player, value: { action?: unknown; id?: unknown; x?: unknown }) {
+export function changeHousing(
+  p: Player,
+  value: { action?: unknown; id?: unknown; x?: unknown; quantity?: unknown },
+) {
   if (!nearHousing(p)) throw new Error('Climb to the housing platform in central Elderwood.');
   const id = typeof value.id === 'string' ? value.id : '';
   const level = p.carpentry?.level ?? 1;
@@ -86,9 +89,12 @@ export function changeHousing(p: Player, value: { action?: unknown; id?: unknown
     if (!r || !(p.unlockedRecipes ?? []).includes(id))
       throw new Error('Find this Carpentry recipe on Whispering Woods monsters.');
     if (level < r.level) throw new Error(`Requires Carpentry level ${r.level}.`);
-    spend(p, r.cost);
-    p.inventory[id] = (p.inventory[id] ?? 0) + 1;
-    train(p, r.xp);
+    const quantity = value.quantity === undefined ? 1 : Number(value.quantity);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000)
+      throw new Error('Choose a quantity from 1 to 1000.');
+    spend(p, Object.fromEntries(Object.entries(r.cost).map(([item, n]) => [item, n * quantity])));
+    p.inventory[id] = (p.inventory[id] ?? 0) + quantity;
+    train(p, r.xp * quantity);
   } else if (value.action === 'place') {
     const h = p.housing,
       r = CARPENTRY_RECIPES.find((r) => r.id === id);

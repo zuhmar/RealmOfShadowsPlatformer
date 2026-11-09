@@ -5,7 +5,6 @@ import {
   CARPENTRY_RECIPES,
   houseStageCost,
   itemDefinition,
-  type PlotSize,
 } from '@ros/game-data';
 import { nearHousing, type Player } from '@ros/shared';
 import { ItemIcon } from './ItemIcon';
@@ -22,45 +21,89 @@ export function HousingPanel({
   players: Player[];
   send: (type: string, v: unknown) => void;
 }) {
-  const [position, setPosition] = useState(0),
+  const [tab, setTab] = useState('Build'),
+    [recipe, setRecipe] = useState('oak-plank'),
+    [quantity, setQuantity] = useState(1),
+    [position, setPosition] = useState(0),
     [pending, setPending] = useState(false);
-  const near = nearHousing(p),
+  const h = p.housing,
+    level = p.carpentry?.level ?? 1,
+    near = nearHousing(p),
     view = p.housingView,
     visiting = !!view && view.ownerId !== p.id;
   const act = (action: string, id?: string, x?: number) => {
     if (pending) return;
     setPending(true);
-    send('housing', { action, id, x });
+    send('housing', { action, id, x, ...(action === 'craft' ? { quantity } : {}) });
     setTimeout(() => setPending(false), 800);
   };
-  const h = p.housing,
-    level = p.carpentry?.level ?? 1;
+  const r = CARPENTRY_RECIPES.find((r) => r.id === recipe)!,
+    known = (p.unlockedRecipes ?? []).includes(r.id),
+    maximum = Math.min(
+      1000,
+      ...Object.entries(r.cost).map(([id, n]) => Math.floor((p.inventory[id] ?? 0) / n)),
+    ),
+    total = Object.fromEntries(Object.entries(r.cost).map(([id, n]) => [id, n * quantity]));
   return (
     <section className="housing-panel">
       <p>
-        Climb the central village ladder to the housing platform. Your house is private. Invitations
-        let other adventurers visit your plot while you are together in this village.
-      </p>
-      <p>
         <b>Carpentry Lv. {level}</b> ·{' '}
-        {near ? 'At the housing platform' : 'Build and visit from the housing platform'}
+        {near ? 'At the housing platform' : 'Climb to the central village housing platform'}
       </p>
-      {visiting ? (
-        <>
-          <h3>
-            Visiting {view.ownerName} · {HOUSE_STAGES[view.stage]}
-          </h3>
+      {visiting && (
+        <p>
+          Visiting {view.ownerName} · {HOUSE_STAGES[view.stage]}{' '}
           <button disabled={!near || pending} onClick={() => act('home')}>
             Return to my plot
           </button>
-        </>
-      ) : (
+        </p>
+      )}
+      <nav className="housing-tabs" aria-label="Housing sections">
+        {['Build', 'Craft', 'Decorate', 'Guests'].map((t) => (
+          <button key={t} aria-pressed={tab === t} onClick={() => setTab(t)}>
+            {t}
+          </button>
+        ))}
+      </nav>
+      {!visiting && tab === 'Build' && (
         <>
           <h3>
             {h
               ? `${HOUSING_PLOTS[h.size].name} plot · ${HOUSE_STAGES[h.stage]}`
               : 'Choose your plot'}
           </h3>
+          {h && h.stage < 3 && (
+            <section className="housing-next-step" aria-label="Next house construction step">
+              <h4>
+                {h.stage === 0
+                  ? 'Plot claimed — build your house next'
+                  : 'Continue building your house'}
+              </h4>
+              <p>
+                Your plot is reserved in the middle of this platform, to the right of the workbench.
+                Build its foundation, walls, and roof to complete your home.
+              </p>
+              <p>
+                Next: {HOUSE_STAGES[h.stage + 1]} · {costs(houseStageCost(h.size, h.stage))}
+              </p>
+              <button
+                disabled={
+                  !near ||
+                  pending ||
+                  !Object.entries(houseStageCost(h.size, h.stage)).every(
+                    ([id, n]) => (p.inventory[id] ?? 0) >= n,
+                  )
+                }
+                onClick={() => act('build')}
+              >
+                Build {HOUSE_STAGES[h.stage + 1]}
+              </button>
+              <button onClick={() => setTab('Craft')}>Craft building materials</button>
+            </section>
+          )}
+          {h?.stage === 3 && (
+            <p>Your house is complete. Craft furniture, then place it in Decorate.</p>
+          )}
           <div className="housing-options">
             {Object.entries(HOUSING_PLOTS).map(([id, d]) => (
               <article key={id}>
@@ -79,6 +122,8 @@ export function HousingPanel({
                     !near ||
                     pending ||
                     level < d.level ||
+                    !(p.unlockedRecipes ?? []).includes(`house-${id}`) ||
+                    !Object.entries(d.cost).every(([item, n]) => (p.inventory[item] ?? 0) >= n) ||
                     (!!h && d.width <= HOUSING_PLOTS[h.size].width)
                   }
                   onClick={() => act('plot', id)}
@@ -88,47 +133,89 @@ export function HousingPanel({
               </article>
             ))}
           </div>
-          {h && h.stage < 3 && (
-            <p>
-              <button disabled={!near || pending} onClick={() => act('build')}>
-                Build {HOUSE_STAGES[h.stage + 1]}
-              </button>{' '}
-              · {costs(houseStageCost(h.size, h.stage))}
-            </p>
-          )}
-          <h3>Carpentry workbench</h3>
-          <p>
-            Find recipes on Whispering Woods monsters. Craft planks, build your house, then craft
-            furniture. House upgrades preserve furniture. Furniture is decorative in this first set.
-          </p>
-          <div className="housing-options">
-            {CARPENTRY_RECIPES.map((r) => (
-              <article key={r.id}>
-                <ItemIcon id={r.id} />
-                <h4>{r.name}</h4>
-                <p>
-                  Lv. {r.level} · {costs(r.cost)} · {p.inventory[r.id] ?? 0} owned
-                </p>
-                <button
-                  disabled={
-                    !near || pending || level < r.level || !(p.unlockedRecipes ?? []).includes(r.id)
-                  }
-                  onClick={() => act('craft', r.id)}
-                >
-                  {(p.unlockedRecipes ?? []).includes(r.id) ? 'Craft' : 'Find recipe'}
-                </button>
-                {r.width > 0 && (
-                  <button
-                    disabled={!near || pending || h?.stage !== 3 || !(p.inventory[r.id] > 0)}
-                    onClick={() => act('place', r.id, position)}
-                  >
-                    Place at {position}
-                  </button>
-                )}
-              </article>
+        </>
+      )}
+      {!visiting && tab === 'Craft' && (
+        <div className="carpentry-crafting">
+          <div className="carpentry-catalog" aria-label="Carpentry recipes">
+            {CARPENTRY_RECIPES.map((def) => (
+              <button
+                key={def.id}
+                aria-pressed={r.id === def.id}
+                onClick={() => {
+                  setRecipe(def.id);
+                  setQuantity(1);
+                }}
+              >
+                <ItemIcon id={def.id} />
+                <b>{def.name}</b>
+                <small>
+                  {(p.unlockedRecipes ?? []).includes(def.id)
+                    ? `Lv. ${def.level} · ${p.inventory[def.id] ?? 0} owned`
+                    : 'Find recipe in Whispering Woods'}
+                </small>
+              </button>
             ))}
           </div>
-          {h && (
+          <section className="carpentry-recipe-detail" aria-label="Selected Carpentry recipe">
+            <ItemIcon id={r.id} />
+            <h3>{r.name}</h3>
+            <p>
+              Carpentry Lv. {r.level} · {p.inventory[r.id] ?? 0} owned
+            </p>
+            <label>
+              Quantity
+              <input
+                type="number"
+                aria-label="Craft quantity"
+                min="1"
+                max="1000"
+                value={quantity}
+                onChange={(e) =>
+                  setQuantity(Math.max(1, Math.min(1000, Math.floor(Number(e.target.value) || 1))))
+                }
+              />
+            </label>
+            <div className="craft-quantity-presets">
+              {[1, 5, 10].map((n) => (
+                <button key={n} onClick={() => setQuantity(n)}>
+                  {n}
+                </button>
+              ))}
+              <button disabled={maximum < 1} onClick={() => setQuantity(maximum)}>
+                Max ({maximum})
+              </button>
+            </div>
+            <ul className="craft-total-cost">
+              {Object.entries(total).map(([id, n]) => (
+                <li key={id}>
+                  <ItemIcon id={id} />
+                  <span>{itemDefinition(id)?.name ?? id}</span>
+                  <b className={(p.inventory[id] ?? 0) < n ? 'stat-loss' : ''}>
+                    {p.inventory[id] ?? 0} / {n}
+                  </b>
+                </li>
+              ))}
+            </ul>
+            <p>
+              Total: {costs(total)} · {r.xp * quantity} Carpentry XP
+            </p>
+            <button
+              className="carpentry-craft-action"
+              disabled={!near || pending || !known || level < r.level || quantity > maximum}
+              onClick={() => act('craft', r.id)}
+            >
+              {!known ? 'Find recipe' : `Craft ${quantity} × ${r.name}`}
+            </button>
+          </section>
+        </div>
+      )}
+      {!visiting && tab === 'Decorate' && (
+        <>
+          <p>
+            Craft furniture, then place it along your plot. Removing a piece returns it to your bag.
+          </p>
+          {h ? (
             <>
               <label>
                 Furniture position: {position}
@@ -142,10 +229,21 @@ export function HousingPanel({
                   onChange={(e) => setPosition(Number(e.target.value))}
                 />
               </label>
-              <p>
-                Positions run left to right from the plot’s center. Leave room between pieces.
-                Remove a piece to recover it and place it elsewhere.
-              </p>
+              <div className="housing-options">
+                {CARPENTRY_RECIPES.filter((r) => r.width > 0).map((r) => (
+                  <article key={r.id}>
+                    <ItemIcon id={r.id} />
+                    <h4>{r.name}</h4>
+                    <p>{p.inventory[r.id] ?? 0} owned</p>
+                    <button
+                      disabled={!near || pending || h.stage !== 3 || !(p.inventory[r.id] > 0)}
+                      onClick={() => act('place', r.id, position)}
+                    >
+                      Place {r.name} at {position}
+                    </button>
+                  </article>
+                ))}
+              </div>
               {h.furniture.map((f) => (
                 <p key={f.id}>
                   {itemDefinition(f.item)?.name} · {f.x}{' '}
@@ -154,6 +252,20 @@ export function HousingPanel({
                   </button>
                 </p>
               ))}
+            </>
+          ) : (
+            <p>Claim a plot and finish building your house first.</p>
+          )}
+        </>
+      )}
+      {tab === 'Guests' && (
+        <>
+          <p>
+            Your house is private. Invited guests can visit while you are together in this village;
+            only you can build and decorate.
+          </p>
+          {h && !visiting && (
+            <>
               <h3>Invited guests</h3>
               {h.invited.map((id) => (
                 <p key={id}>
@@ -165,30 +277,27 @@ export function HousingPanel({
               ))}
             </>
           )}
+          <h3>Village adventurers</h3>
+          {players
+            .filter((other) => other.id !== p.id)
+            .map((other) => (
+              <p key={other.id}>
+                {other.name}{' '}
+                <button disabled={!near || pending} onClick={() => act('visit', other.id)}>
+                  Visit plot
+                </button>
+                {h && !visiting && (
+                  <button
+                    disabled={!near || pending || h.invited.includes(other.id)}
+                    onClick={() => act('invite', other.id)}
+                  >
+                    Invite to my plot
+                  </button>
+                )}
+              </p>
+            ))}
         </>
       )}
-      <h3>Village adventurers</h3>
-      <p>
-        Invited guests can select Visit. Guests cannot build, remove furniture, or invite others.
-      </p>
-      {players
-        .filter((other) => other.id !== p.id)
-        .map((other) => (
-          <p key={other.id}>
-            {other.name}{' '}
-            <button disabled={!near || pending} onClick={() => act('visit', other.id)}>
-              Visit plot
-            </button>
-            {h && !visiting && (
-              <button
-                disabled={!near || pending || h.invited.includes(other.id)}
-                onClick={() => act('invite', other.id)}
-              >
-                Invite to my plot
-              </button>
-            )}
-          </p>
-        ))}
     </section>
   );
 }
