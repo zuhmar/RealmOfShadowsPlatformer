@@ -119,12 +119,13 @@ npm run publish:once -w @ros/discord-bot -- --apply
 ```
 
 The first command previews the operation without connecting. Applying uploads
-`welcome-banner.png` and `server-icon.png` to #welcome, then the full 72-card
+`welcome-banner.png` to #welcome, then the full 72-card
 library to #showcase with section headings. It posts without member/role pings,
 spaces uploads, and verifies plain text plus a normal downloadable image attachment
 for every card afterward. It repairs older embed-only posts in place so they
 remain visible when a member hides link embeds. Marked posts
 are reused on retry after scanning channel history; a scan limit stops the run
-rather than guessing and duplicating posts. This command posts the icon as an
-image; it does not change the Discord server icon. It requires the same private
+rather than guessing and duplicating posts. The icon is omitted by default once server branding is configured. To explicitly
+post the icon file again, append `--include-icon`; this does not change the
+Discord server icon. It requires the same private
 credentials as one-time setup and no permanent hosting.

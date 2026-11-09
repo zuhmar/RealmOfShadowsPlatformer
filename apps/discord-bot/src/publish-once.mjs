@@ -14,6 +14,7 @@ import { hasDirectPublishedImage } from './publish-verification.mjs';
 
 const root = new URL('../../../docs/community/discord/', import.meta.url);
 const cards = await loadCatalog();
+const includeIcon = process.argv.includes('--include-icon');
 const groups = [
   ['features', 'Feature previews'],
   ['classes', 'Class spotlights'],
@@ -22,7 +23,7 @@ const groups = [
 ];
 if (!process.argv.includes('--apply')) {
   console.log(
-    `Preview: post welcome banner and icon in #welcome, then ${cards.length} cards in #showcase. Existing marked posts are reused. No role or channel changes.`,
+    `Preview: post welcome banner${includeIcon ? ' and icon' : ''} in #welcome, then ${cards.length} cards in #showcase. Existing marked posts are reused. No role or channel changes.`,
   );
 } else {
   const {
@@ -131,13 +132,15 @@ if (!process.argv.includes('--apply')) {
         welcomeText,
         paths[1],
       );
-      const icon = await post(
-        welcome,
-        'server-icon-v1',
-        'Realm of Shadows — community icon',
-        'The server icon artwork. Open the image to save it at full size.',
-        paths[0],
-      );
+      const icon = includeIcon
+        ? await post(
+            welcome,
+            'server-icon-v1',
+            'Realm of Shadows — community icon',
+            'The server icon artwork. Open the image to save it at full size.',
+            paths[0],
+          )
+        : null;
       const intro = await post(
         showcase,
         'library-intro-v1',
@@ -179,7 +182,7 @@ if (!process.argv.includes('--apply')) {
       const welcomeVerified = await markers(welcome);
       if (
         !hasDirectPublishedImage(welcomeVerified.get('ros:publish:welcome-banner-v1')) ||
-        !hasDirectPublishedImage(welcomeVerified.get('ros:publish:server-icon-v1'))
+        (includeIcon && !hasDirectPublishedImage(welcomeVerified.get('ros:publish:server-icon-v1')))
       )
         throw new Error('Welcome artwork did not verify');
       console.log(
@@ -190,7 +193,7 @@ if (!process.argv.includes('--apply')) {
             repairedPosts: repaired,
             reusedPosts: reused,
             welcome: banner.url,
-            icon: icon.url,
+            icon: icon?.url ?? null,
             showcase: intro.url,
             serverIconChanged: false,
           },
