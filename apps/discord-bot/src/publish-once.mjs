@@ -10,6 +10,7 @@ import { stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { loadCatalog, selectCard } from './catalog.mjs';
+import { hasPublishedImage } from './publish-verification.mjs';
 
 const root = new URL('../../../docs/community/discord/', import.meta.url);
 const cards = await loadCatalog();
@@ -173,13 +174,13 @@ if (!process.argv.includes('--apply')) {
       // Verify the remote channel history independently after the upload run.
       const verified = await markers(showcase);
       const missing = cards.filter(
-        (c) => !verified.get('ros:publish:card-' + c.id + '-v1')?.attachments.size,
+        (c) => !hasPublishedImage(verified.get('ros:publish:card-' + c.id + '-v1'), showcase.id),
       );
       if (missing.length) throw new Error('Some remote card attachments did not verify');
       const welcomeVerified = await markers(welcome);
       if (
-        !welcomeVerified.get('ros:publish:welcome-banner-v1')?.attachments.size ||
-        !welcomeVerified.get('ros:publish:server-icon-v1')?.attachments.size
+        !hasPublishedImage(welcomeVerified.get('ros:publish:welcome-banner-v1'), welcome.id) ||
+        !hasPublishedImage(welcomeVerified.get('ros:publish:server-icon-v1'), welcome.id)
       )
         throw new Error('Welcome artwork did not verify');
       console.log(
