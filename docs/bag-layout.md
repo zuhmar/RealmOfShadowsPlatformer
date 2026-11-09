@@ -1,0 +1,9 @@
+# Bag layout
+
+Bag opens as a transparent, scrollable overlay over the dimmed world, without the standard modal panel. The center previews the player's current skin and exact equipped weapon tier. Head, chest, legs, weapon, feet and accessory slots surround it. Inventory sits below in eight desktop columns or six mobile columns, with quantity badges and empty slots.
+
+Stackable inventory keeps existing server quantities. Unequipped equipment is grouped visually only when base, slot, source, name, level, rarity, identification and all rolled attributes match. Each original equipment ID remains intact; selecting a stack acts on one real instance. Identifying, equipping or selling changes that instance and recomputes the visible stacks. Equipped gear appears around the character instead of duplicating in inventory slots. Stack grouping never rolls, consumes, merges or rewrites server equipment.
+
+Select an equipment slot or bag slot for details. Gear retains attribute comparison, class/level restrictions, identification at Bram, confirmed selling and equipped-sale protection. Normal weapons and accessories can be equipped/unequipped; meals and potions retain their use and cooldown rules. Details have no surrounding panel. Keyboard focus is contained in the bag, Escape closes it even after the selected item was removed, and focus returns to the opener.
+
+Validation: `npm test`, `npm run typecheck`, `npm run build`, `node --env-file-if-exists=apps/server/.env scripts/browser-bag.mjs`, and the updated `scripts/browser-equipment-management.mjs`. Unit checks cover safe grouping and preservation of distinct attributes/IDs. Browser checks exercise actual server equipment/identification/sale/consumption/accessory messages, saved state, desktop/mobile rendering and keyboard closing. No schema or game economy changes.

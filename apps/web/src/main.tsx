@@ -1,3 +1,4 @@
+import { BagPanel } from './BagPanel';
 import { HousingPanel } from './HousingPanel';
 import { recipeFromScroll } from '@ros/game-data';
 import { RecipesPanel } from './RecipesPanel';
@@ -15,7 +16,6 @@ import { CrystalQuests } from './CrystalQuests';
 import { ClassPanel } from './ClassPanel';
 import { OfflineActivities, activitySummary } from './OfflineActivities';
 import { WorldMapPanel } from './WorldMapPanel';
-import { EquipmentPanel } from './EquipmentPanel';
 import { SkillsPanel } from './SkillsPanel';
 import { WoodsQuests } from './WoodsQuests';
 import { ForgePanel } from './ForgePanel';
@@ -1274,7 +1274,17 @@ function App() {
           send={bridge.current.send}
         />
       )}
-      {panel && panel !== 'map' && p && (
+      {panel === 'inventory' && p && (
+        <BagPanel
+          player={p}
+          time={snapshot?.time ?? Date.now()}
+          pending={recipePending}
+          onUse={(id) => recipeAction('use', id)}
+          send={bridge.current.send}
+          onClose={() => setPanel(null)}
+        />
+      )}
+      {panel && panel !== 'map' && panel !== 'inventory' && p && (
         <div className="modal-backdrop">
           <section className="modal wide">
             <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
@@ -1305,74 +1315,6 @@ function App() {
                 players={snapshot?.players ?? []}
                 send={bridge.current.send}
               />
-            )}
-            {panel === 'inventory' && (
-              <>
-                <div className="inventory-summary">
-                  ◈ {p.gold} gold <span>Weapon: {itemDefinition(p.weapon)?.name ?? 'Unarmed'}</span>
-                </div>
-                <EquipmentPanel player={p} send={(type, id) => room?.send(type, id)} />
-                <div className="inventory-grid">
-                  {Array.from(
-                    {
-                      length: Math.max(24, Object.values(p.inventory).filter((n) => n > 0).length),
-                    },
-                    (_, i) => {
-                      const entry = Object.entries(p.inventory).filter(([, n]) => n > 0)[i];
-                      const item = entry ? ITEMS[entry[0] as keyof typeof ITEMS] : null;
-                      return (
-                        <div
-                          className="inventory-cell"
-                          tabIndex={item ? 0 : -1}
-                          key={i}
-                          onClick={(e) => {
-                            if (item) e.currentTarget.focus();
-                          }}
-                        >
-                          {item && (
-                            <>
-                              <ItemIcon id={item.id} />
-                              <b>{entry![1]}</b>
-                              <div className="item-detail">
-                                <strong>{item.name}</strong>
-                                <p>{item.description}</p>
-                                {provisionRecipe(item.id) && (
-                                  <button
-                                    className="primary"
-                                    disabled={
-                                      recipePending ||
-                                      (item.type === 'potion' &&
-                                        (p.potionReadyAt ?? 0) > (snapshot?.time ?? Date.now()))
-                                    }
-                                    onClick={() => recipeAction('use', item.id)}
-                                  >
-                                    {item.type === 'food' ? 'Eat' : 'Drink'}
-                                  </button>
-                                )}
-                                {item.type === 'weapon' && (
-                                  <button
-                                    className="primary"
-                                    onClick={() =>
-                                      room?.send('equip', p.weapon === item.id ? null : item.id)
-                                    }
-                                  >
-                                    {p.weapon === item.id ? 'Unequip' : 'Equip'}
-                                  </button>
-                                )}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-                <p>
-                  Loot is collected when you approach it. Wolves drop pelts, spiders drop silk,
-                  boars drop tusks, and Forest Bear drops claws with a 10% ring chance. Every fifth
-                  wolf still drops a Wayfarer Blade. Hover or tap an item for details.
-                </p>
-              </>
             )}
             {panel === 'skills' && (
               <>

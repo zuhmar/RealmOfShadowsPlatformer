@@ -1,4 +1,5 @@
-import { baseSkinSheet } from '@ros/game-data';
+import type { Player } from '@ros/shared';
+import { classSkinSheet, baseSkinSheet } from '@ros/game-data';
 import { useEffect, useState } from 'react';
 import type { SkinId } from '@ros/game-data';
 import { assetUrl } from './assets';
@@ -20,17 +21,21 @@ export function ClassSprite({
   outfit = 'sage',
   armedPreview = false,
   weapon,
+  player,
 }: {
   skin: SkinId | null;
   appearance: string;
   outfit?: string;
   armedPreview?: boolean;
   weapon?: string | null;
+  player?: Player;
 }) {
   const path =
-    skin && skin !== 'golden-test'
-      ? `/assets/characters/skins/celestial/${skin}-${armedPreview ? 'armed' : 'unarmed'}`
-      : baseSkinSheet({ weapon }, !armedPreview).path;
+    player && armedPreview
+      ? classSkinSheet(player).path
+      : skin && skin !== 'golden-test'
+        ? `/assets/characters/skins/celestial/${skin}-${armedPreview ? 'armed' : 'unarmed'}`
+        : baseSkinSheet({ weapon }, !armedPreview).path;
   const [atlas, setAtlas] = useState<SkinAtlas | null>(null);
   useEffect(() => {
     let active = true;

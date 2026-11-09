@@ -24,14 +24,18 @@ const slots: { id: EquipmentSlot; label: string }[] = [
 export function EquipmentPanel({
   player: p,
   send,
+  gearId,
 }: {
   player: Player;
+  gearId?: string;
   send: (type: string, id: string) => void;
 }) {
   const [rarity, setRarity] = useState('All'),
     [confirmSale, setConfirmSale] = useState<string | null>(null);
   const atBram = p.mapId === 'village' && nearNpc(p, MAPS.village, 'bram');
-  const visible = (p.gear ?? []).filter((g) => rarity === 'All' || g.rarity === rarity);
+  const visible = (p.gear ?? []).filter((g) =>
+    gearId ? g.id === gearId : rarity === 'All' || g.rarity === rarity,
+  );
   return (
     <section className="equipment-panel">
       <h3>Equipped gear</h3>

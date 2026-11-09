@@ -3485,3 +3485,216 @@ footer {
   display: block;
   width: min(100%, 440px);
 }
+
+.bag-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  background: rgba(10, 5, 20, 0.72);
+  backdrop-filter: blur(5px);
+  padding: 24px 12px;
+}
+.bag-view {
+  position: relative;
+  width: min(100%, 640px);
+  margin: auto;
+  padding: 12px 24px 30px;
+  color: #fff1d9;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  text-shadow: 0 2px 5px #0a0315;
+}
+.bag-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: none;
+  border: 0;
+  padding: 6px;
+}
+.bag-heading {
+  text-align: center;
+  padding: 0 28px;
+}
+.bag-heading h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 30px;
+}
+.bag-heading p {
+  margin: 8px 0 12px;
+  color: #d9c1ef;
+}
+.bag-paperdoll {
+  display: grid;
+  grid-template-columns: 96px minmax(100px, 1fr) 96px;
+  grid-template-rows: repeat(3, 88px);
+  gap: 8px 22px;
+  width: min(100%, 460px);
+  margin: 0 auto 20px;
+  align-items: center;
+}
+.bag-player {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bag-player .class-sprite {
+  width: 100%;
+  height: 100%;
+  max-height: 260px;
+  filter: drop-shadow(0 4px 12px #1b062a);
+}
+.app.playing button.bag-equipped {
+  width: 100%;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #ae81d0;
+  border-radius: 10px;
+  background: rgba(33, 15, 50, 0.5);
+  color: #fff1d9;
+  min-width: 0;
+}
+.bag-equipped small {
+  font-size: 11px;
+  color: #d7b8ec;
+}
+.bag-equipped > span:last-child {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 10px;
+}
+.bag-equipped svg {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+.bag-empty {
+  font-size: 28px;
+  opacity: 0.4;
+}
+.bag-inventory-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: Georgia, serif;
+  margin: 12px 0;
+}
+.bag-inventory-title small {
+  font-size: 12px;
+  font-family: inherit;
+  color: #c5a7d9;
+}
+.bag-slots {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+.app.playing button.bag-slot {
+  aspect-ratio: 1;
+  position: relative;
+  min-width: 0;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #84609f;
+  border-radius: 9px;
+  background: rgba(32, 15, 50, 0.6);
+  color: #fff;
+}
+.bag-slot:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.bag-slot > svg,
+.bag-slot > span {
+  max-width: 100%;
+}
+.bag-slot b {
+  position: absolute;
+  bottom: 3px;
+  right: 5px;
+  font-size: 12px;
+  line-height: 1;
+  text-shadow:
+    0 1px 3px #000,
+    0 0 3px #000;
+}
+.bag-slot .bag-unidentified {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  color: #ffe198;
+  font-weight: bold;
+}
+.bag-slot.selected,
+.bag-slot:focus-visible,
+.bag-equipped:focus-visible {
+  outline: 2px solid #efc0ff;
+  outline-offset: 2px;
+}
+.bag-details {
+  margin-top: 16px;
+  font-size: 14px;
+}
+.bag-details h3 {
+  margin: 8px 0;
+}
+.bag-details .equipment-panel > :not(.skills-grid) {
+  display: none;
+}
+.bag-details .skills-grid {
+  display: block;
+}
+.bag-details .gear-card {
+  background: none;
+  border: 0 !important;
+  box-shadow: none;
+  padding: 0;
+}
+.bag-details button {
+  margin: 4px;
+}
+@media (max-width: 600px) {
+  .bag-backdrop {
+    padding: 12px 10px;
+  }
+  .bag-view {
+    padding: 12px 6px 24px;
+  }
+  .bag-heading h2 {
+    font-size: 24px;
+  }
+  .bag-paperdoll {
+    grid-template-columns: 82px minmax(100px, 1fr) 82px;
+    gap: 8px 12px;
+    max-width: 340px;
+  }
+  .bag-slots {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .app.playing button.bag-slot {
+    padding: 3px;
+  }
+  .bag-slot b {
+    font-size: 10px;
+    right: 3px;
+  }
+}
