@@ -1,6 +1,6 @@
 # Realm of Shadows · First Light
 
-A browser-based shared-world idle platformer. Elderwood Village, all four Whispering Woods areas, and all four Crystal Caverns areas are playable. Features include gathering, crafting, monster equipment identifiable anywhere for gold, animated bosses, weapon-themed skills, quest-unlocked classes and talents, offline hunting/gathering, reconnect recovery, chat and PostgreSQL saves. Later five islands remain planned. Elderwood also has private Small/Medium/Large housing plots, staged construction, hunting-unlocked Carpentry and decorative furniture; see [housing](docs/housing.md).
+A browser-based shared-world idle platformer. Elderwood Village, all four Whispering Woods areas, and all four Crystal Caverns areas are playable. Features include gathering, crafting, monster equipment identifiable anywhere for gold, animated bosses, weapon-themed skills, quest-unlocked classes and talents, offline hunting/gathering, reconnect recovery, chat and PostgreSQL saves. Later five islands remain planned. Elderwood also has private Small/Medium/Large housing plots, staged construction, private enterable interiors with one/two/three floors, hunting-unlocked Carpentry and floor-based furniture placement; see [housing](docs/housing.md).
 
 ## Run locally
 

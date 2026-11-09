@@ -104,9 +104,24 @@ export class HousingScenery {
         house.setCrop(0, f.height * 0.82, f.width, f.height * 0.18);
       }
     }
-    for (const f of view.furniture) {
-      const r = CARPENTRY_RECIPES.find((r) => r.id === f.item);
-      if (r) add(f.item, center + f.x, y, r.width, r.height, 3);
+    if (view.stage === 3) {
+      const door = this.scene.add
+        .zone(center, y - 65, 130, 140)
+        .setDepth(7)
+        .setName('house-entrance')
+        .setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => this.scene.events.emit('enter-house'));
+      const hint = this.scene.add
+        .text(center, y + 38, 'Enter house · E', {
+          fontFamily: 'Georgia',
+          fontSize: '15px',
+          color: '#ffe9af',
+          stroke: '#24152f',
+          strokeThickness: 4,
+        })
+        .setOrigin(0.5, 0)
+        .setDepth(6);
+      this.objects.push(door, hint);
     }
   }
 }

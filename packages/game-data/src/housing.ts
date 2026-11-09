@@ -80,3 +80,15 @@ export function houseStageCost(size: PlotSize, stage: number): Record<string, nu
       ? { 'oak-plank': 20 * factor }
       : { 'oak-plank': 15 * factor, 'iron-bar': factor };
 }
+
+export const HOUSE_LAYOUTS = {
+  small: { width: 1000, height: 620, floors: [500], capacity: 24 },
+  medium: { width: 1450, height: 900, floors: [780, 500], capacity: 48 },
+  large: { width: 2000, height: 1200, floors: [1080, 800, 520], capacity: 80 },
+} as const;
+export function houseSize(mapId: string): PlotSize | undefined {
+  const size = mapId.replace('house-', '');
+  return mapId.startsWith('house-') && Object.hasOwn(HOUSE_LAYOUTS, size)
+    ? (size as PlotSize)
+    : undefined;
+}

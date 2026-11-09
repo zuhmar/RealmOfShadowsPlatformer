@@ -98,6 +98,7 @@ function App() {
   const [playerId, setPlayerId] = useState('');
   const [chatOpen, setChatOpen] = useState(() => window.innerWidth > 700);
   const [panel, setPanel] = useState<string | null>(null);
+  const [housingInvitations, setHousingInvitations] = useState<{ id: string; name: string }[]>([]);
   const [cosmeticDialog, setCosmeticDialog] = useState<'class' | 'skin' | null>(null);
   const offeredClass = useRef(new Set<string>());
   const previousClass = useRef<{ id: string; classId?: string } | null>(null);
@@ -264,22 +265,25 @@ function App() {
     reconnectToken?: string,
     epoch?: number,
     reservation?: Parameters<Client['consumeSeatReservation']>[0],
+    houseOwnerId = c.data.houseOwnerId,
   ) {
+    setHousingInvitations([]);
     const client = new Client(SERVER.replace(/^http/, 'ws'));
-    const joinOptions = { token, characterId: c.id, mapId, snapshotProtocol: 1, travelProtocol: 2 };
+    const joinOptions = {
+      token,
+      characterId: c.id,
+      mapId,
+      houseOwnerId: mapId.startsWith('house-') ? houseOwnerId : undefined,
+      snapshotProtocol: 1,
+      travelProtocol: 2,
+    };
     const next = reconnectToken
       ? await client.reconnect(reconnectToken)
       : reservation
         ? await client
             .consumeSeatReservation(reservation)
             .catch(() => client.joinOrCreate('map', joinOptions))
-        : await client.joinOrCreate('map', {
-            token,
-            characterId: c.id,
-            mapId,
-            snapshotProtocol: 1,
-            travelProtocol: 2,
-          });
+        : await client.joinOrCreate('map', joinOptions);
     if (epoch !== undefined && epoch !== recoveryEpoch.current) {
       await next.leave();
       return false;
@@ -330,6 +334,9 @@ function App() {
     next.onMessage('chat', (m: { name: string; text: string }) =>
       setChat((old) => [...old.slice(-39), m]),
     );
+    next.onMessage('housingInvitations', (homes: { id: string; name: string }[]) =>
+      setHousingInvitations(homes),
+    );
     next.onMessage('notice', (m: string) => setNotice(m));
     next.onMessage('npc', (npc: { id: string }) => {
       if (npc.id === 'carpentry-station') setPanel('housing');
@@ -363,6 +370,7 @@ function App() {
           | string
           | {
               target: string;
+              houseOwnerId?: string;
               overlapLeave: boolean;
               reservation?: Parameters<Client['consumeSeatReservation']>[0];
             },
@@ -370,6 +378,7 @@ function App() {
         const target = typeof message === 'string' ? message : message.target;
         const overlapLeave = typeof message !== 'string' && message.overlapLeave;
         void run(async () => {
+          setPanel(null);
           hud.stop();
           bridge.current.snapshot = null;
           bridge.current.held = {};
@@ -388,6 +397,7 @@ function App() {
             undefined,
             undefined,
             typeof message === 'string' ? undefined : message.reservation,
+            typeof message === 'string' ? undefined : message.houseOwnerId,
           );
         });
       },
@@ -1314,6 +1324,7 @@ function App() {
               <HousingPanel
                 player={p}
                 players={snapshot?.players ?? []}
+                invitedHomes={housingInvitations}
                 send={bridge.current.send}
               />
             )}

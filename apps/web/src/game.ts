@@ -1,3 +1,5 @@
+import { HouseInterior, preloadHouseInterior } from './house-interior';
+import { houseSize } from '@ros/game-data';
 import { craftingStation } from './crafting-stations';
 import { HousingScenery } from './housing';
 import { preloadFactionFigures, factionFigure } from './faction-figures';
@@ -63,6 +65,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     crystal?: CrystalScenery;
     village?: VillageScenery;
     housing?: HousingScenery;
+    interior?: HouseInterior;
     miraMarker?: Phaser.GameObjects.Text;
     bossWarnings!: BossWarnings;
     nextPrepareAt = 3000;
@@ -90,7 +93,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       preloadLoot(this, loadingMap);
       preloadBossEntrance(this, loadingMap);
       preloadWoodsMonster(this, loadingMap.monster);
-      if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
+      if (houseSize(loadingMap.id)) preloadHouseInterior(this);
+      else if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
       else if (loadingMap.island === 'Crystal Caverns') preloadCrystal(this, loadingMap);
       else {
         preloadVillage(this);
@@ -107,6 +111,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       if (map.island === 'Whispering Woods')
         return `woods-background:${map.background ?? '/assets/backgrounds/whispering-woods.png'}`;
       if (map.island === 'Crystal Caverns') return `crystal-background:${map.background}`;
+      if (houseSize(map.id)) return 'house-interior';
       return 'village-background';
     }
     rememberBackground(map: GameMap) {
@@ -159,7 +164,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const id = bridge.snapshot?.mapId ?? 'village';
       this.map = MAPS[id];
       this.cameras.main.setBackgroundColor(
-        this.map.island === 'Whispering Woods' ? '#b6c9b2' : '#c1d6c5',
+        houseSize(this.map.id)
+          ? '#291a28'
+          : this.map.island === 'Whispering Woods'
+            ? '#b6c9b2'
+            : '#c1d6c5',
       );
       this.cameras.main.setBounds(0, 0, this.map.width, this.map.height);
       this.physics.world.setBounds(0, 0, this.map.width, this.map.height);
@@ -218,11 +227,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     drawWorld() {
       const m = this.map;
       const woods = m.island === 'Whispering Woods';
-      if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
+      if (houseSize(m.id))
+        this.interior = new HouseInterior(this, m, () =>
+          bridge.send('housing', { action: 'exit' }),
+        );
+      else if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
       else if (m.island === 'Crystal Caverns')
         this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
       else {
         this.village = new VillageScenery(this, m);
+        this.events.on('enter-house', () => bridge.send('housing', { action: 'enter' }));
         this.events.on('crafting-bram', () => bridge.send('interact', { npcId: 'bram' }));
         this.housing = new HousingScenery(this);
       }
@@ -233,7 +247,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.floor.add(body);
       }
       addBossEntrance(this, m, () => bridge.send('travel', null));
-      for (const p of m.portals) {
+      for (const p of houseSize(m.id) ? [] : m.portals) {
         if (!p.key || !m.bossEntrance) addPortal(this, m.id, p);
         if (p.key)
           fitArtwork(
@@ -559,6 +573,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       this.sync(s);
       this.housing?.update(s.players.find((p) => p.id === bridge.id));
+      this.interior?.update(s.players.find((p) => p.id === bridge.id));
       if (this.time.now >= this.nextPrepareAt && !this.load.isLoading()) {
         this.nextPrepareAt = this.time.now + 1000;
         const p = s.players.find((p) => p.id === bridge.id);

@@ -96,6 +96,14 @@ try {
       .evaluate((el) => getComputedStyle(el).backgroundColor),
   ).toBe('rgba(0, 0, 0, 0)');
   await page.setViewportSize({ width: 1200, height: 850 });
+  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.keyboard.down('d');
+  await page.waitForTimeout(1650);
+  await page.keyboard.up('d');
+  await page.getByRole('button', { name: 'Interact', exact: true }).click();
+  await expect(page.locator('.world-title')).toContainText('Small House');
+  await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
+  await page.getByRole('button', { name: 'Housing', exact: true }).click();
   await page.getByRole('button', { name: 'Decorate', exact: true }).click();
   await page.waitForTimeout(850);
   await page.getByRole('button', { name: 'Place Oak Table at 0', exact: true }).click();
@@ -103,6 +111,10 @@ try {
   await page.screenshot({ path: 'artifacts/housing-panel-desktop.png' });
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.screenshot({ path: 'artifacts/housing-small-desktop.png' });
+  await page.getByRole('button', { name: 'Housing', exact: true }).click();
+  await page.getByRole('button', { name: 'Exit house', exact: true }).click();
+  await expect(page.locator('.world-title')).toContainText('Elderwood Village');
+  await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
   await page.getByRole('button', { name: 'Housing', exact: true }).click();
   const large = page
     .locator('.housing-options article')
@@ -130,7 +142,7 @@ try {
   expect(saved.data.housingView).toBeUndefined();
   expect(errors).toEqual([]);
   console.log(
-    'PASS: carpentry bench opens actual housing UI and builds stages, crafts/places furniture, upgrades plot, saves and renders desktop/mobile without overflow.',
+    'PASS: carpentry bench opens actual housing UI and builds stages, enters its private interior, crafts/places furniture, upgrades plot, saves and renders desktop/mobile without overflow.',
   );
 } finally {
   await browser.close();

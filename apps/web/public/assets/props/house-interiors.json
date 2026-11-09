@@ -1,0 +1,132 @@
+{
+  "frames": {
+    "wall": {
+      "frame": {
+        "x": 29,
+        "y": 70,
+        "w": 427,
+        "h": 386
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 427,
+        "h": 386
+      },
+      "sourceSize": {
+        "w": 427,
+        "h": 386
+      }
+    },
+    "floor": {
+      "frame": {
+        "x": 519,
+        "y": 262,
+        "w": 495,
+        "h": 105
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 495,
+        "h": 105
+      },
+      "sourceSize": {
+        "w": 495,
+        "h": 105
+      }
+    },
+    "beam": {
+      "frame": {
+        "x": 1206,
+        "y": 9,
+        "w": 121,
+        "h": 476
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 121,
+        "h": 476
+      },
+      "sourceSize": {
+        "w": 121,
+        "h": 476
+      }
+    },
+    "ladder": {
+      "frame": {
+        "x": 178,
+        "y": 515,
+        "w": 155,
+        "h": 505
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 155,
+        "h": 505
+      },
+      "sourceSize": {
+        "w": 155,
+        "h": 505
+      }
+    },
+    "door": {
+      "frame": {
+        "x": 596,
+        "y": 533,
+        "w": 336,
+        "h": 469
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 336,
+        "h": 469
+      },
+      "sourceSize": {
+        "w": 336,
+        "h": 469
+      }
+    },
+    "window": {
+      "frame": {
+        "x": 1070,
+        "y": 548,
+        "w": 418,
+        "h": 417
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 418,
+        "h": 417
+      },
+      "sourceSize": {
+        "w": 418,
+        "h": 417
+      }
+    }
+  },
+  "meta": {
+    "image": "house-interiors.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-d8f7d92a-a71c-4ecd-bd7a-a99889f12685.png"
+  }
+}

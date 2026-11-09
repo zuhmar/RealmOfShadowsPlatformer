@@ -1,5 +1,5 @@
 export * from './housing';
-import { CARPENTRY_ITEMS } from './housing';
+import { CARPENTRY_ITEMS, HOUSE_LAYOUTS } from './housing';
 export * from './recipes';
 import { RECIPE_SCROLL_ITEMS } from './recipes';
 export * from './provisions';
@@ -152,6 +152,35 @@ export const MAPS: Record<string, GameMap> = {
     npcs: [],
   },
 };
+for (const [size, layout] of Object.entries(HOUSE_LAYOUTS)) {
+  const floors: number[] = [...layout.floors];
+  MAPS[`house-${size}`] = {
+    id: `house-${size}`,
+    name: `${size[0].toUpperCase() + size.slice(1)} House`,
+    island: 'Player Housing',
+    requiredLevel: 1,
+    width: layout.width,
+    height: layout.height,
+    spawn: { x: 170, y: floors[0] },
+    platforms: floors.map((y, i) => ({
+      id: i === 0 ? 'ground' : `floor-${i}`,
+      x: i === 0 ? 0 : 40,
+      y,
+      width: i === 0 ? layout.width : layout.width - 80,
+      oneWay: i > 0,
+    })),
+    ladders: floors.slice(1).map((y, i) => ({
+      x: i % 2 === 0 ? layout.width - 160 : 160,
+      bottom: floors[i],
+      top: y,
+      from: i === 0 ? 'ground' : `floor-${i}`,
+      to: `floor-${i + 1}`,
+    })),
+    portals: [{ x: 110, y: floors[0], target: 'village', label: 'Exit to Elderwood' }],
+    spawns: [],
+    npcs: [],
+  };
+}
 MAPS.village.npcs.push(...PROVISION_STATIONS, {
   id: 'carpentry-station',
   name: 'Carpentry Workbench',

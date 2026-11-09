@@ -1,6 +1,8 @@
 import {
   CARPENTRY_RECIPES,
   HOUSING_PLOTS,
+  HOUSE_LAYOUTS,
+  houseSize,
   HOUSING_PLATFORM,
   houseStageCost,
   gatheringXpNeeded,
@@ -11,7 +13,7 @@ export type Housing = {
   size: PlotSize;
   stage: number;
   invited: string[];
-  furniture: { id: string; item: string; x: number }[];
+  furniture: { id: string; item: string; x: number; floor?: number }[];
 };
 export type HousingView = {
   ownerId: string;
@@ -22,10 +24,11 @@ export type HousingView = {
 };
 export function nearHousing(p: Pick<Player, 'mapId' | 'x' | 'y'>) {
   return (
-    p.mapId === 'village' &&
-    p.x >= HOUSING_PLATFORM.x - 40 &&
-    p.x <= HOUSING_PLATFORM.x + HOUSING_PLATFORM.width + 40 &&
-    Math.abs(p.y - HOUSING_PLATFORM.y) <= 85
+    !!houseSize(p.mapId) ||
+    (p.mapId === 'village' &&
+      p.x >= HOUSING_PLATFORM.x - 40 &&
+      p.x <= HOUSING_PLATFORM.x + HOUSING_PLATFORM.width + 40 &&
+      Math.abs(p.y - HOUSING_PLATFORM.y) <= 85)
   );
 }
 export function housingView(owner: Player, viewer: Player): HousingView | undefined {
@@ -57,10 +60,13 @@ export function changeHousing(
   p: Player,
   value: { action?: unknown; id?: unknown; x?: unknown; quantity?: unknown },
 ) {
-  if (!nearHousing(p)) throw new Error('Climb to the housing platform in central Elderwood.');
+  if (!nearHousing(p)) throw new Error('Return to your house or the Elderwood housing platform.');
+  if (houseSize(p.mapId) && p.houseOwnerId !== p.id)
+    throw new Error('Only the owner can change this house.');
   const id = typeof value.id === 'string' ? value.id : '';
   const level = p.carpentry?.level ?? 1;
   if (value.action === 'plot') {
+    if (houseSize(p.mapId)) throw new Error('Upgrade your plot from Elderwood Village.');
     if (!Object.hasOwn(HOUSING_PLOTS, id)) throw new Error('Choose a valid plot size.');
     const size = id as PlotSize,
       def = HOUSING_PLOTS[size],
@@ -100,20 +106,31 @@ export function changeHousing(
       r = CARPENTRY_RECIPES.find((r) => r.id === id);
     if (!h || h.stage !== 3 || !r?.width || (p.inventory[id] ?? 0) < 1)
       throw new Error('Finish your house and craft furniture first.');
+    const size = houseSize(p.mapId);
+    if (!size || p.houseOwnerId !== p.id) throw new Error('Enter your house to place furniture.');
+    const layout = HOUSE_LAYOUTS[size],
+      floor = layout.floors.findIndex((y) => Math.abs(y - p.y) <= 50);
+    if (floor < 0 || !p.grounded) throw new Error('Stand on a house floor to place furniture.');
     const x = Number(value.x),
-      half = HOUSING_PLOTS[h.size].width / 2;
+      half = (layout.width - 160) / 2;
     if (!Number.isFinite(x) || Math.abs(x) > half - r.width / 2 || !Number.isInteger(x))
       throw new Error('Place furniture within your plot.');
-    if (h.furniture.length >= 24) throw new Error('This plot holds up to 24 decorations.');
+    if (h.furniture.length >= layout.capacity)
+      throw new Error(`This house holds up to ${layout.capacity} decorations.`);
     if (
       h.furniture.some((f) => {
         const other = CARPENTRY_RECIPES.find((r) => r.id === f.item)!;
-        return Math.abs(f.x - x) < (other.width + r.width) / 2 + 4;
+        return (f.floor ?? 0) === floor && Math.abs(f.x - x) < (other.width + r.width) / 2 + 4;
       })
     )
       throw new Error('Leave space between furniture pieces.');
     p.inventory[id]--;
-    h.furniture.push({ id: `f${(p.housingRevision ?? 0) + 1}-${h.furniture.length}`, item: id, x });
+    h.furniture.push({
+      id: `f${(p.housingRevision ?? 0) + 1}-${h.furniture.length}`,
+      item: id,
+      x,
+      floor,
+    });
   } else if (value.action === 'remove') {
     const h = p.housing,
       i = h?.furniture.findIndex((f) => f.id === id) ?? -1;

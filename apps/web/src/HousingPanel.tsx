@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   HOUSING_PLOTS,
+  HOUSE_LAYOUTS,
+  houseSize,
   HOUSE_STAGES,
   CARPENTRY_RECIPES,
   houseStageCost,
@@ -15,12 +17,17 @@ const costs = (cost: Record<string, number>) =>
 export function HousingPanel({
   player: p,
   players,
+  invitedHomes = [],
   send,
 }: {
   player: Player;
   players: Player[];
+  invitedHomes?: { id: string; name: string }[];
   send: (type: string, v: unknown) => void;
 }) {
+  useEffect(() => {
+    send('housing', { action: 'list' });
+  }, []);
   const [tab, setTab] = useState('Build'),
     [recipe, setRecipe] = useState('oak-plank'),
     [quantity, setQuantity] = useState(1),
@@ -30,7 +37,9 @@ export function HousingPanel({
     level = p.carpentry?.level ?? 1,
     near = nearHousing(p),
     view = p.housingView,
-    visiting = !!view && view.ownerId !== p.id;
+    visiting = !!view && view.ownerId !== p.id,
+    inside = !!houseSize(p.mapId),
+    layout = h ? HOUSE_LAYOUTS[h.size] : undefined;
   const act = (action: string, id?: string, x?: number) => {
     if (pending) return;
     setPending(true);
@@ -48,13 +57,17 @@ export function HousingPanel({
     <section className="housing-panel">
       <p>
         <b>Carpentry Lv. {level}</b> ·{' '}
-        {near ? 'At the housing platform' : 'Climb to the central village housing platform'}
+        {inside
+          ? 'Inside the house'
+          : near
+            ? 'At the housing platform'
+            : 'Climb to the central village housing platform'}
       </p>
       {visiting && (
         <p>
           Visiting {view.ownerName} · {HOUSE_STAGES[view.stage]}{' '}
-          <button disabled={!near || pending} onClick={() => act('home')}>
-            Return to my plot
+          <button disabled={!near || pending} onClick={() => act(inside ? 'exit' : 'home')}>
+            {inside ? 'Exit house' : 'Return to my plot'}
           </button>
         </p>
       )}
@@ -102,7 +115,16 @@ export function HousingPanel({
             </section>
           )}
           {h?.stage === 3 && (
-            <p>Your house is complete. Craft furniture, then place it in Decorate.</p>
+            <p>
+              <button disabled={pending} onClick={() => act(inside ? 'exit' : 'enter')}>
+                {inside ? 'Exit house' : 'Enter house'}
+              </button>{' '}
+              · {HOUSE_LAYOUTS[h.size].floors.length} floor(s) · {HOUSE_LAYOUTS[h.size].capacity}{' '}
+              furniture spaces
+            </p>
+          )}
+          {h?.stage === 3 && (
+            <p>Your house is complete. Enter through its front door to walk around and decorate.</p>
           )}
           <div className="housing-options">
             {Object.entries(HOUSING_PLOTS).map(([id, d]) => (
@@ -213,17 +235,28 @@ export function HousingPanel({
       {!visiting && tab === 'Decorate' && (
         <>
           <p>
-            Craft furniture, then place it along your plot. Removing a piece returns it to your bag.
+            Place furniture on the floor you are standing on inside your house. Removing a piece
+            returns it to your bag.
           </p>
           {h ? (
             <>
+              {!inside && <p>Enter your finished house to place furniture.</p>}
+              {inside && (
+                <p>
+                  Floor {(layout?.floors.findIndex((y) => Math.abs(y - p.y) <= 50) ?? -1) + 1} ·{' '}
+                  {h.furniture.length}/{layout?.capacity} placed{' '}
+                  <button onClick={() => setPosition(Math.round(p.x - (layout?.width ?? 0) / 2))}>
+                    Place here
+                  </button>
+                </p>
+              )}
               <label>
                 Furniture position: {position}
                 <input
                   aria-label="Furniture position"
                   type="range"
-                  min={-Math.floor(HOUSING_PLOTS[h.size].width / 2)}
-                  max={Math.floor(HOUSING_PLOTS[h.size].width / 2)}
+                  min={-Math.floor(((layout?.width ?? 800) - 160) / 2)}
+                  max={Math.floor(((layout?.width ?? 800) - 160) / 2)}
                   step="5"
                   value={position}
                   onChange={(e) => setPosition(Number(e.target.value))}
@@ -236,7 +269,7 @@ export function HousingPanel({
                     <h4>{r.name}</h4>
                     <p>{p.inventory[r.id] ?? 0} owned</p>
                     <button
-                      disabled={!near || pending || h.stage !== 3 || !(p.inventory[r.id] > 0)}
+                      disabled={!inside || pending || h.stage !== 3 || !(p.inventory[r.id] > 0)}
                       onClick={() => act('place', r.id, position)}
                     >
                       Place {r.name} at {position}
@@ -246,7 +279,7 @@ export function HousingPanel({
               </div>
               {h.furniture.map((f) => (
                 <p key={f.id}>
-                  {itemDefinition(f.item)?.name} · {f.x}{' '}
+                  {itemDefinition(f.item)?.name} · Floor {(f.floor ?? 0) + 1} · {f.x}{' '}
                   <button disabled={!near || pending} onClick={() => act('remove', f.id)}>
                     Return to bag
                   </button>
@@ -277,6 +310,16 @@ export function HousingPanel({
               ))}
             </>
           )}
+          <h3>Houses you can visit</h3>
+          {invitedHomes.map((home) => (
+            <p key={home.id}>
+              {home.name}{' '}
+              <button disabled={inside || !near || pending} onClick={() => act('visit', home.id)}>
+                Visit {home.name}'s house
+              </button>
+            </p>
+          ))}
+          {!invitedHomes.length && <p>No house invitations yet.</p>}
           <h3>Village adventurers</h3>
           {players
             .filter((other) => other.id !== p.id)

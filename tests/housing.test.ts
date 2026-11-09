@@ -42,9 +42,11 @@ test('construction spends materials once per stage, upgrades preserve furniture 
   assert.equal(p.housing?.stage, 3);
   assert.throws(() => changeHousing(p, { action: 'build' }));
   changeHousing(p, { action: 'craft', id: 'oak-table' });
+  Object.assign(p, { mapId: 'house-small', houseOwnerId: p.id, y: 500, grounded: true });
   changeHousing(p, { action: 'place', id: 'oak-table', x: 0 });
   assert.equal(p.housing?.furniture.length, 1);
   const id = p.housing!.furniture[0].id;
+  Object.assign(p, { mapId: 'village', x: 900, y: 240 });
   p.carpentry = { level: 1, xp: 0 };
   assert.throws(() => changeHousing(p, { action: 'plot', id: 'medium' }), /level 5/);
   p.carpentry = { level: 10, xp: 0 };
@@ -73,12 +75,14 @@ test('rejects missing recipes, insufficient materials, unknown actions, invalid 
   assert.throws(() => changeHousing(p, { action: 'craft', id: 'oak-table' }), /recipe/);
   assert.throws(() => changeHousing(p, { action: 'plot', id: '__proto__' }));
   p.housing!.stage = 3;
+  Object.assign(p, { mapId: 'house-small', houseOwnerId: p.id, y: 500, grounded: true });
   p.inventory['oak-table'] = 2;
   for (const x of [NaN, Infinity, -1000, 1000, 0.5])
     assert.throws(() => changeHousing(p, { action: 'place', id: 'oak-table', x }));
   changeHousing(p, { action: 'place', id: 'oak-table', x: 0 });
   assert.throws(() => changeHousing(p, { action: 'place', id: 'oak-table', x: 20 }), /space/);
   assert.equal(p.inventory['oak-table'], 1);
+  p.mapId = 'village';
   p.y = 650;
   assert.equal(nearHousing(p), false);
   assert.throws(

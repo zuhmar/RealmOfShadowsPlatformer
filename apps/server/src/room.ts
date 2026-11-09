@@ -1,3 +1,4 @@
+import { houseSize, HOUSE_LAYOUTS } from '@ros/game-data';
 import { persistHousing } from './housing.js';
 import { housingView, nearHousing } from '@ros/shared';
 import { revealOrigin } from './story.js';
@@ -36,6 +37,8 @@ import { changeQuest } from './quests.js';
 import { activeCharacters, authenticate, db, save, json } from './db.js';
 export class MapRoom extends Room {
   maxClients = 24;
+  houseOwnerId?: string;
+  houseOwner?: Player;
   world!: World;
   inputs = new Map<string, Input>();
   characters = new Map<string, string>();
@@ -47,13 +50,38 @@ export class MapRoom extends Room {
   snapshotStreams = new Map<string, SnapshotEncoder>();
   snapshotResyncAt = new Map<string, number>();
   housingVisits = new Map<string, string>();
+  visitingOwners = new Map<string, Player>();
   fastTravel = new Set<string>();
   travelTokens = new Map<string, string>();
-  onCreate(options: { mapId?: string }) {
+  onCreate(options: { mapId?: string; houseOwnerId?: string }) {
     const map = MAPS[options.mapId ?? 'woods'];
     if (!map) throw new Error('Unknown map');
+    if (houseSize(map.id)) {
+      if (typeof options.houseOwnerId !== 'string' || !options.houseOwnerId)
+        throw new Error('Private house owner required.');
+      this.houseOwnerId = options.houseOwnerId;
+    }
     this.world = new World(map);
-    this.setMetadata({ mapId: map.id });
+    this.clock.setInterval(() => {
+      for (const ownerId of new Set(this.housingVisits.values()))
+        if (!this.world.players.has(ownerId))
+          void db.character
+            .findUnique({ where: { id: ownerId } })
+            .then((row) => {
+              if (row) this.visitingOwners.set(ownerId, row.data as unknown as Player);
+              else this.visitingOwners.delete(ownerId);
+            })
+            .catch(() => {});
+    }, 1000);
+    this.setMetadata({ mapId: map.id, houseOwnerId: this.houseOwnerId });
+    if (this.houseOwnerId)
+      this.clock.setInterval(() => {
+        if (!this.world.players.has(this.houseOwnerId!))
+          void db.character
+            .findUnique({ where: { id: this.houseOwnerId } })
+            .then((row) => (this.houseOwner = row?.data as unknown as Player | undefined))
+            .catch(() => {});
+      }, 1000);
     this.setSimulationInterval((dt) => this.tick(Math.min(dt, 100) / 1000), 1000 / 30);
     this.onMessage('snapshotResync', (c) => {
       const now = Date.now();
@@ -187,6 +215,24 @@ export class MapRoom extends Room {
     this.onMessage('interact', (c, payload) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
+      if (
+        this.world.map.id === 'village' &&
+        Math.abs(p.x - 900) < 100 &&
+        Math.abs(p.y - 240) < 65
+      ) {
+        void this.enterHouse(c).catch(() =>
+          c.send('notice', 'Could not enter the house. Try again.'),
+        );
+        return;
+      }
+      if (
+        houseSize(this.world.map.id) &&
+        Math.abs(p.x - 110) < 110 &&
+        Math.abs(p.y - this.world.map.spawn.y) < 65
+      ) {
+        void this.exitHouse(c);
+        return;
+      }
       if (nearNpc(p, this.world.map, 'carpentry-station')) {
         p.auto = false;
         delete p.gathering;
@@ -294,17 +340,43 @@ export class MapRoom extends Room {
     this.saves = task.catch(() => {});
     void task.catch((e) => c.send('notice', e.message)).finally(() => this.questTasks.delete(p.id));
   }
-  async travel(c: Client, destination?: string) {
+  async travel(
+    c: Client,
+    destination?: string,
+    housingTarget?: { mapId: string; ownerId?: string },
+  ) {
     const p = this.player(c);
     if (!p || !this.rate(c, 100)) return;
+    if (!housingTarget && houseSize(this.world.map.id) && destination === undefined) {
+      await this.exitHouse(c);
+      return;
+    }
     let target: string;
     try {
-      target =
-        destination !== undefined ? useTeleport(p, destination) : usePortal(p, this.world.map);
+      if (!housingTarget && destination && houseSize(destination))
+        throw new Error('Enter houses through their front door.');
+      if (housingTarget) {
+        target = housingTarget.mapId;
+        const m = MAPS[target];
+        p.mapId = target;
+        p.houseOwnerId = housingTarget.ownerId;
+        p.x = target === 'village' ? 900 : m.spawn.x;
+        p.y = target === 'village' ? 240 : m.spawn.y;
+        p.platform = target === 'village' ? 'housing' : 'ground';
+        p.vx = 0;
+        p.vy = 0;
+        p.grounded = true;
+        p.climbing = false;
+        p.auto = false;
+        delete p.gathering;
+      } else
+        target =
+          destination !== undefined ? useTeleport(p, destination) : usePortal(p, this.world.map);
     } catch (error) {
       c.send('notice', error instanceof Error ? error.message : 'Could not travel.');
       return;
     }
+    if (!houseSize(target)) delete p.houseOwnerId;
     this.inputs.set(p.id, idleInput());
     this.world.players.delete(p.id);
     try {
@@ -319,6 +391,7 @@ export class MapRoom extends Room {
             token,
             characterId: p.id,
             mapId: target,
+            houseOwnerId: p.houseOwnerId,
             snapshotProtocol: 1,
             travelProtocol: 2,
           });
@@ -328,7 +401,16 @@ export class MapRoom extends Room {
       }
       c.send(
         'travel',
-        fast ? { target, overlapLeave: true, ...(reservation ? { reservation } : {}) } : target,
+        fast
+          ? {
+              target,
+              houseOwnerId: p.houseOwnerId,
+              overlapLeave: true,
+              ...(reservation ? { reservation } : {}),
+            }
+          : p.houseOwnerId
+            ? { target, houseOwnerId: p.houseOwnerId, overlapLeave: false }
+            : target,
       );
     } catch {
       c.send('notice', 'Travel save failed. Please reconnect.');
@@ -597,6 +679,20 @@ export class MapRoom extends Room {
         const p = character.data as unknown as Player;
         if (normalizeSkin(p)) await tx.character.update({ where: { id }, data: { data: json(p) } });
         if (p.mapId !== this.world.map.id) throw new Error('Invalid map. Refresh your characters.');
+        if (this.houseOwnerId) {
+          const row = await tx.character.findUnique({ where: { id: this.houseOwnerId } });
+          const owner = row?.data as unknown as Player | undefined;
+          if (
+            !owner ||
+            p.houseOwnerId !== this.houseOwnerId ||
+            owner.housing?.stage !== 3 ||
+            `house-${owner.housing.size}` !== this.world.map.id ||
+            (owner.id !== p.id && !owner.housing.invited.includes(p.id))
+          )
+            throw new Error('You are not invited to this house.');
+          this.houseOwner = owner;
+        }
+
         const questRows = await tx.questProgress.findMany({ where: { characterId: id } });
         p.quests = Object.fromEntries(
           questRows
@@ -673,10 +769,91 @@ export class MapRoom extends Room {
     c.send('welcome', { id: p.id, mapId: this.world.map.id });
     this.sendSnapshot(c, Date.now(), true);
   }
+  async selectHouse(c: Client, ownerId: string) {
+    const p = this.player(c);
+    if (!p || this.world.map.id !== 'village' || !nearHousing(p)) return;
+    const owner =
+      this.world.players.get(ownerId) ??
+      ((await db.character.findUnique({ where: { id: ownerId } }))?.data as unknown as
+        | Player
+        | undefined);
+    if (!owner || !housingView(owner, p)) {
+      c.send('notice', 'That owner must invite you first.');
+      return;
+    }
+    this.visitingOwners.set(owner.id, owner);
+    this.housingVisits.set(p.id, owner.id);
+    this.sendSnapshot(c, Date.now(), true);
+  }
+  async enterHouse(c: Client) {
+    const p = this.player(c);
+    if (!p) return;
+    if (this.world.map.id !== 'village' || Math.abs(p.x - 900) > 100 || Math.abs(p.y - 240) > 65) {
+      c.send('notice', 'Walk to the front of the house on the housing platform.');
+      return;
+    }
+    const ownerId = this.housingVisits.get(p.id) ?? p.id;
+    const owner =
+      this.world.players.get(ownerId) ??
+      ((await db.character.findUnique({ where: { id: ownerId } }))?.data as unknown as
+        | Player
+        | undefined);
+    if (!owner || owner.housing?.stage !== 3 || !housingView(owner, p)) {
+      c.send('notice', 'Finish the house or ask its owner for an invitation.');
+      return;
+    }
+    await this.travel(c, undefined, { mapId: `house-${owner.housing.size}`, ownerId: owner.id });
+  }
+  async exitHouse(c: Client, forced = false) {
+    const p = this.player(c);
+    if (!p || !houseSize(this.world.map.id)) return;
+    if (!forced && (Math.abs(p.x - 110) > 110 || Math.abs(p.y - this.world.map.spawn.y) > 65)) {
+      c.send('notice', 'Walk to the exit door on the ground floor.');
+      return;
+    }
+    await this.travel(c, undefined, { mapId: 'village' });
+  }
   housing(c: Client, value: unknown) {
     const p = this.player(c);
     if (!p || !this.rate(c, 100) || !value || typeof value !== 'object') return;
     const v = value as { action?: unknown; id?: unknown; x?: unknown; quantity?: unknown };
+    if (v.action === 'list') {
+      void db.character
+        .findMany({
+          where: { data: { path: ['housing', 'invited'], array_contains: [p.id] } },
+          select: { id: true, name: true, data: true },
+        })
+        .then((rows) =>
+          c.send(
+            'housingInvitations',
+            rows
+              .filter((row) => (row.data as unknown as Player).housing?.stage === 3)
+              .map((row) => ({ id: row.id, name: row.name })),
+          ),
+        )
+        .catch(() => c.send('notice', 'Could not load invited houses.'));
+      return;
+    }
+    if (v.action === 'visit' && this.world.map.id === 'village') {
+      void this.selectHouse(c, typeof v.id === 'string' ? v.id : '').catch(() =>
+        c.send('notice', 'Could not load that house. Try again.'),
+      );
+      return;
+    }
+    if (v.action === 'enter') {
+      void this.enterHouse(c).catch(() =>
+        c.send('notice', 'Could not enter the house. Try again.'),
+      );
+      return;
+    }
+    if (v.action === 'exit') {
+      void this.exitHouse(c);
+      return;
+    }
+    if (this.houseOwnerId && this.houseOwnerId !== p.id) {
+      c.send('notice', 'Only the owner can edit this house.');
+      return;
+    }
     if (!nearHousing(p)) {
       c.send('notice', 'Climb to the housing platform in central Elderwood.');
       return;
@@ -688,6 +865,7 @@ export class MapRoom extends Room {
         c.send('notice', 'That owner must be here and must invite you first.');
         return;
       }
+      this.visitingOwners.set(owner.id, owner);
       this.housingVisits.set(p.id, owner.id);
       this.sendSnapshot(c, Date.now(), true);
       return;
@@ -734,8 +912,19 @@ export class MapRoom extends Room {
     if (!id || !this.world.players.has(id)) return;
     const snapshot = this.world.snapshot(now, id);
     const viewer = this.world.players.get(id)!;
-    const owner = this.world.players.get(this.housingVisits.get(id) ?? id);
-    const view = this.world.map.id === 'village' && owner ? housingView(owner, viewer) : undefined;
+    const owner = this.houseOwnerId
+      ? (this.world.players.get(this.houseOwnerId) ?? this.houseOwner)
+      : (this.world.players.get(this.housingVisits.get(id) ?? id) ??
+        this.visitingOwners.get(this.housingVisits.get(id) ?? id));
+    const view = owner ? housingView(owner, viewer) : undefined;
+    if (
+      this.houseOwnerId &&
+      (!view || `house-${view.size}` !== this.world.map.id || view.stage !== 3)
+    ) {
+      c.send('notice', 'Your house invitation was revoked.');
+      void this.exitHouse(c, true);
+      return;
+    }
     if (!view) this.housingVisits.delete(id);
     snapshot.players = snapshot.players.map((p) =>
       p.id === id
@@ -759,6 +948,7 @@ export class MapRoom extends Room {
   }
   enqueueSave(p: Player) {
     const copy = structuredClone(p);
+    if (p.id === this.houseOwnerId) this.houseOwner = copy;
     const task = this.saves.catch(() => {}).then(() => save(copy));
     this.saves = task;
     return task;

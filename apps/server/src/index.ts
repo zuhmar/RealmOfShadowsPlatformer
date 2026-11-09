@@ -1,3 +1,4 @@
+import { houseSize } from '@ros/game-data';
 import 'dotenv/config';
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
@@ -107,6 +108,32 @@ app.get(
       include: { offline: true },
       orderBy: { id: 'asc' },
     });
+    for (const c of cs) {
+      const p = c.data as unknown as Player;
+      if (!houseSize(p.mapId) || activeCharacters.has(c.id)) continue;
+      const row = p.houseOwnerId
+          ? await db.character.findUnique({ where: { id: p.houseOwnerId } })
+          : null,
+        owner = row?.data as unknown as Player | undefined;
+      if (
+        !owner ||
+        owner.housing?.stage !== 3 ||
+        `house-${owner.housing.size}` !== p.mapId ||
+        (owner.id !== p.id && !owner.housing.invited.includes(p.id))
+      ) {
+        if (activeCharacters.has(c.id)) continue;
+        p.mapId = 'village';
+        delete p.houseOwnerId;
+        p.x = 900;
+        p.y = 240;
+        p.platform = 'housing';
+        p.vx = 0;
+        p.vy = 0;
+        p.grounded = true;
+        p.climbing = false;
+        await db.character.update({ where: { id: c.id }, data: { data: json(p) } });
+      }
+    }
     res.json({
       guest: u.guest,
       characters: cs.map((c) => ({
@@ -232,7 +259,7 @@ const game = new Server({
     verifyClient: (info, cb) => cb(!info.origin || info.origin === origin),
   }),
 });
-game.define('map', MapRoom).filterBy(['mapId']);
+game.define('map', MapRoom).filterBy(['mapId', 'houseOwnerId']);
 await db.$connect();
 await game.listen(Number(process.env.PORT ?? 2567));
 console.log(

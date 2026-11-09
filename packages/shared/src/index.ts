@@ -93,6 +93,7 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  houseOwnerId?: string;
   housing?: import('./housing').Housing;
   housingView?: import('./housing').HousingView;
   housingRevision?: number;
@@ -1151,6 +1152,7 @@ export class World {
         if (!viewerId || p.id === viewerId) return p;
         const visible = { ...p, inventory: {}, gold: 0, xp: 0, kills: 0 };
         for (const key of [
+          'houseOwnerId',
           'housing',
           'housingView',
           'housingRevision',
