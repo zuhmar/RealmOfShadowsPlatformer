@@ -1,0 +1,20 @@
+# Optional separate blueprint for the Discord worker; does not change the game server.
+services:
+  - type: worker
+    name: realm-of-shadows-community-bot
+    runtime: node
+    plan: starter
+    numInstances: 1
+    buildCommand: npm ci --workspace @ros/discord-bot --omit=dev
+    startCommand: npm run start -w @ros/discord-bot
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: NODE_ENV
+        value: production
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_GUILD_ID
+        sync: false
+      - key: GAME_URL
+        sync: false

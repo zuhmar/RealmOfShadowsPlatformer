@@ -197,3 +197,11 @@ All 81 crafting recipes require [hunted recipe scrolls](docs/recipe-discovery.md
 Cooking and Alchemy now have [ten craftable recipes](docs/cooking-alchemy.md), profession XP, two Elderwood stations and consumable use from Bag or Skills → Cooking & Alchemy recipes. Meals grant temporary damage, regeneration or crit buffs; potions restore health/mana with a shared cooldown.
 
 The character direction now uses **white-and-gold Celestials** for the hero and friendly NPCs, and **black-and-purple Shadow figures** for hostile humanoid NPCs. New and saved heroes adopt the Celestial appearance automatically. Creature sprites and gameplay remain unchanged. The opening story retains the destroyed hometown, years of training and hunt for the Shadow Dragon. Hidden-origin story content is gated until Celestial Realm entry; that island remains planned content. See [character direction and story canon](docs/character-concept.md) for implementation, future content limits and author spoilers.
+
+### Discord community bot
+
+The optional [Realm of Shadows community bot](apps/discord-bot/README.md)
+provides channel/role setup, member welcomes, cosmetic class roles, showcase
+posting, updates, and moderation commands. It runs separately from the game;
+`render.discord.yaml` is its optional worker blueprint. Store credentials in
+private hosting environment variables, never in the repository.
