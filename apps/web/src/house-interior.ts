@@ -59,6 +59,13 @@ export class HouseInterior {
       .setOrigin(0)
       .setDepth(-18)
       .setName('house-right-wall');
+    // One unbroken frame joins every storey without pillar caps or overlapping bases.
+    const edgeTop = bounds.top - 28;
+    const edgeHeight = bounds.bottom + 28 - edgeTop;
+    for (const x of [64, map.width - 32]) {
+      strip(x, edgeTop, edgeHeight, 32, 'floor-strip', 4, 'house-wall-edge')
+        .setRotation(Math.PI / 2);
+    }
     for (const y of layout.floors) {
       strip(64, y - 80, map.width - 128, 80, 'wainscot-strip', -25, 'house-wainscot');
       strip(64, y - 86, map.width - 128, 8, 'floor-strip', -24, 'house-wall-trim');
@@ -67,13 +74,6 @@ export class HouseInterior {
         .setOrigin(0)
         .setDepth(-1);
       strip(32, y, map.width - 64, 28, 'floor-strip', 0, 'house-floor');
-      for (const x of [32, map.width - 32]) {
-        const beam = scene.add.image(x, y, 'house-interior', 'beam').setOrigin(0.5, 1);
-        beam
-          .setScale(280 / beam.height)
-          .setDepth(4)
-          .setName('house-beam');
-      }
       for (let x = 360; x < map.width - 200; x += 400) {
         const im = scene.add.image(x, y - 100, 'house-interior', 'window').setOrigin(0.5, 1);
         im.setScale(110 / im.height).setDepth(-20);
