@@ -3957,3 +3957,45 @@ footer {
   color: #fff1ff;
 }
 .app.playing .placement-actions button:disabled { opacity: .45; }
+
+/* One panel-free adventurer at a time, like the world-map carousel. */
+.character-carousel { max-width: 760px; margin: 20px auto 0; }
+.character-carousel:focus-visible { outline: 2px solid #c594eb; outline-offset: 8px; border-radius: 20px; }
+.character-carousel-body { display: grid; grid-template-columns: 60px minmax(0, 440px) 60px; align-items: center; justify-content: center; gap: 22px; }
+.character-carousel .slots { display: block; min-width: 0; }
+.character-carousel .character-card,
+.character-carousel .empty-slot,
+.character-carousel .portrait-big,
+.character-carousel .offline-reward {
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.character-carousel .character-card,
+.character-carousel .empty-slot { width: 100%; min-height: 470px; padding: 12px; }
+.character-carousel .portrait-big { width: 220px; height: 220px; margin: 8px auto; }
+.character-carousel .portrait-big svg { width: 220px; height: 220px; }
+.character-carousel .portrait-big > span { display: none; }
+.character-carousel .card-number { max-width: 320px; }
+.character-carousel .empty-slot { justify-content: center; }
+.character-carousel-arrow { border: 0; padding: 0; background: none; box-shadow: none; min-width: 48px; min-height: 48px; }
+.character-carousel-arrow .control-icon { width: 56px; height: 56px; display: block; }
+.character-carousel-dots { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 16px auto 0; }
+.character-carousel-dots button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; background: none; box-shadow: none; }
+.character-carousel-dots span { width: 10px; height: 10px; border: 1px solid #bb89df; border-radius: 50%; }
+.character-carousel-dots [aria-current='true'] span { background: #cf9cf4; box-shadow: 0 0 12px #ad64e0; }
+.character-carousel-counter { text-align: center; color: #c4acd8; font-size: 12px; margin: 0; }
+@media (max-width: 600px) {
+  .selection { padding: 32px 14px; }
+  .selection h1 { font-size: 34px; }
+  .selection-top { margin: 20px 0; }
+  .character-carousel-body { grid-template-columns: 40px minmax(0, 1fr) 40px; gap: 2px; }
+  .character-carousel-arrow { min-width: 40px; }
+  .character-carousel-arrow .control-icon { width: 40px; height: 40px; }
+  .character-carousel .character-card, .character-carousel .empty-slot { padding: 6px; min-height: 430px; }
+  .character-carousel .portrait-big, .character-carousel .portrait-big svg { width: 180px; height: 180px; }
+  .character-carousel .character-card h2 { font-size: 26px; overflow-wrap: anywhere; }
+  .character-carousel .character-summary { gap: 12px; font-size: 10px; }
+  .character-carousel .offline-activities { width: 100%; }
+  .character-carousel select { max-width: 100%; }
+}

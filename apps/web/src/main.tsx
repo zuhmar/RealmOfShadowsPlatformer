@@ -89,6 +89,8 @@ function App() {
   const [page, setPage] = useState<'landing' | 'characters' | 'game'>('landing');
   const [auth, setAuth] = useState<'login' | 'register' | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [characterSlot, setCharacterSlot] = useState(0);
+  const characterSwipe = useRef<{ x: number; y: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -301,6 +303,7 @@ function App() {
     await run(async () => {
       await api('/characters', 'POST', { name, appearance, outfit });
       setCreating(false);
+      setCharacterSlot(Math.min(characters.length, 2));
       setName('');
       await refresh();
     });
@@ -763,76 +766,150 @@ function App() {
               </button>
             </div>
           </div>
-          <div className="slots">
-            {[0, 1, 2].map((i) => {
-              const c = characters[i];
-              return c ? (
-                <article className="character-card" key={c.id}>
-                  <div className="card-number">
-                    ADVENTURER 0{i + 1}
-                    <button
-                      aria-label={`Delete ${c.name}`}
-                      onClick={() => {
-                        setDeleteId(c.id);
-                        setDeleteName('');
-                      }}
-                    >
-                      ×
+          <div
+            className="character-carousel"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Character selection"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (busy || (e.target as Element).closest('input,select,textarea')) return;
+              if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                setCharacterSlot((i) => (i + (e.key === 'ArrowRight' ? 1 : 2)) % 3);
+              }
+            }}
+            onTouchStart={(e) => {
+              if ((e.target as Element).closest('button,input,select,textarea')) {
+                characterSwipe.current = null;
+                return;
+              }
+              const t = e.touches[0];
+              characterSwipe.current = { x: t.clientX, y: t.clientY };
+            }}
+            onTouchEnd={(e) => {
+              const start = characterSwipe.current;
+              characterSwipe.current = null;
+              if (!start || busy) return;
+              const t = e.changedTouches[0],
+                dx = t.clientX - start.x,
+                dy = t.clientY - start.y;
+              if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5)
+                setCharacterSlot((i) => (i + (dx < 0 ? 1 : 2)) % 3);
+            }}
+          >
+            <div className="character-carousel-body">
+              <button
+                className="character-carousel-arrow"
+                aria-label="Previous adventurer"
+                disabled={busy}
+                onClick={() => setCharacterSlot((i) => (i + 2) % 3)}
+              >
+                <ControlIcon name="left" />
+              </button>
+              <div
+                className="slots"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Slot ${characterSlot + 1} of 3`}
+              >
+                {[characterSlot].map((i) => {
+                  const c = characters[i];
+                  return c ? (
+                    <article className="character-card" key={c.id}>
+                      <div className="card-number">
+                        ADVENTURER 0{i + 1}
+                        <button
+                          aria-label={`Delete ${c.name}`}
+                          onClick={() => {
+                            setDeleteId(c.id);
+                            setDeleteName('');
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className={`portrait-big ${c.outfit}`}>
+                        <ClassSprite
+                          skin={
+                            canEquipSkin(c.data.classId, c.data.skin) ? (c.data.skin ?? null) : null
+                          }
+                          outfit={c.outfit}
+                          appearance={c.appearance}
+                        />
+                        <span>✦</span>
+                      </div>
+                      <h2>{c.name}</h2>
+                      <div className="character-class">
+                        LEVEL {c.data.level} ·{' '}
+                        {(c.class === 'Citizen' ? 'Civilian' : c.class).toUpperCase()}
+                      </div>
+                      <p>⌖ {MAPS[c.data.mapId]?.name}</p>
+                      <div className="character-summary">
+                        <span>◈ {c.data.gold} gold</span>
+                        <span>⚔ {c.data.kills} wolves</span>
+                      </div>
+                      <OfflineActivities
+                        active={!!c.offline}
+                        reward={c.offlineReward}
+                        choices={
+                          c.offlineActivities ?? [{ id: 'training', label: 'General training' }]
+                        }
+                        busy={busy}
+                        assign={(kind) =>
+                          void run(async () => {
+                            await api(`/characters/${c.id}/offline`, 'POST', { kind });
+                            await refresh();
+                            setNotice('Offline activity assigned.');
+                          })
+                        }
+                        claim={() =>
+                          void run(async () => {
+                            const reward = await api(`/characters/${c.id}/claim`, 'POST', {});
+                            await refresh();
+                            setNotice(`Activity complete: ${activitySummary(reward)}`);
+                          })
+                        }
+                      />
+                      <button className="primary" disabled={busy} onClick={() => play(c)}>
+                        {busy ? 'Connecting…' : 'Enter world →'}
+                      </button>
+                    </article>
+                  ) : (
+                    <button key={i} className="empty-slot" onClick={() => setCreating(true)}>
+                      <span>＋</span>
+                      <h2>A story unwritten</h2>
+                      <p>Create a new adventurer</p>
+                      <small>SLOT 0{i + 1}</small>
                     </button>
-                  </div>
-                  <div className={`portrait-big ${c.outfit}`}>
-                    <ClassSprite
-                      skin={
-                        canEquipSkin(c.data.classId, c.data.skin) ? (c.data.skin ?? null) : null
-                      }
-                      outfit={c.outfit}
-                      appearance={c.appearance}
-                    />
-                    <span>✦</span>
-                  </div>
-                  <h2>{c.name}</h2>
-                  <div className="character-class">
-                    LEVEL {c.data.level} ·{' '}
-                    {(c.class === 'Citizen' ? 'Civilian' : c.class).toUpperCase()}
-                  </div>
-                  <p>⌖ {MAPS[c.data.mapId]?.name}</p>
-                  <div className="character-summary">
-                    <span>◈ {c.data.gold} gold</span>
-                    <span>⚔ {c.data.kills} wolves</span>
-                  </div>
-                  <OfflineActivities
-                    active={!!c.offline}
-                    reward={c.offlineReward}
-                    choices={c.offlineActivities ?? [{ id: 'training', label: 'General training' }]}
-                    busy={busy}
-                    assign={(kind) =>
-                      void run(async () => {
-                        await api(`/characters/${c.id}/offline`, 'POST', { kind });
-                        await refresh();
-                        setNotice('Offline activity assigned.');
-                      })
-                    }
-                    claim={() =>
-                      void run(async () => {
-                        const reward = await api(`/characters/${c.id}/claim`, 'POST', {});
-                        await refresh();
-                        setNotice(`Activity complete: ${activitySummary(reward)}`);
-                      })
-                    }
-                  />
-                  <button className="primary" disabled={busy} onClick={() => play(c)}>
-                    {busy ? 'Connecting…' : 'Enter world →'}
-                  </button>
-                </article>
-              ) : (
-                <button key={i} className="empty-slot" onClick={() => setCreating(true)}>
-                  <span>＋</span>
-                  <h2>A story unwritten</h2>
-                  <p>Create a new adventurer</p>
-                  <small>SLOT 0{i + 1}</small>
+                  );
+                })}
+              </div>
+              <button
+                className="character-carousel-arrow"
+                aria-label="Next adventurer"
+                disabled={busy}
+                onClick={() => setCharacterSlot((i) => (i + 1) % 3)}
+              >
+                <ControlIcon name="right" />
+              </button>
+            </div>
+            <nav className="character-carousel-dots" aria-label="Character slots">
+              {[0, 1, 2].map((i) => (
+                <button
+                  key={i}
+                  aria-label={`Show character slot ${i + 1}`}
+                  aria-current={characterSlot === i ? 'true' : undefined}
+                  disabled={busy}
+                  onClick={() => setCharacterSlot(i)}
+                >
+                  <span />
                 </button>
-              );
-            })}
+              ))}
+            </nav>
+            <p className="character-carousel-counter" role="status" aria-live="polite">
+              Slot {characterSlot + 1} of 3
+            </p>
           </div>
         </main>
       )}
