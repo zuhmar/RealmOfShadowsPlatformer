@@ -58,7 +58,7 @@ try {
     const n = { small: 1, medium: 2, large: 3 }[size];
     await page.waitForFunction(() => {
       const s = window.interiorTest.game.scene.getScene('realm'),
-        b = s.children.getByName('house-backdrop')?.getBounds(),
+        b = s.children.getByName('house-sky')?.getBounds(),
         v = s.cameras.main.worldView;
       return b && b.left <= v.left && b.right >= v.right && b.top <= v.top && b.bottom >= v.bottom;
     });
@@ -112,13 +112,39 @@ try {
     expect(counts.floors).toBe(n);
     expect(counts.ladders).toBe(n - 1);
     expect(counts.uniform).toBe(true);
+    const shell = await page.evaluate(() => {
+      const s = window.interiorTest.game.scene.getScene('realm'),
+        roof = s.children.getByName('house-roof'),
+        plaster = s.children.getByName('house-backdrop'),
+        edges = s.children.list.filter((o) => o.name === 'house-wall-edge');
+      return {
+        roofTexture: roof.texture.key,
+        roofUniform: roof.scaleX === roof.scaleY,
+        edges: edges.map((e) => e.displayTexture.key),
+        plasterBelowRoof: plaster.y >= roof.y - 8,
+      };
+    });
+    expect(shell.roofTexture).toBe('house-roof');
+    expect(shell.roofUniform).toBe(true);
+    expect(shell.edges).toEqual(['house-wall-edge', 'house-wall-edge']);
+    expect(shell.plasterBelowRoof).toBe(true);
+
+    await page.waitForTimeout(200);
     await page.screenshot({ path: `artifacts/${size}-house-interior.png` });
+    await page.evaluate(() => {
+      const s = window.interiorTest.game.scene.getScene('realm');
+      s.cameras.main.stopFollow();
+      s.cameras.main.centerOn(s.map.width / 2, s.map.interiorBounds.top - 80);
+      s.interior.refresh();
+    });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: `artifacts/${size}-house-roof.png` });
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(150);
   await page.waitForFunction(() => {
     const s = window.interiorTest.game.scene.getScene('realm'),
-      b = s.children.getByName('house-backdrop').getBounds(),
+      b = s.children.getByName('house-sky').getBounds(),
       v = s.cameras.main.worldView;
     return b.left <= v.left && b.right >= v.right && b.top <= v.top && b.bottom >= v.bottom;
   });

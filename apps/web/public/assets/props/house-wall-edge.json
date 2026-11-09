@@ -1,0 +1,32 @@
+{
+  "frames": {
+    "main": {
+      "frame": {
+        "x": 454,
+        "y": 27,
+        "w": 165,
+        "h": 1412
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 165,
+        "h": 1412
+      },
+      "sourceSize": {
+        "w": 165,
+        "h": 1412
+      }
+    }
+  },
+  "meta": {
+    "image": "house-wall-edge.png",
+    "size": {
+      "w": 1073,
+      "h": 1466
+    },
+    "scale": "1"
+  }
+}

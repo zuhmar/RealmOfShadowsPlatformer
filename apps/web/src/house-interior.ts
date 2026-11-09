@@ -5,6 +5,12 @@ import { assetUrl } from './assets';
 import { preloadHousing } from './housing';
 export function preloadHouseInterior(scene: Phaser.Scene) {
   preloadHousing(scene);
+  if (!scene.textures.exists('house-sky'))
+    scene.load.image('house-sky', assetUrl('/assets/backgrounds/house-sky.png'));
+  for (const key of ['house-wall-edge', 'house-roof']) {
+    if (!scene.textures.exists(key))
+      scene.load.atlas(key, assetUrl(`/assets/props/${key}.png`), `/assets/props/${key}.json`);
+  }
   if (!scene.textures.exists('house-plaster'))
     scene.load.image('house-plaster', assetUrl('/assets/backgrounds/house-plaster.png'));
   if (!scene.textures.exists('house-interior'))
@@ -18,6 +24,8 @@ export class HouseInterior {
   private items: Phaser.GameObjects.Image[] = [];
   private signature = '';
   private backdrop: Phaser.GameObjects.TileSprite;
+  private sky: Phaser.GameObjects.Image;
+  private roofBase: number;
   constructor(
     private scene: Phaser.Scene,
     private map: GameMap,
@@ -25,6 +33,8 @@ export class HouseInterior {
   ) {
     const layout = HOUSE_LAYOUTS[houseSize(map.id)!];
     const bounds = map.interiorBounds!;
+    this.roofBase = bounds.top - 10;
+    this.sky = scene.add.image(0, 0, 'house-sky').setOrigin(0).setDepth(-41).setName('house-sky');
     this.backdrop = scene.add
       .tileSprite(0, 0, scene.scale.width, scene.scale.height, 'house-plaster')
       .setOrigin(0)
@@ -49,23 +59,25 @@ export class HouseInterior {
         .setName(name);
     };
     strip(32, bounds.top - 28, map.width - 64, 28, 'floor-strip', 1, 'house-ceiling');
-    scene.add
-      .rectangle(0, 0, 64, map.height, 0x6a4125)
-      .setOrigin(0)
-      .setDepth(-18)
-      .setName('house-left-wall');
-    scene.add
-      .rectangle(map.width - 64, 0, 64, map.height, 0x6a4125)
-      .setOrigin(0)
-      .setDepth(-18)
-      .setName('house-right-wall');
-    // One unbroken frame joins every storey without pillar caps or overlapping bases.
     const edgeTop = bounds.top - 28;
     const edgeHeight = bounds.bottom + 28 - edgeTop;
-    for (const x of [64, map.width - 32]) {
-      strip(x, edgeTop, edgeHeight, 32, 'floor-strip', 4, 'house-wall-edge')
-        .setRotation(Math.PI / 2);
+    const edgeFrame = scene.textures.getFrame('house-wall-edge', 'main');
+    for (const x of [32, map.width - 64]) {
+      scene.add
+        .tileSprite(x, edgeTop, 32, edgeHeight, 'house-wall-edge', 'main')
+        .setOrigin(0)
+        .setTileScale(32 / edgeFrame.width)
+        .setDepth(4)
+        .setName('house-wall-edge');
     }
+    const roof = scene.add
+      .image(map.width / 2, this.roofBase, 'house-roof', 'main')
+      .setOrigin(0.5, 1)
+      .setDepth(5)
+      .setName('house-roof');
+    roof.setScale(map.width / roof.width);
+    const cameraTop = Math.min(0, this.roofBase - roof.displayHeight - 80);
+    scene.cameras.main.setBounds(0, cameraTop, map.width, map.height - cameraTop);
     for (const y of layout.floors) {
       strip(64, y - 80, map.width - 128, 80, 'wainscot-strip', -25, 'house-wainscot');
       strip(64, y - 86, map.width - 128, 8, 'floor-strip', -24, 'house-wall-trim');
@@ -124,8 +136,13 @@ export class HouseInterior {
     const view = camera.worldView;
     const w = Math.ceil((view.width || camera.width / camera.zoom) + 128),
       h = Math.ceil((view.height || camera.height / camera.zoom) + 128);
-    this.backdrop.setPosition(view.x - 64, view.y - 64);
-    if (this.backdrop.width !== w || this.backdrop.height !== h) this.backdrop.setSize(w, h);
+    this.sky.setPosition(view.x - 64, view.y - 64);
+    this.sky.setScale(Math.max(w / this.sky.width, h / this.sky.height));
+    const plasterTop = Math.max(view.y - 64, this.roofBase - 8);
+    const plasterHeight = Math.max(1, view.y - 64 + h - plasterTop);
+    this.backdrop.setPosition(view.x - 64, plasterTop);
+    if (this.backdrop.width !== w || this.backdrop.height !== plasterHeight)
+      this.backdrop.setSize(w, plasterHeight);
     this.backdrop.tilePositionX = this.backdrop.x;
     this.backdrop.tilePositionY = this.backdrop.y;
   }

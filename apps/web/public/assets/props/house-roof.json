@@ -1,0 +1,32 @@
+{
+  "frames": {
+    "main": {
+      "frame": {
+        "x": 0,
+        "y": 3,
+        "w": 2172,
+        "h": 686
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 2172,
+        "h": 686
+      },
+      "sourceSize": {
+        "w": 2172,
+        "h": 686
+      }
+    }
+  },
+  "meta": {
+    "image": "house-roof.png",
+    "size": {
+      "w": 2172,
+      "h": 724
+    },
+    "scale": "1"
+  }
+}
