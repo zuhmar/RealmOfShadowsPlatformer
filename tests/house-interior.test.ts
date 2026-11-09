@@ -6,6 +6,7 @@ import {
   World,
   idleInput,
   changeHousing,
+  furniturePlacement,
   moveActor,
   constrainHouseActor,
 } from '@ros/shared';
@@ -95,4 +96,26 @@ test('house movement remains inside visible walls on every floor and recovers in
       assert.equal(p.platform, 'ground');
     }
   }
+});
+
+test('furniture previews validate the same placement as the server without consuming inventory', () => {
+  const p = createPlayer('preview', 'Decorator', 'house-medium');
+  p.houseOwnerId = p.id;
+  p.housing = { size: 'medium', stage: 3, invited: [], furniture: [] };
+  p.inventory = { 'oak-table': 2 };
+  p.y = 780;
+  p.grounded = true;
+  const original = structuredClone(p);
+  const target = furniturePlacement(p, 'oak-table', 100);
+  assert.equal(target.floor, 0);
+  assert.equal(target.x, 100);
+  assert.deepEqual(p, original);
+  changeHousing(p, { action: 'place', id: 'oak-table', x: target.x });
+  assert.equal(p.inventory['oak-table'], 1);
+  assert.throws(() => furniturePlacement(p, 'oak-table', 100), /space/);
+  assert.throws(() => furniturePlacement(p, 'oak-table', 10000), /within/);
+  p.y = 500;
+  assert.equal(furniturePlacement(p, 'oak-table', 100).floor, 1);
+  p.grounded = false;
+  assert.throws(() => furniturePlacement(p, 'oak-table', 200), /Stand/);
 });

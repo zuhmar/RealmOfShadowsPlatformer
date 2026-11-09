@@ -19,11 +19,13 @@ export function HousingPanel({
   players,
   invitedHomes = [],
   send,
+  onPlace,
 }: {
   player: Player;
   players: Player[];
   invitedHomes?: { id: string; name: string }[];
   send: (type: string, v: unknown) => void;
+  onPlace: (id: string) => void;
 }) {
   useEffect(() => {
     send('housing', { action: 'list' });
@@ -31,7 +33,6 @@ export function HousingPanel({
   const [tab, setTab] = useState('Build'),
     [recipe, setRecipe] = useState('oak-plank'),
     [quantity, setQuantity] = useState(1),
-    [position, setPosition] = useState(0),
     [pending, setPending] = useState(false);
   const h = p.housing,
     level = p.carpentry?.level ?? 1,
@@ -40,10 +41,10 @@ export function HousingPanel({
     visiting = !!view && view.ownerId !== p.id,
     inside = !!houseSize(p.mapId),
     layout = h ? HOUSE_LAYOUTS[h.size] : undefined;
-  const act = (action: string, id?: string, x?: number) => {
+  const act = (action: string, id?: string) => {
     if (pending) return;
     setPending(true);
-    send('housing', { action, id, x, ...(action === 'craft' ? { quantity } : {}) });
+    send('housing', { action, id, ...(action === 'craft' ? { quantity } : {}) });
     setTimeout(() => setPending(false), 800);
   };
   const r = CARPENTRY_RECIPES.find((r) => r.id === recipe)!,
@@ -235,8 +236,8 @@ export function HousingPanel({
       {!visiting && tab === 'Decorate' && (
         <>
           <p>
-            Place furniture on the floor you are standing on inside your house. Removing a piece
-            returns it to your bag.
+            Choose furniture, then tap or click a spot in your house to preview its placement.
+            Removing a piece returns it to your bag.
           </p>
           {h ? (
             <>
@@ -245,23 +246,8 @@ export function HousingPanel({
                 <p>
                   Floor {(layout?.floors.findIndex((y) => Math.abs(y - p.y) <= 50) ?? -1) + 1} ·{' '}
                   {h.furniture.length}/{layout?.capacity} placed{' '}
-                  <button onClick={() => setPosition(Math.round(p.x - (layout?.width ?? 0) / 2))}>
-                    Place here
-                  </button>
                 </p>
               )}
-              <label>
-                Furniture position: {position}
-                <input
-                  aria-label="Furniture position"
-                  type="range"
-                  min={-Math.floor(((layout?.width ?? 800) - 160) / 2)}
-                  max={Math.floor(((layout?.width ?? 800) - 160) / 2)}
-                  step="5"
-                  value={position}
-                  onChange={(e) => setPosition(Number(e.target.value))}
-                />
-              </label>
               <div className="housing-options">
                 {CARPENTRY_RECIPES.filter((r) => r.width > 0).map((r) => (
                   <article key={r.id}>
@@ -270,16 +256,16 @@ export function HousingPanel({
                     <p>{p.inventory[r.id] ?? 0} owned</p>
                     <button
                       disabled={!inside || pending || h.stage !== 3 || !(p.inventory[r.id] > 0)}
-                      onClick={() => act('place', r.id, position)}
+                      onClick={() => onPlace(r.id)}
                     >
-                      Place {r.name} at {position}
+                      Place {r.name}
                     </button>
                   </article>
                 ))}
               </div>
               {h.furniture.map((f) => (
                 <p key={f.id}>
-                  {itemDefinition(f.item)?.name} · Floor {(f.floor ?? 0) + 1} · {f.x}{' '}
+                  {itemDefinition(f.item)?.name} · Floor {(f.floor ?? 0) + 1}{' '}
                   <button disabled={!near || pending} onClick={() => act('remove', f.id)}>
                     Return to bag
                   </button>

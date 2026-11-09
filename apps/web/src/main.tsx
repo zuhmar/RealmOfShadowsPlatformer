@@ -1,3 +1,5 @@
+import type { FurnitureTarget } from './furniture-placement';
+import { houseSize } from '@ros/game-data';
 import { BagPanel } from './BagPanel';
 import { HousingPanel } from './HousingPanel';
 import { recipeFromScroll } from '@ros/game-data';
@@ -98,6 +100,9 @@ function App() {
   const [playerId, setPlayerId] = useState('');
   const [chatOpen, setChatOpen] = useState(() => window.innerWidth > 700);
   const [panel, setPanel] = useState<string | null>(null);
+  const [placingFurniture, setPlacingFurniture] = useState<string | null>(null);
+  const [furnitureTarget, setFurnitureTarget] = useState<FurnitureTarget | null>(null);
+  const [placementPending, setPlacementPending] = useState<number | null>(null);
   const [housingInvitations, setHousingInvitations] = useState<{ id: string; name: string }[]>([]);
   const [cosmeticDialog, setCosmeticDialog] = useState<'class' | 'skin' | null>(null);
   const offeredClass = useRef(new Set<string>());
@@ -164,6 +169,47 @@ function App() {
     }
   }, [p?.id, p?.classId, p?.quests?.['crystal-class-trial']?.claimed, map.id]);
 
+  useEffect(() => {
+    if (!placingFurniture) {
+      delete bridge.current.furniturePlacement;
+      setFurnitureTarget(null);
+      return;
+    }
+    bridge.current.furniturePlacement = { item: placingFurniture, onTarget: setFurnitureTarget };
+    const cancel = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && placementPending === null) setPlacingFurniture(null);
+    };
+    window.addEventListener('keydown', cancel);
+    return () => {
+      delete bridge.current.furniturePlacement;
+      window.removeEventListener('keydown', cancel);
+    };
+  }, [placingFurniture, placementPending]);
+  useEffect(() => {
+    if (!p || !houseSize(p.mapId) || p.houseOwnerId !== p.id || panel || connectionStatus) {
+      setPlacingFurniture(null);
+      setPlacementPending(null);
+    }
+  }, [p?.id, p?.mapId, p?.houseOwnerId, panel, connectionStatus]);
+  useEffect(() => {
+    if (placementPending !== null && (p?.housingRevision ?? 0) !== placementPending) {
+      setPlacementPending(null);
+      setPlacingFurniture(null);
+    }
+  }, [placementPending, p?.housingRevision]);
+  useEffect(() => {
+    if (placementPending === null) return;
+    const timeout = setTimeout(() => setPlacementPending(null), 5000);
+    return () => clearTimeout(timeout);
+  }, [placementPending]);
+  function selectFurniture(id: string) {
+    setFurnitureTarget(null);
+    setPlacementPending(null);
+    setPlacingFurniture(id);
+    setPanel(null);
+    bridge.current.held = {};
+    bridge.current.send('auto', false);
+  }
   const trialStatus = p ? questStatus(p) : 'available';
   const woodsObjective =
     p &&
@@ -545,6 +591,7 @@ function App() {
   useEffect(() => {
     bridge.current.blocked =
       !!cosmeticDialog ||
+      !!placingFurniture ||
       !!connectionStatus ||
       panel === 'mira' ||
       panel === 'bram' ||
@@ -552,13 +599,14 @@ function App() {
       panel === 'recipes';
     if (
       cosmeticDialog ||
+      placingFurniture ||
       panel === 'mira' ||
       panel === 'bram' ||
       panel === 'crystal-quests' ||
       panel === 'recipes'
     )
       bridge.current.held = {};
-  }, [panel, connectionStatus, cosmeticDialog]);
+  }, [panel, connectionStatus, cosmeticDialog, placingFurniture]);
   function isolateControlInput(e: React.SyntheticEvent) {
     if (page === 'game' && (e.target as Element).closest('button,input,textarea,select,.modal'))
       e.stopPropagation();
@@ -594,7 +642,7 @@ function App() {
   );
   return (
     <div
-      className={`app ${page === 'game' ? 'playing' : ''}`}
+      className={`app ${page === 'game' ? 'playing' : ''} ${placingFurniture ? 'furniture-placement-active' : ''}`}
       onPointerDown={isolateControlInput}
       onPointerUp={isolateControlInput}
       onMouseDown={isolateControlInput}
@@ -1285,6 +1333,42 @@ function App() {
           send={bridge.current.send}
         />
       )}
+      {placingFurniture && p && (
+        <section className="furniture-placement-toolbar" aria-label="Furniture placement">
+          <div>
+            <ItemIcon id={placingFurniture} />
+            <b>{itemDefinition(placingFurniture)?.name}</b>
+          </div>
+          <p>Tap or click the room to position your furniture.</p>
+          <p
+            role="status"
+            className={furnitureTarget?.valid ? 'placement-valid' : 'placement-invalid'}
+          >
+            {placementPending !== null
+              ? 'Saving furniture…'
+              : (furnitureTarget?.reason ?? 'Choose a spot in your house.')}
+          </p>
+          <div className="placement-actions">
+            <button
+              disabled={!furnitureTarget?.valid || placementPending !== null}
+              onClick={() => {
+                if (!furnitureTarget?.valid || placementPending !== null) return;
+                setPlacementPending(p.housingRevision ?? 0);
+                bridge.current.send('housing', {
+                  action: 'place',
+                  id: placingFurniture,
+                  x: furnitureTarget.x,
+                });
+              }}
+            >
+              Place furniture
+            </button>
+            <button disabled={placementPending !== null} onClick={() => setPlacingFurniture(null)}>
+              Cancel placement
+            </button>
+          </div>
+        </section>
+      )}
       {panel === 'inventory' && p && (
         <BagPanel
           player={p}
@@ -1325,6 +1409,7 @@ function App() {
                 player={p}
                 players={snapshot?.players ?? []}
                 invitedHomes={housingInvitations}
+                onPlace={selectFurniture}
                 send={bridge.current.send}
               />
             )}

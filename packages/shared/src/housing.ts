@@ -56,6 +56,32 @@ function train(p: Player, xp: number) {
   }
   if (s.level >= 100) s.xp = 0;
 }
+export function furniturePlacement(p: Player, id: string, position: unknown) {
+  if (p.houseOwnerId !== p.id) throw new Error('Only the owner can change this house.');
+  const h = p.housing,
+    r = CARPENTRY_RECIPES.find((r) => r.id === id);
+  if (!h || h.stage !== 3 || !r?.width || (p.inventory[id] ?? 0) < 1)
+    throw new Error('Finish your house and craft furniture first.');
+  const size = houseSize(p.mapId);
+  if (!size || p.houseOwnerId !== p.id) throw new Error('Enter your house to place furniture.');
+  const layout = HOUSE_LAYOUTS[size],
+    floor = layout.floors.findIndex((y) => Math.abs(y - p.y) <= 50);
+  if (floor < 0 || !p.grounded) throw new Error('Stand on a house floor to place furniture.');
+  const x = Number(position),
+    half = (layout.width - 160) / 2;
+  if (!Number.isFinite(x) || Math.abs(x) > half - r.width / 2 || !Number.isInteger(x))
+    throw new Error('Place furniture within your plot.');
+  if (h.furniture.length >= layout.capacity)
+    throw new Error(`This house holds up to ${layout.capacity} decorations.`);
+  if (
+    h.furniture.some((f) => {
+      const other = CARPENTRY_RECIPES.find((r) => r.id === f.item)!;
+      return (f.floor ?? 0) === floor && Math.abs(f.x - x) < (other.width + r.width) / 2 + 4;
+    })
+  )
+    throw new Error('Leave space between furniture pieces.');
+  return { h, r, x, floor, layout };
+}
 export function changeHousing(
   p: Player,
   value: { action?: unknown; id?: unknown; x?: unknown; quantity?: unknown },
@@ -102,28 +128,7 @@ export function changeHousing(
     p.inventory[id] = (p.inventory[id] ?? 0) + quantity;
     train(p, r.xp * quantity);
   } else if (value.action === 'place') {
-    const h = p.housing,
-      r = CARPENTRY_RECIPES.find((r) => r.id === id);
-    if (!h || h.stage !== 3 || !r?.width || (p.inventory[id] ?? 0) < 1)
-      throw new Error('Finish your house and craft furniture first.');
-    const size = houseSize(p.mapId);
-    if (!size || p.houseOwnerId !== p.id) throw new Error('Enter your house to place furniture.');
-    const layout = HOUSE_LAYOUTS[size],
-      floor = layout.floors.findIndex((y) => Math.abs(y - p.y) <= 50);
-    if (floor < 0 || !p.grounded) throw new Error('Stand on a house floor to place furniture.');
-    const x = Number(value.x),
-      half = (layout.width - 160) / 2;
-    if (!Number.isFinite(x) || Math.abs(x) > half - r.width / 2 || !Number.isInteger(x))
-      throw new Error('Place furniture within your plot.');
-    if (h.furniture.length >= layout.capacity)
-      throw new Error(`This house holds up to ${layout.capacity} decorations.`);
-    if (
-      h.furniture.some((f) => {
-        const other = CARPENTRY_RECIPES.find((r) => r.id === f.item)!;
-        return (f.floor ?? 0) === floor && Math.abs(f.x - x) < (other.width + r.width) / 2 + 4;
-      })
-    )
-      throw new Error('Leave space between furniture pieces.');
+    const { h, x, floor } = furniturePlacement(p, id, value.x);
     p.inventory[id]--;
     h.furniture.push({
       id: `f${(p.housingRevision ?? 0) + 1}-${h.furniture.length}`,

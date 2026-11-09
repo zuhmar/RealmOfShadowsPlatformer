@@ -11,7 +11,7 @@ const browser = await chromium.launch({
   executablePath: '/usr/bin/chromium',
   args: ['--no-sandbox'],
 });
-const page = await browser.newPage({ viewport: { width: 1200, height: 850 } }),
+const page = await browser.newPage({ viewport: { width: 1200, height: 850 }, hasTouch: true }),
   errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 let userId;
@@ -106,11 +106,60 @@ try {
   await page.getByRole('button', { name: 'Housing', exact: true }).click();
   await page.getByRole('button', { name: 'Decorate', exact: true }).click();
   await page.waitForTimeout(850);
-  await page.getByRole('button', { name: 'Place Oak Table at 0', exact: true }).click();
+  await expect(page.getByLabel('Furniture position')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Place Oak Table', exact: true }).click();
+  await expect(page.getByLabel('Furniture placement', { exact: true })).toBeVisible();
+  await expect(page.locator('.housing-panel')).toHaveCount(0);
+  await page.locator('.phaser-host canvas').click({ position: { x: 650, y: 480 } });
+  await expect(page.getByRole('button', { name: 'Place furniture', exact: true })).toBeEnabled();
+  await page.screenshot({ path: 'artifacts/furniture-preview-desktop.png' });
+  await page.getByRole('button', { name: 'Place furniture', exact: true }).click();
+  await expect(page.getByLabel('Furniture placement', { exact: true })).toHaveCount(0);
+  await expect
+    .poll(
+      async () =>
+        (await db.character.findUnique({ where: { id: c.id } })).data.housing.furniture.length,
+    )
+    .toBe(1);
+  await page.getByRole('button', { name: 'Housing', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Return to bag', exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/housing-panel-desktop.png' });
   await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.screenshot({ path: 'artifacts/housing-small-desktop.png' });
+  await page.getByRole('button', { name: 'Housing', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
+  await page.getByRole('button', { name: 'Place Oak Table', exact: true }).click();
+  await page.locator('.phaser-host canvas').click({ position: { x: 110, y: 650 } });
+  await page.waitForTimeout(200);
+  await expect(page.locator('.world-title')).toContainText('Small House');
+  await expect(page.getByLabel('Furniture placement', { exact: true })).toBeVisible();
+  await page.locator('.phaser-host canvas').click({ position: { x: 650, y: 480 } });
+  await expect(page.getByRole('button', { name: 'Place furniture', exact: true })).toBeDisabled();
+  await expect(page.getByLabel('Furniture placement', { exact: true })).toContainText(
+    'Leave space',
+  );
+  await page.getByRole('button', { name: 'Cancel placement', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: 'Housing', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
+  await page.getByRole('button', { name: 'Place Oak Table', exact: true }).click();
+  await page.touchscreen.tap(280, 550);
+  await expect(page.getByRole('button', { name: 'Place furniture', exact: true })).toBeEnabled();
+  await page.screenshot({ path: 'artifacts/furniture-preview-mobile.png' });
+  await page.getByRole('button', { name: 'Place furniture', exact: true }).click();
+  await expect(page.getByLabel('Furniture placement', { exact: true })).toHaveCount(0);
+  await expect
+    .poll(
+      async () =>
+        (await db.character.findUnique({ where: { id: c.id } })).data.housing.furniture.length,
+    )
+    .toBe(2);
+  const decorated = (await db.character.findUnique({ where: { id: c.id } })).data;
+  expect(decorated.inventory['oak-table']).toBe(1);
+  expect(new Set(decorated.housing.furniture.map((f) => f.x)).size).toBe(2);
+  await page.setViewportSize({ width: 1200, height: 850 });
+
   await page.getByRole('button', { name: 'Housing', exact: true }).click();
   await page.getByRole('button', { name: 'Exit house', exact: true }).click();
   await expect(page.locator('.world-title')).toContainText('Elderwood Village');
@@ -138,11 +187,11 @@ try {
   await expect(page.locator('.site-header')).toBeVisible();
   const saved = await db.character.findUnique({ where: { id: c.id } });
   expect(saved.data.housing.size).toBe('large');
-  expect(saved.data.housing.furniture.length).toBe(1);
+  expect(saved.data.housing.furniture.length).toBe(2);
   expect(saved.data.housingView).toBeUndefined();
   expect(errors).toEqual([]);
   console.log(
-    'PASS: carpentry bench opens actual housing UI and builds stages, enters its private interior, crafts/places furniture, upgrades plot, saves and renders desktop/mobile without overflow.',
+    'PASS: carpentry bench opens actual housing UI and builds stages, enters its private interior, crafts furniture, places directly with mouse/touch, rejects overlap, cancels without spending, protects the door while decorating, upgrades plot and saves both placements without overflow.',
   );
 } finally {
   await browser.close();

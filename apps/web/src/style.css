@@ -3923,3 +3923,37 @@ footer {
     min-width: 0;
   }
 }
+
+.furniture-placement-toolbar {
+  position: fixed;
+  z-index: 120;
+  left: 50%;
+  top: max(180px, env(safe-area-inset-top));
+  transform: translateX(-50%);
+  width: min(440px, calc(100vw - 24px));
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: rgba(24, 13, 38, .92);
+  border: 1px solid #bf8fdd;
+  text-align: center;
+  box-shadow: 0 8px 30px #0007;
+  pointer-events: auto;
+}
+.furniture-placement-toolbar > div:first-child { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.furniture-placement-toolbar p { margin: 5px 0; font-size: 14px; }
+.placement-valid { color: #b6e78c; }
+.placement-invalid { color: #ffb2b8; }
+.placement-actions { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
+.furniture-placement-active .touch-controls { visibility: hidden; pointer-events: none; }
+
+.furniture-placement-active .floating-actions,
+.furniture-placement-active .chat-box { visibility: hidden; pointer-events: none; }
+.app.playing .placement-actions button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #c391e4;
+  border-radius: 12px;
+  background: #4d2869;
+  color: #fff1ff;
+}
+.app.playing .placement-actions button:disabled { opacity: .45; }

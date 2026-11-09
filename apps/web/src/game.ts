@@ -1,3 +1,4 @@
+import { FurniturePlacement, type FurnitureSelection } from './furniture-placement';
 import { constrainHouseActor } from '@ros/shared';
 import { HouseInterior, preloadHouseInterior } from './house-interior';
 import { houseSize } from '@ros/game-data';
@@ -41,6 +42,7 @@ export type Bridge = {
   id: string;
   held: Partial<Input>;
   blocked?: boolean;
+  furniturePlacement?: FurnitureSelection;
   send: (type: string, data: unknown) => void;
   onReady?: () => void;
   prepareMap?: (id: string) => void;
@@ -67,6 +69,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     village?: VillageScenery;
     housing?: HousingScenery;
     interior?: HouseInterior;
+    furniturePlacement?: FurniturePlacement;
     miraMarker?: Phaser.GameObjects.Text;
     bossWarnings!: BossWarnings;
     nextPrepareAt = 3000;
@@ -229,9 +232,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const m = this.map;
       const woods = m.island === 'Whispering Woods';
       if (houseSize(m.id))
-        this.interior = new HouseInterior(this, m, () =>
-          bridge.send('housing', { action: 'exit' }),
-        );
+        this.interior = new HouseInterior(this, m, () => {
+          if (!bridge.furniturePlacement) bridge.send('housing', { action: 'exit' });
+        });
       else if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
       else if (m.island === 'Crystal Caverns')
         this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
@@ -577,6 +580,13 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.sync(s);
       this.housing?.update(s.players.find((p) => p.id === bridge.id));
       this.interior?.update(s.players.find((p) => p.id === bridge.id));
+      if (this.interior) {
+        this.furniturePlacement ??= new FurniturePlacement(this, this.map);
+        this.furniturePlacement.update(
+          s.players.find((p) => p.id === bridge.id),
+          bridge.furniturePlacement,
+        );
+      }
       if (this.time.now >= this.nextPrepareAt && !this.load.isLoading()) {
         this.nextPrepareAt = this.time.now + 1000;
         const p = s.players.find((p) => p.id === bridge.id);
