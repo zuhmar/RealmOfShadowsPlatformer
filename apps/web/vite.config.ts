@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
+import { showcasePlugin } from './showcase-plugin';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), showcasePlugin()],
   server: { proxy: { '/api': 'http://127.0.0.1:2567' } },
 });

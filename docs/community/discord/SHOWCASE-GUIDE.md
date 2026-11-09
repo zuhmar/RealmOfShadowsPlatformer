@@ -37,3 +37,10 @@ node --import tsx scripts/render-discord-features.mjs
 The renderer checks missing assets and text overflow. `SKIP_EXISTING=1` can
 reuse exported PNGs when rebuilding the gallery and manifest; omit it after
 layout or artwork changes.
+
+## View on the game website
+
+The web build publishes this library at `/showcase`. Open that path on the
+same domain as the game, tap a preview, and save the full-size PNG. The page
+also links to the server icon, welcome banner, and post captions. These static
+files load only when visiting the gallery, not when starting the game.
