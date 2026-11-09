@@ -1,0 +1,768 @@
+{
+  "cards": [
+    {
+      "id": "00-start-here",
+      "title": "A world to grow into.",
+      "intro": "Explore, fight, craft, and make a home in Realm of Shadows.",
+      "file": "features/00-start-here.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "01-elderwood",
+      "title": "Elderwood Village",
+      "intro": "Your safe hub between adventures.",
+      "file": "features/01-elderwood.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "02-hunting",
+      "title": "Into Whispering Woods",
+      "intro": "Explore distinct hunting areas as your adventure unfolds.",
+      "file": "features/02-hunting.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "03-gathering",
+      "title": "Gather. Train. Upgrade.",
+      "intro": "Build your gathering skills with tools held in your character’s hands.",
+      "file": "features/03-gathering.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "04-fishing",
+      "title": "A quiet moment by the water.",
+      "intro": "Cast from a dedicated fishing platform.",
+      "file": "features/04-fishing.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "05-bosses",
+      "title": "Face the island boss.",
+      "intro": "A bigger threat at the end of the hunt.",
+      "file": "features/05-bosses.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "06-crystal",
+      "title": "Beyond the woods.",
+      "intro": "A look inside Crystal Caverns.",
+      "file": "features/06-crystal.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "07-crystal-gathering",
+      "title": "Resources with a crystal glow.",
+      "intro": "Continue gathering as your equipment progresses.",
+      "file": "features/07-crystal-gathering.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "08-classes",
+      "title": "Four paths. Your adventure.",
+      "intro": "Choose a class through the Crystal Caverns quest.",
+      "file": "features/08-classes.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "class-knight",
+      "title": "Knight",
+      "intro": "Wide melee sweeps and extra reach.",
+      "file": "classes/class-knight.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "class-archer",
+      "title": "Archer",
+      "intro": "Long-range arrows that pierce more enemies.",
+      "file": "classes/class-archer.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "class-mage",
+      "title": "Mage",
+      "intro": "Magic bursts with growing area coverage.",
+      "file": "classes/class-mage.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "class-rogue",
+      "title": "Rogue",
+      "intro": "Rapid close-range combinations.",
+      "file": "classes/class-rogue.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "09-weapons",
+      "title": "Choose your weapon.",
+      "intro": "Sword, bow, staff, or paired daggers: find your combat style.",
+      "file": "features/09-weapons.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "10-skills",
+      "title": "Grow through practice.",
+      "intro": "Melee, Magic, and Distance training increase base damage.",
+      "file": "features/10-skills.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "11-equipment",
+      "title": "Gear up for the journey.",
+      "intro": "Weapons and armor with a visual identity for each island.",
+      "file": "features/11-equipment.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "12-identification",
+      "title": "What did you find?",
+      "intro": "Identify monster-dropped equipment with gold to reveal its rarity and attributes.",
+      "file": "features/12-identification.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "13-crafting-benches",
+      "title": "Built for crafting.",
+      "intro": "Dedicated stations bring your materials to life.",
+      "file": "features/13-crafting-benches.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "14-forging",
+      "title": "Ore to bars. Bars to equipment.",
+      "intro": "Smelt materials, discover recipes, and craft upgrades.",
+      "file": "features/14-forging.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "15-cooking",
+      "title": "Cook for the next fight.",
+      "intro": "Prepared food grants buffs for your adventures.",
+      "file": "features/15-cooking.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "16-alchemy",
+      "title": "Brew a little backup.",
+      "intro": "Craft health and mana potions with gathered ingredients.",
+      "file": "features/16-alchemy.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "17-recipes",
+      "title": "Your next discovery could be a recipe.",
+      "intro": "Find recipe scrolls while hunting to unlock new crafts.",
+      "file": "features/17-recipes.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "18-carpentry",
+      "title": "Make something worth coming home to.",
+      "intro": "Turn logs into planks, furniture, and a place of your own.",
+      "file": "features/18-carpentry.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "19-housing",
+      "title": "Your corner of Elderwood.",
+      "intro": "Build, decorate, and invite friends into your private house.",
+      "file": "features/19-housing.png",
+      "kind": "Actual game renderer · Staged development capture"
+    },
+    {
+      "id": "20-travel",
+      "title": "Less walking. More adventure.",
+      "intro": "Spend Teleport Crystals on the world map to revisit discovered areas.",
+      "file": "features/20-travel.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "21-quests",
+      "title": "One quest at a time.",
+      "intro": "Hunt, explore, and work toward the next chapter of your journey.",
+      "file": "features/21-quests.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "22-inventory",
+      "title": "Everything you carry.",
+      "intro": "Stacked inventory slots, equipped gear, and item details in your bag.",
+      "file": "features/22-inventory.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "23-idle",
+      "title": "Keep growing between adventures.",
+      "intro": "Assign away activities and return to claim accumulated rewards.",
+      "file": "features/23-idle.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "24-specials",
+      "title": "A technique that grows with your weapon.",
+      "intro": "Special attacks improve as your weapon tier progresses.",
+      "file": "features/24-specials.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "25-skins",
+      "title": "Dress for your calling.",
+      "intro": "Class outfits include headwear and matching weapon appearances.",
+      "file": "features/25-skins.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "26-villagers",
+      "title": "A few familiar faces.",
+      "intro": "Meet the people who help you along the way.",
+      "file": "features/26-villagers.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "27-portals",
+      "title": "Every destination has its own glow.",
+      "intro": "Island-themed portals connect the journey.",
+      "file": "features/27-portals.png",
+      "kind": "Actual portal sprites · Includes later-island artwork"
+    },
+    {
+      "id": "28-world-1",
+      "title": "The islands ahead.",
+      "intro": "Whispering Woods and Crystal Caverns are playable; later islands are in development.",
+      "file": "features/28-world-1.png",
+      "kind": "Actual island-map artwork · Availability labelled per island"
+    },
+    {
+      "id": "28-world-2",
+      "title": "The islands ahead.",
+      "intro": "Whispering Woods and Crystal Caverns are playable; later islands are in development.",
+      "file": "features/28-world-2.png",
+      "kind": "Actual island-map artwork · Availability labelled per island"
+    },
+    {
+      "id": "29-controls",
+      "title": "Adventure at your fingertips.",
+      "intro": "In-game controls and menus keep the world in view.",
+      "file": "features/29-controls.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "30-multiplayer",
+      "title": "A world to share.",
+      "intro": "Chat with other adventurers and invite friends into your house.",
+      "file": "features/30-multiplayer.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "31-attributes",
+      "title": "Make your equipment count.",
+      "intro": "Revealed gear attributes can shape your combat stats.",
+      "file": "features/31-attributes.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "gather-mining",
+      "title": "Mining progression",
+      "intro": "Start with wooden tools, then equip crafted upgrades.",
+      "file": "features/gather-mining.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "gather-woodcutting",
+      "title": "Woodcutting progression",
+      "intro": "Start with wooden tools, then equip crafted upgrades.",
+      "file": "features/gather-woodcutting.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "gather-fishing",
+      "title": "Fishing progression",
+      "intro": "Start with wooden tools, then equip crafted upgrades.",
+      "file": "features/gather-fishing.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "gather-herbalism",
+      "title": "Herbalism progression",
+      "intro": "Start with wooden tools, then equip crafted upgrades.",
+      "file": "features/gather-herbalism.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-wolf-spritesheet",
+      "title": "Wolf",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-wolf-spritesheet.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-thorn-spider",
+      "title": "Thorn Spider",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-thorn-spider.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-wild-boar",
+      "title": "Wild Boar",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-wild-boar.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-forest-bear",
+      "title": "Forest Bear",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-forest-bear.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-cave-bat",
+      "title": "Cave Bat",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-cave-bat.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-crystal-golem",
+      "title": "Crystal Golem",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-crystal-golem.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-shard-scorpion",
+      "title": "Shard Scorpion",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-shard-scorpion.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "monster-crystal-wyrm",
+      "title": "Crystal Wyrm",
+      "intro": "A creature from the current hunting islands.",
+      "file": "monsters/monster-crystal-wyrm.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "starter-weapons",
+      "title": "The first four weapons.",
+      "intro": "Try the four weapon types as your adventure begins.",
+      "file": "items/starter-weapons.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "keys-currency",
+      "title": "Keys, crystals & rewards.",
+      "intro": "Useful finds for your travels and hunts.",
+      "file": "items/keys-currency.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "equipment-woods",
+      "title": "Ironwood equipment",
+      "intro": "Whispering Woods · Four weapon types and four armor pieces.",
+      "file": "items/equipment-woods.png",
+      "kind": "Actual game sprites · Development preview"
+    },
+    {
+      "id": "equipment-crystal",
+      "title": "Crystal equipment",
+      "intro": "Crystal Caverns · Four weapon types and four armor pieces.",
+      "file": "items/equipment-crystal.png",
+      "kind": "Actual game sprites · Development preview"
+    },
+    {
+      "id": "equipment-swamp",
+      "title": "Mireguard equipment",
+      "intro": "Murkmire Swamp · Four weapon types and four armor pieces.",
+      "file": "items/equipment-swamp.png",
+      "kind": "Actual game sprites · Later-island art preview"
+    },
+    {
+      "id": "equipment-frost",
+      "title": "Frostforged equipment",
+      "intro": "Frostfall Tundra · Four weapon types and four armor pieces.",
+      "file": "items/equipment-frost.png",
+      "kind": "Actual game sprites · Later-island art preview"
+    },
+    {
+      "id": "equipment-ember",
+      "title": "Emberforged equipment",
+      "intro": "Ember Peaks · Four weapon types and four armor pieces.",
+      "file": "items/equipment-ember.png",
+      "kind": "Actual game sprites · Later-island art preview"
+    },
+    {
+      "id": "equipment-celestial",
+      "title": "Astral equipment",
+      "intro": "Celestial Realm · Four weapon types and four armor pieces.",
+      "file": "items/equipment-celestial.png",
+      "kind": "Actual game sprites · Later-island art preview"
+    },
+    {
+      "id": "equipment-shadow",
+      "title": "Shadowforged equipment",
+      "intro": "Shadow Fortress · Four weapon types and four armor pieces.",
+      "file": "items/equipment-shadow.png",
+      "kind": "Actual game sprites · Later-island art preview"
+    },
+    {
+      "id": "tools-wood",
+      "title": "Wooden gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-wood.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "tools-iron",
+      "title": "Iron gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-iron.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "tools-crystal",
+      "title": "Crystal gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-crystal.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "tools-mire",
+      "title": "Mire gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-mire.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "tools-frost",
+      "title": "Frost gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-frost.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "tools-ember",
+      "title": "Ember gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-ember.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "tools-celestial",
+      "title": "Celestial gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-celestial.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "tools-shadow",
+      "title": "Shadow gathering tools",
+      "intro": "Pickaxe, axe, fishing rod, and sickle.",
+      "file": "items/tools-shadow.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "resources-1",
+      "title": "Gathering resources",
+      "intro": "A closer look at the game’s item sprites.",
+      "file": "items/resources-1.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "loot-1",
+      "title": "Hunting loot",
+      "intro": "A closer look at the game’s item sprites.",
+      "file": "items/loot-1.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "bars-1",
+      "title": "Smelted bars",
+      "intro": "A closer look at the game’s item sprites.",
+      "file": "items/bars-1.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "food-potions-1",
+      "title": "Food & potions",
+      "intro": "A closer look at the game’s item sprites.",
+      "file": "items/food-potions-1.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "furniture-1",
+      "title": "Housing & furniture",
+      "intro": "A closer look at the game’s item sprites.",
+      "file": "items/furniture-1.png",
+      "kind": "Game sprites · Development preview"
+    },
+    {
+      "id": "recipe-scrolls-1",
+      "title": "Recipe scrolls",
+      "intro": "A closer look at the game’s item sprites.",
+      "file": "items/recipe-scrolls-1.png",
+      "kind": "Game sprites · Development preview"
+    }
+  ],
+  "catalogs": [
+    {
+      "category": "Gathering resources",
+      "count": 12,
+      "items": [
+        {
+          "id": "iron-ore",
+          "name": "Iron Ore"
+        },
+        {
+          "id": "oak-logs",
+          "name": "Oak Logs"
+        },
+        {
+          "id": "greenleaf",
+          "name": "Greenleaf"
+        },
+        {
+          "id": "brook-trout",
+          "name": "Brook Trout"
+        },
+        {
+          "id": "silver-minnow",
+          "name": "Silver Minnow"
+        },
+        {
+          "id": "golden-carp",
+          "name": "Golden Carp"
+        },
+        {
+          "id": "crystal-ore",
+          "name": "Crystal Ore"
+        },
+        {
+          "id": "crystalwood",
+          "name": "Crystalwood"
+        },
+        {
+          "id": "glowcap",
+          "name": "Glowcap"
+        },
+        {
+          "id": "crystal-fish",
+          "name": "Crystal Fish"
+        },
+        {
+          "id": "glowfin",
+          "name": "Glowfin"
+        },
+        {
+          "id": "prismatic-eel",
+          "name": "Prismatic Eel"
+        }
+      ]
+    },
+    {
+      "category": "Hunting loot",
+      "count": 12,
+      "items": [
+        {
+          "id": "wolf-pelt",
+          "name": "Wolf Pelt"
+        },
+        {
+          "id": "thorn-silk",
+          "name": "Thorn Silk"
+        },
+        {
+          "id": "boar-tusk",
+          "name": "Boar Tusk"
+        },
+        {
+          "id": "bear-claw",
+          "name": "Forest Bear Claw"
+        },
+        {
+          "id": "forest-guardian-ring",
+          "name": "Forest Guardian Ring"
+        },
+        {
+          "id": "forest-bear-trophy",
+          "name": "Forest Bear Trophy"
+        },
+        {
+          "id": "bat-wing",
+          "name": "Cave Bat Wing"
+        },
+        {
+          "id": "golem-core",
+          "name": "Crystal Golem Core"
+        },
+        {
+          "id": "shard-stinger",
+          "name": "Shard Stinger"
+        },
+        {
+          "id": "wyrm-scale",
+          "name": "Crystal Wyrm Scale"
+        },
+        {
+          "id": "crystal-boss-key",
+          "name": "Crystal Wyrm Key"
+        },
+        {
+          "id": "crystal-wyrm-trophy",
+          "name": "Crystal Wyrm Trophy"
+        }
+      ]
+    },
+    {
+      "category": "Smelted bars",
+      "count": 7,
+      "items": [
+        {
+          "id": "iron-bar",
+          "name": "Iron Bar"
+        },
+        {
+          "id": "crystal-bar",
+          "name": "Crystal Bar"
+        },
+        {
+          "id": "mire-bar",
+          "name": "Mire Bar"
+        },
+        {
+          "id": "frost-bar",
+          "name": "Frost Bar"
+        },
+        {
+          "id": "ember-bar",
+          "name": "Ember Bar"
+        },
+        {
+          "id": "celestial-bar",
+          "name": "Celestial Bar"
+        },
+        {
+          "id": "shadow-bar",
+          "name": "Shadow Bar"
+        }
+      ]
+    },
+    {
+      "category": "Food & potions",
+      "count": 10,
+      "items": [
+        {
+          "id": "trout-skewers",
+          "name": "Trout Skewers"
+        },
+        {
+          "id": "minnow-broth",
+          "name": "Silver Minnow Broth"
+        },
+        {
+          "id": "golden-carp-feast",
+          "name": "Golden Carp Feast"
+        },
+        {
+          "id": "crystal-fish-roast",
+          "name": "Crystal Fish Roast"
+        },
+        {
+          "id": "glowfin-soup",
+          "name": "Glowfin Soup"
+        },
+        {
+          "id": "prismatic-eel-banquet",
+          "name": "Prismatic Eel Banquet"
+        },
+        {
+          "id": "greenleaf-health-potion",
+          "name": "Greenleaf Health Potion"
+        },
+        {
+          "id": "greenleaf-mana-potion",
+          "name": "Greenleaf Mana Potion"
+        },
+        {
+          "id": "glowcap-health-potion",
+          "name": "Glowcap Health Potion"
+        },
+        {
+          "id": "glowcap-mana-potion",
+          "name": "Glowcap Mana Potion"
+        }
+      ]
+    },
+    {
+      "category": "Housing & furniture",
+      "count": 8,
+      "items": [
+        {
+          "id": "house-small",
+          "name": "House Small"
+        },
+        {
+          "id": "house-medium",
+          "name": "House Medium"
+        },
+        {
+          "id": "house-large",
+          "name": "House Large"
+        },
+        {
+          "id": "house-frame",
+          "name": "House Frame"
+        },
+        {
+          "id": "oak-table",
+          "name": "Oak Table"
+        },
+        {
+          "id": "oak-chair",
+          "name": "Oak Chair"
+        },
+        {
+          "id": "oak-bed",
+          "name": "Oak Bed"
+        },
+        {
+          "id": "oak-chest",
+          "name": "Oak Chest"
+        }
+      ]
+    },
+    {
+      "category": "Recipe scrolls",
+      "count": 6,
+      "items": [
+        {
+          "id": "cooking",
+          "name": "Cooking"
+        },
+        {
+          "id": "alchemy",
+          "name": "Alchemy"
+        },
+        {
+          "id": "smelting",
+          "name": "Smelting"
+        },
+        {
+          "id": "tool",
+          "name": "Tool"
+        },
+        {
+          "id": "weapon",
+          "name": "Weapon"
+        },
+        {
+          "id": "armor",
+          "name": "Armor"
+        }
+      ]
+    }
+  ],
+  "equipmentCount": 56,
+  "toolCount": 32
+}

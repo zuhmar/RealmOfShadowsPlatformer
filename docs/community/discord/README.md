@@ -31,3 +31,9 @@ node scripts/render-discord-showcase.mjs
 ```
 
 These create marketing files only and do not change player saves.
+
+## Full feature and item library
+
+Open [the gallery](index.html) for all feature, class, monster, and item cards.
+See [the showcase guide](SHOWCASE-GUIDE.md) for coverage and regeneration, and
+[the captions](SHOWCASE-CAPTIONS.md) for ready-to-post copy.
