@@ -187,7 +187,12 @@ export class MapRoom extends Room {
     this.onMessage('interact', (c, payload) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
-      if (nearNpc(p, this.world.map, 'mira')) {
+      if (nearNpc(p, this.world.map, 'carpentry-station')) {
+        p.auto = false;
+        delete p.gathering;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: 'carpentry-station' });
+      } else if (nearNpc(p, this.world.map, 'mira')) {
         p.auto = false;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: 'mira' });

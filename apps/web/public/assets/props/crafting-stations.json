@@ -1,0 +1,112 @@
+{
+  "frames": {
+    "smelting": {
+      "frame": {
+        "x": 28,
+        "y": 41,
+        "w": 467,
+        "h": 452
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 467,
+        "h": 452
+      },
+      "sourceSize": {
+        "w": 467,
+        "h": 452
+      }
+    },
+    "blacksmithing": {
+      "frame": {
+        "x": 517,
+        "y": 176,
+        "w": 461,
+        "h": 317
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 461,
+        "h": 317
+      },
+      "sourceSize": {
+        "w": 461,
+        "h": 317
+      }
+    },
+    "carpentry": {
+      "frame": {
+        "x": 1025,
+        "y": 193,
+        "w": 484,
+        "h": 295
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 484,
+        "h": 295
+      },
+      "sourceSize": {
+        "w": 484,
+        "h": 295
+      }
+    },
+    "cooking": {
+      "frame": {
+        "x": 7,
+        "y": 612,
+        "w": 489,
+        "h": 348
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 489,
+        "h": 348
+      },
+      "sourceSize": {
+        "w": 489,
+        "h": 348
+      }
+    },
+    "alchemy": {
+      "frame": {
+        "x": 515,
+        "y": 565,
+        "w": 494,
+        "h": 397
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 494,
+        "h": 397
+      },
+      "sourceSize": {
+        "w": 494,
+        "h": 397
+      }
+    }
+  },
+  "meta": {
+    "image": "crafting-stations.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-9a129093-f952-4f9f-a63f-e7d9b91d5fa4.png"
+  }
+}

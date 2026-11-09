@@ -23,7 +23,7 @@ export function preloadFactionFigures(scene: Phaser.Scene, map: GameMap) {
     map.npcs
       .filter(
         (n) =>
-          !['cooking-station', 'alchemy-station'].includes(n.id ?? '') &&
+          !['cooking-station', 'alchemy-station', 'carpentry-station'].includes(n.id ?? '') &&
           (n.allegiance === 'shadow' || !hasOutfit(n.id)),
       )
       .map((n) => n.allegiance ?? 'celestial'),

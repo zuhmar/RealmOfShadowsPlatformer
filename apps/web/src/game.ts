@@ -1,3 +1,4 @@
+import { craftingStation } from './crafting-stations';
 import { HousingScenery } from './housing';
 import { preloadFactionFigures, factionFigure } from './faction-figures';
 import { provisionStation } from './provision-stations';
@@ -222,6 +223,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
       else {
         this.village = new VillageScenery(this, m);
+        this.events.on('crafting-bram', () => bridge.send('interact', { npcId: 'bram' }));
         this.housing = new HousingScenery(this);
       }
       this.floor = this.physics.add.staticGroup();
@@ -267,30 +269,41 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       for (const npc of m.npcs) {
         const c =
-          npc.id === 'cooking-station' || npc.id === 'alchemy-station'
-            ? provisionStation(this, npc.x, npc.y, npc.id === 'cooking-station')
-            : factionFigure(
-                this,
-                npc.x,
-                npc.y,
-                npc.allegiance ?? 'celestial',
-                npc.id === 'bram' ? 90 : 80,
-                npc.id,
-              );
+          npc.id === 'carpentry-station'
+            ? craftingStation(this, 'carpentry', npc.x, npc.y, 74, 110).setName(npc.id)
+            : npc.id === 'cooking-station' || npc.id === 'alchemy-station'
+              ? provisionStation(this, npc.x, npc.y, npc.id === 'cooking-station')
+              : factionFigure(
+                  this,
+                  npc.x,
+                  npc.y,
+                  npc.allegiance ?? 'celestial',
+                  npc.id === 'bram' ? 90 : 80,
+                  npc.id,
+                );
         this.add
-          .text(npc.x, npc.y - (npc.id === 'bram' ? 112 : 80), `${npc.name}\n${npc.role}`, {
-            fontFamily: 'Georgia',
-            fontSize: '14px',
-            color: '#f6e9b6',
-            align: 'center',
-            stroke: '#263c31',
-            strokeThickness: 4,
-          })
+          .text(
+            npc.x,
+            npc.y - (npc.id === 'bram' ? 112 : npc.id?.endsWith('-station') ? 110 : 80),
+            `${npc.name}\n${npc.role}`,
+            {
+              fontFamily: 'Georgia',
+              fontSize: '14px',
+              color: '#f6e9b6',
+              align: 'center',
+              stroke: '#263c31',
+              strokeThickness: 4,
+            },
+          )
           .setOrigin(0.5);
         c.setDepth(8);
-        if (npc.id === 'cooking-station' || npc.id === 'alchemy-station')
+        if (
+          npc.id === 'cooking-station' ||
+          npc.id === 'alchemy-station' ||
+          npc.id === 'carpentry-station'
+        )
           this.add
-            .zone(npc.x, npc.y - 30, 80, 80)
+            .zone(npc.x, npc.y - 45, 140, 110)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => bridge.send('interact', { npcId: npc.id }));
         if (npc.id === 'bram')

@@ -1,3 +1,4 @@
+import { preloadCraftingStations, craftingStation } from './crafting-stations';
 import { terrainPlatform, terrainLadder } from './terrain';
 import { artworkStrip } from './artwork';
 import { assetUrl } from './assets';
@@ -6,6 +7,7 @@ import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 
 export function preloadVillage(scene: Phaser.Scene) {
+  preloadCraftingStations(scene);
   scene.load.image('village-background', assetUrl('/assets/backgrounds/elderwood-village.png'));
   for (const [name, folder] of [
     ['buildings', 'props'],
@@ -65,12 +67,24 @@ export class VillageScenery {
       ['lantern-post', 560, 125],
       ['barrel', 750, 43],
       ['crate', 800, 40],
-      ['anvil', 1020, 48],
       ['flower-planter', 1310, 38],
       ['signpost', 1670, 66],
       ['shrub', 1760, 48],
     ] as const)
       this.props.push(place('village-props', frame, x, ground.y + 2, height, 2));
+    for (const [kind, x, height] of [
+      ['smelting', 825, 108],
+      ['blacksmithing', 990, 76],
+    ] as const) {
+      const bench = craftingStation(scene, kind, x, ground.y, height, 115).setDepth(2);
+      this.props.push(bench);
+      scene.add
+        .zone(x, ground.y - 45, 115, 100)
+        .setDepth(3)
+        .setName(`${kind}-interaction`)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => scene.events.emit('crafting-bram'));
+    }
     for (const ladder of map.ladders) this.ladders.push(terrainLadder(scene, ladder, 'village'));
     // Decorative paving and bridge deck lie on the existing ground, with no new colliders.
     for (const [frame, x, width] of [

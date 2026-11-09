@@ -64,7 +64,7 @@ try {
   await page.screenshot({ path: 'artifacts/recipe-stations-desktop.png' });
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Cooking & Alchemy', exact: true })).toBeVisible();
-  await expect(page.getByText('Cooking Campfire ready.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Cooking Station ready.', { exact: true })).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Craft Golden Carp Feast', exact: true }),
   ).toBeDisabled();
@@ -79,14 +79,15 @@ try {
   await expect(page.getByRole('button', { name: 'Active food buff', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Bag', exact: true }).click();
   const packedFood = page
-    .locator('.inventory-cell')
+    .locator('.bag-slot')
     .filter({ has: page.getByRole('img', { name: 'Trout Skewers', exact: true }) });
   await packedFood.click();
-  await packedFood.getByRole('button', { name: 'Eat', exact: true }).click();
+  await page.getByRole('button', { name: 'Eat Trout Skewers', exact: true }).click();
   await expect(
-    page.locator('.inventory-grid').getByRole('img', { name: 'Trout Skewers', exact: true }),
+    page.locator('.bag-slots').getByRole('img', { name: 'Trout Skewers', exact: true }),
   ).toHaveCount(0);
-  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.getByRole('button', { name: 'Close item details', exact: true }).click();
+  await page.getByRole('button', { name: 'Close bag', exact: true }).click();
 
   await page.setViewportSize({ width: 390, height: 844 });
   const left = await page.getByRole('button', { name: 'Move left', exact: true }).boundingBox();

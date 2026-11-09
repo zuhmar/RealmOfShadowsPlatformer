@@ -164,7 +164,7 @@ export const PROVISION_STATIONS = [
   {
     id: 'cooking-station',
     skill: 'Cooking',
-    name: 'Cooking Campfire',
+    name: 'Cooking Station',
     role: 'Cooking recipes',
     x: 1360,
     y: 650,

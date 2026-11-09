@@ -332,6 +332,7 @@ function App() {
     );
     next.onMessage('notice', (m: string) => setNotice(m));
     next.onMessage('npc', (npc: { id: string }) => {
+      if (npc.id === 'carpentry-station') setPanel('housing');
       if (npc.id === 'mira') setPanel('mira');
       if (npc.id === 'bram') setPanel('bram');
       if (npc.id === 'mentor') setPanel('crystal-quests');

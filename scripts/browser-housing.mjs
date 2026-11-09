@@ -36,7 +36,7 @@ try {
     data: {
       data: {
         ...c.data,
-        x: 900,
+        x: 560,
         y: 240,
         platform: 'housing',
         carpentry: { level: 10, xp: 0 },
@@ -58,7 +58,7 @@ try {
   await page.getByRole('button', { name: /Continue adventure/ }).click();
   await page.getByRole('button', { name: /Enter world/ }).click();
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
-  await page.getByRole('button', { name: 'Housing', exact: true }).click();
+  await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await expect(page.locator('.housing-panel')).toContainText('At the housing platform');
   const small = page
     .locator('.housing-options article')
@@ -113,7 +113,7 @@ try {
   expect(saved.data.housingView).toBeUndefined();
   expect(errors).toEqual([]);
   console.log(
-    'PASS: actual housing UI builds stages, crafts/places furniture, upgrades plot, saves and renders desktop/mobile without overflow.',
+    'PASS: carpentry bench opens actual housing UI and builds stages, crafts/places furniture, upgrades plot, saves and renders desktop/mobile without overflow.',
   );
 } finally {
   await browser.close();

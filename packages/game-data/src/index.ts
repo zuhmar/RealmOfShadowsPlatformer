@@ -152,7 +152,13 @@ export const MAPS: Record<string, GameMap> = {
     npcs: [],
   },
 };
-MAPS.village.npcs.push(...PROVISION_STATIONS);
+MAPS.village.npcs.push(...PROVISION_STATIONS, {
+  id: 'carpentry-station',
+  name: 'Carpentry Workbench',
+  role: 'Houses & furniture',
+  x: 560,
+  y: 240,
+});
 export const ISLANDS = [
   {
     id: 'woods',
