@@ -177,41 +177,17 @@ test('full-library publishing is preview-only by default and requires credential
   }
 });
 
-test('publishing verification accepts processed embed images even when attachments are omitted', async () => {
-  const { hasPublishedImage } = await import('../src/publish-verification.mjs');
-  const embedded = {
-    attachments: new Collection(),
-    embeds: [
-      {
-        image: {
-          url: 'https://cdn.discordapp.com/attachments/123/456/preview.png?ex=test',
-          width: 1600,
-          height: 1000,
-        },
-      },
-    ],
-  };
-  assert.equal(hasPublishedImage(embedded, '123'), true);
-  assert.equal(hasPublishedImage(embedded, '999'), false);
+test('mobile-visible publishing requires both plain text and a normal image attachment', async () => {
+  const { hasDirectPublishedImage } = await import('../src/publish-verification.mjs');
+  const files = new Collection([['file', { name: 'preview.png', width: 1600, height: 1000 }]]);
+  assert.equal(hasDirectPublishedImage({ content: 'Showcase', attachments: files }), true);
+  assert.equal(hasDirectPublishedImage({ content: '', attachments: files }), false);
   assert.equal(
-    hasPublishedImage({ embeds: [{ image: { url: 'attachment://preview.png' } }] }, '123'),
-    false,
-  );
-  assert.equal(
-    hasPublishedImage(
-      {
-        embeds: [
-          {
-            image: {
-              url: 'https://example.com/attachments/123/456/preview.png',
-              width: 1600,
-              height: 1000,
-            },
-          },
-        ],
-      },
-      '123',
-    ),
+    hasDirectPublishedImage({
+      content: 'Showcase',
+      attachments: new Collection(),
+      embeds: [{ image: { width: 1600, height: 1000 } }],
+    }),
     false,
   );
 });

@@ -10,7 +10,7 @@ import { stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { setTimeout } from 'node:timers/promises';
 import { loadCatalog, selectCard } from './catalog.mjs';
-import { hasPublishedImage } from './publish-verification.mjs';
+import { hasDirectPublishedImage } from './publish-verification.mjs';
 
 const root = new URL('../../../docs/community/discord/', import.meta.url);
 const cards = await loadCatalog();
@@ -92,29 +92,28 @@ if (!process.argv.includes('--apply')) {
         [showcase.id, await markers(showcase)],
       ]);
       let sent = 0,
-        reused = 0;
+        reused = 0,
+        repaired = 0;
       async function post(channel, id, title, description, path) {
         const key = 'ros:publish:' + id,
           history = histories.get(channel.id);
-        if (history.has(key)) {
+        const existing = history.get(key);
+        if (existing?.content && (!path || hasDirectPublishedImage(existing))) {
           reused++;
-          return history.get(key);
+          return existing;
         }
-        const message = await channel.send({
+        const payload = {
+          content: `**${title}**\n${description}`,
           allowedMentions: { parse: [] },
-          embeds: [
-            {
-              title,
-              description,
-              color: 0xa768e5,
-              footer: { text: key },
-              ...(path ? { image: { url: 'attachment://preview.png' } } : {}),
-            },
-          ],
-          ...(path ? { files: [new AttachmentBuilder(path, { name: 'preview.png' })] } : {}),
-        });
+          embeds: [{ title, description, color: 0xa768e5, footer: { text: key } }],
+          ...(path
+            ? { attachments: [], files: [new AttachmentBuilder(path, { name: 'preview.png' })] }
+            : {}),
+        };
+        const message = existing ? await existing.edit(payload) : await channel.send(payload);
+        if (existing) repaired++;
+        else sent++;
         history.set(key, message);
-        sent++;
         await setTimeout(1250);
         return message;
       }
@@ -174,13 +173,13 @@ if (!process.argv.includes('--apply')) {
       // Verify the remote channel history independently after the upload run.
       const verified = await markers(showcase);
       const missing = cards.filter(
-        (c) => !hasPublishedImage(verified.get('ros:publish:card-' + c.id + '-v1'), showcase.id),
+        (c) => !hasDirectPublishedImage(verified.get('ros:publish:card-' + c.id + '-v1')),
       );
       if (missing.length) throw new Error('Some remote card attachments did not verify');
       const welcomeVerified = await markers(welcome);
       if (
-        !hasPublishedImage(welcomeVerified.get('ros:publish:welcome-banner-v1'), welcome.id) ||
-        !hasPublishedImage(welcomeVerified.get('ros:publish:server-icon-v1'), welcome.id)
+        !hasDirectPublishedImage(welcomeVerified.get('ros:publish:welcome-banner-v1')) ||
+        !hasDirectPublishedImage(welcomeVerified.get('ros:publish:server-icon-v1'))
       )
         throw new Error('Welcome artwork did not verify');
       console.log(
@@ -188,6 +187,7 @@ if (!process.argv.includes('--apply')) {
           {
             verifiedCards: cards.length,
             newPosts: sent,
+            repairedPosts: repaired,
             reusedPosts: reused,
             welcome: banner.url,
             icon: icon.url,
