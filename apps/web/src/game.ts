@@ -1,3 +1,4 @@
+import { HousingScenery } from './housing';
 import { preloadFactionFigures, factionFigure } from './faction-figures';
 import { provisionStation } from './provision-stations';
 import { guardAtlasSampling } from './atlas-sampling';
@@ -60,6 +61,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     woods?: WoodsScenery;
     crystal?: CrystalScenery;
     village?: VillageScenery;
+    housing?: HousingScenery;
     miraMarker?: Phaser.GameObjects.Text;
     bossWarnings!: BossWarnings;
     nextPrepareAt = 3000;
@@ -89,7 +91,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       preloadWoodsMonster(this, loadingMap.monster);
       if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
       else if (loadingMap.island === 'Crystal Caverns') preloadCrystal(this, loadingMap);
-      else preloadVillage(this);
+      else {
+        preloadVillage(this);
+      }
       if (loadingMap.id === 'woods' || loadingMap.monster === 'wolf') {
         this.load.json('wolf-config', '/assets/monsters/wolf-spritesheet.json');
         this.load.spritesheet(WOLF_TEXTURE, assetUrl('/assets/monsters/wolf-spritesheet.png'), {
@@ -216,7 +220,10 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
       else if (m.island === 'Crystal Caverns')
         this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
-      else this.village = new VillageScenery(this, m);
+      else {
+        this.village = new VillageScenery(this, m);
+        this.housing = new HousingScenery(this);
+      }
       this.floor = this.physics.add.staticGroup();
       for (const p of m.platforms) {
         const body = this.add.rectangle(p.x + p.width / 2, p.y + 12, p.width, 24, 0, 0);
@@ -538,6 +545,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         return;
       }
       this.sync(s);
+      this.housing?.update(s.players.find((p) => p.id === bridge.id));
       if (this.time.now >= this.nextPrepareAt && !this.load.isLoading()) {
         this.nextPrepareAt = this.time.now + 1000;
         const p = s.players.find((p) => p.id === bridge.id);

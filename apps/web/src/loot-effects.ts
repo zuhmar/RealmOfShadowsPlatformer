@@ -1,3 +1,5 @@
+import housing from '../public/assets/ui/housing.json';
+import { preloadHousing } from './housing';
 import { recipeFromScroll, GATHERING_TOOLS } from '@ros/game-data';
 import bars from '../public/assets/ui/recipe-bars.json';
 import { assetUrl } from './assets';
@@ -9,6 +11,7 @@ import { GEAR_RARITY_COLORS, type Drop, type Event, type GearRarity } from '@ros
 import lootAtlas from '../public/assets/ui/woods-loot.json';
 import resourcesAtlas from '../public/assets/ui/woods-resources.json';
 export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
+  preloadHousing(scene);
   for (const name of ['recipe-scrolls', 'recipe-bars'])
     if (!scene.textures.exists(name))
       scene.load.atlas(name, assetUrl(`/assets/ui/${name}.png`), `/assets/ui/${name}.json`);
@@ -62,7 +65,16 @@ export function lootIcon(
 ): Phaser.GameObjects.Container | Phaser.GameObjects.Image {
   const recipe = recipeFromScroll(item);
   if (recipe) {
-    const parchment = scene.add.image(0, 0, 'recipe-scrolls', recipe.category);
+    const parchment = scene.add.image(
+      0,
+      0,
+      'recipe-scrolls',
+      recipe.category === 'carpentry'
+        ? 'tool'
+        : recipe.category === 'housing'
+          ? 'armor'
+          : recipe.category,
+    );
     parchment.setScale(size / Math.max(parchment.width, parchment.height));
     const badge = lootIcon(scene, recipe.id, size * 0.56).setPosition(0, size * 0.05);
     return scene.add
@@ -74,7 +86,13 @@ export function lootIcon(
     kind = weaponKind(item);
   let key = 'loot-basics',
     frame: string | undefined = 'fang';
-  if (item === 'gold' || item === 'fang') {
+  if (Object.hasOwn(housing.frames, item)) {
+    key = 'housing-art';
+    frame = item;
+  } else if (item === 'oak-plank') {
+    key = 'loot-resources';
+    frame = 'oak-logs';
+  } else if (item === 'gold' || item === 'fang') {
     frame = item;
   } else if (Object.hasOwn(bars.frames, item)) {
     key = 'recipe-bars';

@@ -78,10 +78,11 @@ try {
     expect(state.buildings).toEqual(['guide-cottage', 'blacksmith', 'inn', 'market-stall']);
     expect(state.props.length).toBeGreaterThanOrEqual(12);
     expect(state.stations).toEqual(['cooking-station', 'alchemy-station']);
-    expect(state.ladders).toBeGreaterThanOrEqual(1);
-    expect(state.bodies).toBe(2);
-    expect(state.surfaces[0].y).toBeCloseTo(650, 4);
-    expect(state.surfaces[1].y).toBeCloseTo(450, 4);
+    expect(state.ladders).toBeGreaterThanOrEqual(2);
+    expect(state.bodies).toBe(3);
+    expect(state.surfaces.find((p) => p.id === 'ground').y).toBeCloseTo(650, 4);
+    expect(state.surfaces.find((p) => p.id === 'terrace').y).toBeCloseTo(450, 4);
+    expect(state.surfaces.find((p) => p.id === 'housing').y).toBeCloseTo(240, 4);
     expect(state.background.left).toBeLessThanOrEqual(state.view.left);
     expect(state.background.right).toBeGreaterThanOrEqual(state.view.right);
     expect(state.background.top).toBeLessThanOrEqual(state.view.top);
@@ -106,9 +107,11 @@ try {
     .toBe(true);
   await page.evaluate(() => {
     const s = window.villageTest.game.scene.getScene('realm');
-    const bram = s.children.getByName('bram-npc');
-    if (bram?.texture.key !== 'bram') throw new Error('Bram sprite not loaded');
-    const feet = bram.y + (1240 / 1254 - bram.originY) * bram.displayHeight;
+    const bram = s.children.list.find(
+      (n) => n.name === 'celestial-npc' && n.getData('npcId') === 'bram',
+    );
+    if (bram?.texture.key !== 'npc-outfits') throw new Error('Bram sprite not loaded');
+    const feet = bram.getBottomCenter().y;
     if (Math.abs(feet - 650) > 0.01) throw new Error('Bram feet do not meet village ground');
     s.cameras.main.centerOn(900, 560);
   });
@@ -135,7 +138,7 @@ try {
   await page.screenshot({ path: 'artifacts/elderwood-village-mobile.png' });
   expect(errors).toEqual([]);
   console.log(
-    'PASS: village artwork, two unchanged platform bodies and aligned surfaces, ladder, parallax coverage, Mira and Bram interaction, Bram sprite/feet alignment, desktop/mobile and asset loading.',
+    'PASS: village artwork, three platform bodies and aligned surfaces including housing, both ladders, parallax coverage, Mira and Bram interaction, Bram sprite/feet alignment, desktop/mobile and asset loading.',
   );
 } finally {
   await browser.close();

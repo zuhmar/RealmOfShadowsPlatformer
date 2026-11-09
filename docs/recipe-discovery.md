@@ -1,6 +1,6 @@
 # Hunting for recipes
 
-Every current crafting recipe starts locked: 81 recipes across smelting, tools, weapons, armor, Cooking and Alchemy. This applies to existing characters too. Previously owned equipment, tools, meals and potions remain usable. Starter wooden tools remain automatic; they have no crafting recipe.
+Every current crafting recipe starts locked: 89 recipes across smelting, tools, weapons, armor, Cooking, Alchemy, Carpentry and house blueprints. This applies to existing characters too. Previously owned equipment, tools, meals and potions remain usable. Starter wooden tools remain automatic; they have no crafting recipe.
 
 Kill monsters on a recipe’s island, then collect the owner-only recipe scroll in their loot. Collection permanently learns it for that character. There is no extra learn button or inventory scroll stack. The crafting menus show discovered counts, level requirements, ingredients and the island where each missing recipe drops. A pickup notice names the learned recipe.
 
@@ -17,7 +17,7 @@ Discovery does not bypass profession levels, character levels, ingredients, owne
 
 ## Artwork
 
-Six generated parchment designs use profession/category emblems and a badge of the recipe’s output. All 81 recipes therefore have an identifiable scroll sprite in menus and ground/pickup loot. The seven generated ingots and ten generated meals/potions live in `apps/web/public/assets/ui/recipe-{scrolls,bars,consumables}.{png,json}`. Equipment and tools reuse the existing complete island equipment and gathering-tool atlases. Original source PNGs stay unchanged; atlas metadata bounds each silhouette without stretching. Delivery copies use lossless WebP and preserve exact RGBA.
+Six generated parchment designs use profession/category emblems and a badge of the recipe’s output. All 89 recipes therefore have an identifiable scroll sprite in menus and ground/pickup loot. The seven generated ingots and ten generated meals/potions live in `apps/web/public/assets/ui/recipe-{scrolls,bars,consumables}.{png,json}`. Equipment and tools reuse the existing complete island equipment and gathering-tool atlases. Original source PNGs stay unchanged; atlas metadata bounds each silhouette without stretching. Delivery copies use lossless WebP and preserve exact RGBA.
 
 Artwork provenance: generated originals remain in `/workspace/generated_images`; consumables `exec-9c5f8da5-6fc6-433c-bec8-df3da66fa73f.png`, bars `exec-79d324f1-6a10-421d-9d8f-45db7bed6d5b.png`, scrolls `exec-8c909c42-80c7-4e5e-a768-8008ac393ed9.png`. The scrolls’ blank centers receive the existing output sprite at runtime. Atlas framing uses density gutters and silhouette bounds to exclude detached artifacts without repainting pixels.
 

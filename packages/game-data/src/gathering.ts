@@ -86,7 +86,7 @@ export const WOODS_RESOURCE_ITEMS = Object.fromEntries(
       'oak-logs',
       'Oak Logs',
       'Common',
-      'Oak timber gathered in Whispering Woods. Used for future Carpentry recipes.',
+      'Oak timber gathered in Whispering Woods. Used for Carpentry planks, houses and furniture.',
     ],
     [
       'greenleaf',

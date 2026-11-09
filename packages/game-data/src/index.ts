@@ -1,3 +1,5 @@
+export * from './housing';
+import { CARPENTRY_ITEMS } from './housing';
 export * from './recipes';
 import { RECIPE_SCROLL_ITEMS } from './recipes';
 export * from './provisions';
@@ -89,9 +91,13 @@ export const MAPS: Record<string, GameMap> = {
     spawn: { x: 240, y: 650 },
     platforms: [
       { id: 'ground', x: 0, y: 650, width: 1800, oneWay: false },
+      { id: 'housing', x: 500, y: 240, width: 800, oneWay: true },
       { id: 'terrace', x: 600, y: 450, width: 420, oneWay: true },
     ],
-    ladders: [{ x: 660, bottom: 650, top: 450, from: 'ground', to: 'terrace' }],
+    ladders: [
+      { x: 660, bottom: 650, top: 450, from: 'ground', to: 'terrace' },
+      { x: 760, bottom: 450, top: 240, from: 'terrace', to: 'housing' },
+    ],
     portals: [{ x: 1560, y: 650, target: 'woods', label: 'Whispering Woods' }],
     spawns: [],
     npcs: [
@@ -309,6 +315,7 @@ export const QUESTS = {
 } as const;
 export const INTERACTION = { horizontal: 100, vertical: 65 };
 export const ITEMS = {
+  ...CARPENTRY_ITEMS,
   ...RECIPE_SCROLL_ITEMS,
   ...PROVISION_ITEMS,
   'teleport-crystal': {

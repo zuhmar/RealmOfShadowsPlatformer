@@ -1,9 +1,30 @@
+import { CARPENTRY_RECIPES, HOUSING_PLOTS } from './housing';
 import { FORGE_RECIPES } from './forging';
 import { PROVISION_RECIPES } from './provisions';
 import { EQUIPMENT_TIERS, equipmentDefinition } from './island-equipment';
 export type RecipeScrollId = `recipe:${string}`;
-export type RecipeCategory = 'cooking' | 'alchemy' | 'smelting' | 'tool' | 'weapon' | 'armor';
+export type RecipeCategory =
+  | 'cooking'
+  | 'alchemy'
+  | 'smelting'
+  | 'tool'
+  | 'weapon'
+  | 'armor'
+  | 'carpentry'
+  | 'housing';
 export const ALL_RECIPES = [
+  ...CARPENTRY_RECIPES.map((r) => ({
+    id: r.id,
+    name: r.name,
+    tier: 'woods',
+    category: 'carpentry' as RecipeCategory,
+  })),
+  ...Object.entries(HOUSING_PLOTS).map(([id, p]) => ({
+    id: `house-${id}`,
+    name: `${p.name} House`,
+    tier: 'woods',
+    category: 'housing' as RecipeCategory,
+  })),
   ...FORGE_RECIPES.map((r) => ({
     id: r.id,
     name: r.name,

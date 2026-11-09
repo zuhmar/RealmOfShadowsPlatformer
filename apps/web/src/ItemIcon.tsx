@@ -1,3 +1,4 @@
+import housing from '../public/assets/ui/housing.json';
 import { recipeFromScroll, GATHERING_TOOLS } from '@ros/game-data';
 import { RecipeSprite } from './RecipeSprite';
 import { ToolIcon } from './ToolIcon';
@@ -16,6 +17,16 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  if (id && Object.hasOwn(housing.frames, id))
+    return (
+      <RecipeSprite
+        atlas={housing}
+        sheet="housing"
+        id={id}
+        label={itemDefinition(id)?.name ?? id}
+      />
+    );
+  if (id === 'oak-plank') return <ItemIcon id="oak-logs" />;
   const recipe = recipeFromScroll(id);
   if (recipe)
     return (
@@ -23,7 +34,13 @@ export function ItemIcon({ id }: { id: string | null }) {
         <RecipeSprite
           atlas={scrolls}
           sheet="recipe-scrolls"
-          id={recipe.category}
+          id={
+            recipe.category === 'carpentry'
+              ? 'tool'
+              : recipe.category === 'housing'
+                ? 'armor'
+                : recipe.category
+          }
           label={`${recipe.name} Recipe`}
         />
         <span

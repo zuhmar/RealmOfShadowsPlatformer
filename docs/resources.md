@@ -1,6 +1,6 @@
 # Gathering and crafting resource proposal
 
-Status: proposed, not locked. The island order and level bands in this roster are approved and reflected in the world map. Resource names and skill requirements remain proposed. Whispering Woods and Crystal Caverns implement gathering platforms, fishing, smelting, equipment and tool crafting. Crystal nodes require gathering level 11; its fish unlock at levels 11/15/20. Later island gathering remains planned. See `docs/whispering-woods-gathering.md` for the initial mechanics.
+Status: proposed, not locked. The island order and level bands in this roster are approved and reflected in the world map. Resource names and skill requirements remain proposed. Whispering Woods and Crystal Caverns implement gathering platforms, fishing, smelting, equipment and tool crafting. Crystal nodes require gathering level 11; its fish unlock at levels 11/15/20. Carpentry now uses Oak Logs for planks, private house construction and furniture; see `docs/housing.md`. Later island gathering remains planned. See `docs/whispering-woods-gathering.md` for the initial mechanics.
 
 Elderwood Village remains the safe hub and is not counted as a hunting island.
 

@@ -1,3 +1,5 @@
+import { persistHousing } from './housing.js';
+import { housingView, nearHousing } from '@ros/shared';
 import { revealOrigin } from './story.js';
 import { changeProvision } from './provisions.js';
 import { provisionRecipe, PROVISION_STATIONS } from '@ros/game-data';
@@ -44,6 +46,7 @@ export class MapRoom extends Room {
   inputTimes = new Map<string, number>();
   snapshotStreams = new Map<string, SnapshotEncoder>();
   snapshotResyncAt = new Map<string, number>();
+  housingVisits = new Map<string, string>();
   fastTravel = new Set<string>();
   travelTokens = new Map<string, string>();
   onCreate(options: { mapId?: string }) {
@@ -59,6 +62,7 @@ export class MapRoom extends Room {
         this.sendSnapshot(c, now, true);
       }
     });
+    this.onMessage('housing', (c, value) => this.housing(c, value));
     this.onMessage('input', (c, payload) => {
       if (!this.rate(c, 100)) return;
       const p = this.player(c);
@@ -664,10 +668,70 @@ export class MapRoom extends Room {
     c.send('welcome', { id: p.id, mapId: this.world.map.id });
     this.sendSnapshot(c, Date.now(), true);
   }
+  housing(c: Client, value: unknown) {
+    const p = this.player(c);
+    if (!p || !this.rate(c, 100) || !value || typeof value !== 'object') return;
+    const v = value as { action?: unknown; id?: unknown; x?: unknown };
+    if (!nearHousing(p)) {
+      c.send('notice', 'Climb to the housing platform in central Elderwood.');
+      return;
+    }
+    if (v.action === 'visit' || v.action === 'home') {
+      const owner =
+        v.action === 'home' ? p : this.world.players.get(typeof v.id === 'string' ? v.id : '');
+      if (!owner || (owner.id !== p.id && !housingView(owner, p))) {
+        c.send('notice', 'That owner must be here and must invite you first.');
+        return;
+      }
+      this.housingVisits.set(p.id, owner.id);
+      this.sendSnapshot(c, Date.now(), true);
+      return;
+    }
+    if ((this.housingVisits.get(p.id) ?? p.id) !== p.id) {
+      c.send('notice', 'Return to your own plot to build or decorate.');
+      return;
+    }
+    if (v.action === 'invite' && !this.world.players.has(typeof v.id === 'string' ? v.id : '')) {
+      c.send('notice', 'Invite an adventurer currently in this village.');
+      return;
+    }
+    p.auto = false;
+    delete p.gathering;
+    this.inputs.set(p.id, idleInput());
+    const task = this.saves
+      .catch(() => {})
+      .then(async () => {
+        if (!nearHousing(p)) throw new Error('Stand on the housing platform.');
+        const next = await persistHousing(structuredClone(p), v);
+        p.housing = next.housing;
+        p.carpentry = next.carpentry;
+        p.inventory = next.inventory;
+        p.housingRevision = next.housingRevision;
+        c.send('notice', 'Housing saved.');
+      });
+    this.questTasks.set(p.id, task);
+    this.saves = task.catch(() => {});
+    void task
+      .catch((e) => c.send('notice', e instanceof Error ? e.message : 'Could not save housing.'))
+      .finally(() => this.questTasks.delete(p.id));
+  }
   sendSnapshot(c: Client, now: number, force = false) {
     const id = this.characters.get(c.sessionId);
     if (!id || !this.world.players.has(id)) return;
     const snapshot = this.world.snapshot(now, id);
+    const viewer = this.world.players.get(id)!;
+    const owner = this.world.players.get(this.housingVisits.get(id) ?? id);
+    const view = this.world.map.id === 'village' && owner ? housingView(owner, viewer) : undefined;
+    if (!view) this.housingVisits.delete(id);
+    snapshot.players = snapshot.players.map((p) =>
+      p.id === id
+        ? {
+            ...p,
+            housingView:
+              view ?? (this.world.map.id === 'village' ? housingView(viewer, viewer) : undefined),
+          }
+        : p,
+    );
     const stream = this.snapshotStreams.get(c.sessionId);
     if (!stream) c.send('snapshot', snapshot);
     else {
@@ -741,6 +805,7 @@ export class MapRoom extends Room {
   releaseClient(c: Client) {
     const id = this.characters.get(c.sessionId);
     if (!id) return;
+    this.housingVisits.delete(id);
     this.characters.delete(c.sessionId);
     this.snapshotStreams.delete(c.sessionId);
     this.snapshotResyncAt.delete(c.sessionId);

@@ -143,8 +143,11 @@ test('unexpected disconnect reserves and restores the same character without res
     });
     room.onMessage('snapshotDelta', (d) => {
       recovered = recoveredDecoder.delta(d);
-      assert.ok(recovered);
+      // Reconnect may deliver its first keyframe before listeners attach.
+      // Match the game's decoder recovery instead of asserting on a missing base.
+      if (!recovered) room!.send('snapshotResync');
     });
+    room.send('snapshotResync');
     await until(() => !!recovered?.players.some((p) => p.id === c.id));
     const hero = recovered!.players.find((p) => p.id === c.id)!;
     assert.equal(hero.auto, false);

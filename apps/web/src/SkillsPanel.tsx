@@ -81,16 +81,18 @@ export function SkillsPanel({ player: p }: { player: Player }) {
       </div>
       <h3>Gathering & crafting</h3>
       <div className="skills-grid">
-        {[...GATHERING_SKILLS, 'Blacksmithing', 'Cooking', 'Alchemy'].map((name) => {
+        {[...GATHERING_SKILLS, 'Blacksmithing', 'Carpentry', 'Cooking', 'Alchemy'].map((name) => {
           const state =
-            name === 'Cooking' || name === 'Alchemy'
-              ? (p.craftingSkills?.[name] ?? { level: 1, xp: 0 })
-              : name === 'Blacksmithing'
-                ? (p.blacksmithing ?? { level: 1, xp: 0 })
-                : (p.gatheringSkills?.[name as (typeof GATHERING_SKILLS)[number]] ?? {
-                    level: 1,
-                    xp: 0,
-                  });
+            name === 'Carpentry'
+              ? (p.carpentry ?? { level: 1, xp: 0 })
+              : name === 'Cooking' || name === 'Alchemy'
+                ? (p.craftingSkills?.[name] ?? { level: 1, xp: 0 })
+                : name === 'Blacksmithing'
+                  ? (p.blacksmithing ?? { level: 1, xp: 0 })
+                  : (p.gatheringSkills?.[name as (typeof GATHERING_SKILLS)[number]] ?? {
+                      level: 1,
+                      xp: 0,
+                    });
           return (
             <article className="training-card" key={name}>
               <h4>

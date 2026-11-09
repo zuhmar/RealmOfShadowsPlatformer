@@ -1,0 +1,172 @@
+{
+  "frames": {
+    "house-small": {
+      "frame": {
+        "x": 7,
+        "y": 141,
+        "w": 352,
+        "h": 323
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 352,
+        "h": 323
+      },
+      "sourceSize": {
+        "w": 352,
+        "h": 323
+      }
+    },
+    "house-medium": {
+      "frame": {
+        "x": 382,
+        "y": 45,
+        "w": 372,
+        "h": 418
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 372,
+        "h": 418
+      },
+      "sourceSize": {
+        "w": 372,
+        "h": 418
+      }
+    },
+    "house-large": {
+      "frame": {
+        "x": 776,
+        "y": 66,
+        "w": 595,
+        "h": 398
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 595,
+        "h": 398
+      },
+      "sourceSize": {
+        "w": 595,
+        "h": 398
+      }
+    },
+    "house-frame": {
+      "frame": {
+        "x": 1389,
+        "y": 110,
+        "w": 375,
+        "h": 354
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 375,
+        "h": 354
+      },
+      "sourceSize": {
+        "w": 375,
+        "h": 354
+      }
+    },
+    "oak-table": {
+      "frame": {
+        "x": 30,
+        "y": 601,
+        "w": 389,
+        "h": 228
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 389,
+        "h": 228
+      },
+      "sourceSize": {
+        "w": 389,
+        "h": 228
+      }
+    },
+    "oak-chair": {
+      "frame": {
+        "x": 497,
+        "y": 547,
+        "w": 201,
+        "h": 290
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 201,
+        "h": 290
+      },
+      "sourceSize": {
+        "w": 201,
+        "h": 290
+      }
+    },
+    "oak-bed": {
+      "frame": {
+        "x": 853,
+        "y": 566,
+        "w": 423,
+        "h": 261
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 423,
+        "h": 261
+      },
+      "sourceSize": {
+        "w": 423,
+        "h": 261
+      }
+    },
+    "oak-chest": {
+      "frame": {
+        "x": 1391,
+        "y": 589,
+        "w": 331,
+        "h": 227
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 331,
+        "h": 227
+      },
+      "sourceSize": {
+        "w": 331,
+        "h": 227
+      }
+    }
+  },
+  "meta": {
+    "image": "housing.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "source": "exec-055bfbe9-e448-419a-a963-dbafec962d2d.png"
+  }
+}

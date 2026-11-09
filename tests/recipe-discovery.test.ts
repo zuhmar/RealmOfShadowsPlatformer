@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ALL_RECIPES,
+  CARPENTRY_RECIPES,
+  HOUSING_PLOTS,
   FORGE_RECIPES,
   PROVISION_RECIPES,
   MAPS,
@@ -12,6 +14,7 @@ import {
 } from '@ros/game-data';
 import {
   createPlayer,
+  changeHousing,
   forgeAction,
   provisionAction,
   collectRecipe,
@@ -22,7 +25,13 @@ import {
 
 test('every crafting recipe has a unique hunting scroll and rejects undiscovered crafting without mutation', () => {
   assert.equal(new Set(ALL_RECIPES.map((r) => r.id)).size, ALL_RECIPES.length);
-  assert.equal(ALL_RECIPES.length, FORGE_RECIPES.length + PROVISION_RECIPES.length);
+  assert.equal(
+    ALL_RECIPES.length,
+    FORGE_RECIPES.length +
+      PROVISION_RECIPES.length +
+      CARPENTRY_RECIPES.length +
+      Object.keys(HOUSING_PLOTS).length,
+  );
   for (const r of ALL_RECIPES) {
     assert.equal(recipeFromScroll(recipeScroll(r.id))?.id, r.id);
     assert.equal(itemDefinition(recipeScroll(r.id))?.type, 'recipe');
@@ -30,6 +39,9 @@ test('every crafting recipe has a unique hunting scroll and rejects undiscovered
     const p = createPlayer('p', 'Hunter', 'village');
     forgeAction(p, 'accept');
     p.level = 100;
+    p.carpentry = { level: 100, xp: 0 };
+    p.x = 900;
+    p.y = 240;
     p.blacksmithing = { level: 100, xp: 0 };
     p.craftingSkills = { Cooking: { level: 100, xp: 0 }, Alchemy: { level: 100, xp: 0 } };
     const before = structuredClone(p);
@@ -37,8 +49,13 @@ test('every crafting recipe has a unique hunting scroll and rejects undiscovered
       () =>
         FORGE_RECIPES.some((f) => f.id === r.id)
           ? forgeAction(p, 'craft', r.id)
-          : provisionAction(p, 'craft', r.id),
-      /Find this recipe/,
+          : PROVISION_RECIPES.some((f) => f.id === r.id)
+            ? provisionAction(p, 'craft', r.id)
+            : changeHousing(p, {
+                action: r.category === 'housing' ? 'plot' : 'craft',
+                id: r.category === 'housing' ? r.id.replace('house-', '') : r.id,
+              }),
+      /Find this.*(?:recipe|blueprint)/,
     );
     assert.deepEqual(p, before);
   }

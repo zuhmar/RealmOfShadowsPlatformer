@@ -1,3 +1,4 @@
+export * from './housing';
 export * from './recipes';
 import { collectRecipe, rollRecipeDrop } from './recipes';
 export * from './provisions';
@@ -92,6 +93,10 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  housing?: import('./housing').Housing;
+  housingView?: import('./housing').HousingView;
+  housingRevision?: number;
+  carpentry?: { level: number; xp: number };
   originRevelation?: { title: string; text: string };
   unlockedRecipes?: string[];
   recipeHunts?: Record<string, number>;
@@ -1131,6 +1136,10 @@ export class World {
         if (!viewerId || p.id === viewerId) return p;
         const visible = { ...p, inventory: {}, gold: 0, xp: 0, kills: 0 };
         for (const key of [
+          'housing',
+          'housingView',
+          'housingRevision',
+          'carpentry',
           'gear',
           'equippedGear',
           'equipmentRevision',

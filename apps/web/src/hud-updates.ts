@@ -1,5 +1,5 @@
 import { MAPS } from '@ros/game-data';
-import { classSkillCooldown, nearNpc, type Snapshot } from '@ros/shared';
+import { nearHousing, classSkillCooldown, nearNpc, type Snapshot } from '@ros/shared';
 
 /** Position and animation updates belong to Phaser, not the React panel tree. */
 export function hudSignature(s: Snapshot, id: string) {
@@ -10,6 +10,8 @@ export function hudSignature(s: Snapshot, id: string) {
   return JSON.stringify([
     s.mapId,
     s.players.length,
+    nearHousing(p),
+    s.players.map((p) => [p.id, p.name]),
     stats,
     map.npcs.filter((n) => n.id && nearNpc(p, map, n.id)).map((n) => n.id),
     map.portals.findIndex((q) => Math.abs(q.x - x) < 110 && Math.abs(q.y - y) < 65),

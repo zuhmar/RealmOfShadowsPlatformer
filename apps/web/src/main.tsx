@@ -1,3 +1,4 @@
+import { HousingPanel } from './HousingPanel';
 import { recipeFromScroll } from '@ros/game-data';
 import { RecipesPanel } from './RecipesPanel';
 import { provisionRecipe, type ProvisionSkill } from '@ros/game-data';
@@ -919,6 +920,10 @@ function App() {
                       <small>{label}</small>
                     </button>
                   ))}
+                  <button onClick={() => setPanel('housing')} aria-label="Housing">
+                    <ItemIcon id="house-small" />
+                    <small>Home</small>
+                  </button>
                 </nav>
                 <div className="area-tag">
                   <i />{' '}
@@ -1280,6 +1285,7 @@ function App() {
               {
                 (
                   {
+                    housing: 'Your Elderwood home.',
                     inventory: 'Your satchel.',
                     character: 'The road so far.',
                     skills: 'Skills & attributes.',
@@ -1293,6 +1299,13 @@ function App() {
                 )[panel]
               }
             </h2>
+            {panel === 'housing' && (
+              <HousingPanel
+                player={p}
+                players={snapshot?.players ?? []}
+                send={bridge.current.send}
+              />
+            )}
             {panel === 'inventory' && (
               <>
                 <div className="inventory-summary">

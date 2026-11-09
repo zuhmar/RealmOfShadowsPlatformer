@@ -3466,3 +3466,22 @@ footer {
 .recipes-panel progress::-moz-progress-bar {
   background: #b971ea;
 }
+
+.housing-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.housing-options article {
+  padding: 12px;
+  border: 1px solid #765692;
+  border-radius: 12px;
+  background: #1d1229;
+}
+.housing-panel button {
+  margin: 4px;
+}
+.housing-panel input[type='range'] {
+  display: block;
+  width: min(100%, 440px);
+}
