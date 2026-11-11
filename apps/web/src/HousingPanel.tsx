@@ -8,7 +8,7 @@ import {
   houseStageCost,
   itemDefinition,
 } from '@ros/game-data';
-import { nearHousing, type Player } from '@ros/shared';
+import { nearHousing, decorationSelection, type Player } from '@ros/shared';
 import { ItemIcon } from './ItemIcon';
 const costs = (cost: Record<string, number>) =>
   Object.entries(cost)
@@ -263,9 +263,42 @@ export function HousingPanel({
                   </article>
                 ))}
               </div>
+              <h3>Display loot & equipment</h3>
+              <p>
+                Placed items leave your bag and return when removed. Identify and unequip gear
+                before displaying it.
+              </p>
+              <div className="housing-options">
+                {[
+                  ...Object.keys(p.inventory).map((item) => `display:${item}`),
+                  ...(p.gear ?? []).map((g) => `gear:${g.id}`),
+                ]
+                  .flatMap((key) => {
+                    try {
+                      return [{ key, def: decorationSelection(p, key) }];
+                    } catch {
+                      return [];
+                    }
+                  })
+                  .map(({ key, def }) => (
+                    <article key={key}>
+                      <ItemIcon id={def.id} />
+                      <h4>{def.gear?.name ?? itemDefinition(def.id)?.name}</h4>
+                      <p>
+                        {def.gear ? `${def.gear.rarity} equipment` : `${p.inventory[def.id]} owned`}
+                      </p>
+                      <button
+                        disabled={!inside || pending || h.stage !== 3}
+                        onClick={() => onPlace(key)}
+                      >
+                        Display {def.gear?.name ?? itemDefinition(def.id)?.name}
+                      </button>
+                    </article>
+                  ))}
+              </div>
               {h.furniture.map((f) => (
                 <p key={f.id}>
-                  {itemDefinition(f.item)?.name} · Floor {(f.floor ?? 0) + 1}{' '}
+                  {f.gear?.name ?? itemDefinition(f.item)?.name} · Floor {(f.floor ?? 0) + 1}{' '}
                   <button disabled={!near || pending} onClick={() => act('remove', f.id)}>
                     Return to bag
                   </button>

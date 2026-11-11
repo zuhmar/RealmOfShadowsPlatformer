@@ -1,3 +1,4 @@
+import { decorationSelection } from '@ros/shared';
 import type { FurnitureTarget } from './furniture-placement';
 import { houseSize } from '@ros/game-data';
 import { BagPanel } from './BagPanel';
@@ -148,6 +149,11 @@ function App() {
   }, [page, snapshot?.mapId]);
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
+  let selectedDecoration: ReturnType<typeof decorationSelection> | undefined;
+  try {
+    if (p && placingFurniture) selectedDecoration = decorationSelection(p, placingFurniture);
+  } catch {}
+
   useEffect(() => {
     if (!p) return;
     if (
@@ -1413,10 +1419,10 @@ function App() {
       {placingFurniture && p && (
         <section className="furniture-placement-toolbar" aria-label="Furniture placement">
           <div>
-            <ItemIcon id={placingFurniture} />
-            <b>{itemDefinition(placingFurniture)?.name}</b>
+            <ItemIcon id={selectedDecoration?.id ?? null} />
+            <b>{selectedDecoration?.gear?.name ?? itemDefinition(selectedDecoration?.id)?.name}</b>
           </div>
-          <p>Tap or click the room to position your furniture.</p>
+          <p>Tap or click the room to position your item.</p>
           <p
             role="status"
             className={furnitureTarget?.valid ? 'placement-valid' : 'placement-invalid'}

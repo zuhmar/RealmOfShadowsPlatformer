@@ -6,7 +6,13 @@ import { assetUrl } from './assets';
 import crystalResources from '../public/assets/ui/crystal-resources.json';
 import crystalDrops from '../public/assets/ui/crystal-loot.json';
 import Phaser from 'phaser';
-import { equipmentDefinition, weaponKind, EQUIPMENT_TIERS, type GameMap } from '@ros/game-data';
+import {
+  equipmentDefinition,
+  weaponKind,
+  EQUIPMENT_TIERS,
+  type GameMap,
+  houseSize,
+} from '@ros/game-data';
 import { GEAR_RARITY_COLORS, type Drop, type Event, type GearRarity } from '@ros/shared';
 import lootAtlas from '../public/assets/ui/woods-loot.json';
 import resourcesAtlas from '../public/assets/ui/woods-resources.json';
@@ -36,7 +42,7 @@ export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
     assetUrl('/assets/ui/loot-basics.png'),
     '/assets/ui/loot-basics.json',
   );
-  if (map.island === 'Crystal Caverns') {
+  if (map.island === 'Crystal Caverns' || houseSize(map.id)) {
     scene.load.atlas(
       'loot-crystal-resources',
       assetUrl('/assets/ui/crystal-resources.png'),
@@ -51,12 +57,14 @@ export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
   scene.load.image('loot-crystal', assetUrl('/assets/ui/teleport-crystal.png'));
   scene.load.image('forest-bear-key', assetUrl('/assets/ui/forest-bear-key.png'));
   const tier = EQUIPMENT_TIERS.find((t) => t.island === map.island || t.islandName === map.island);
-  if (tier && tier.id !== 'woods')
+  for (const selectedTier of houseSize(map.id) ? EQUIPMENT_TIERS : tier ? [tier] : []) {
+    if (selectedTier.id === 'woods') continue;
     scene.load.atlas(
-      `loot-equipment-${tier.id}`,
-      assetUrl(`/assets/equipment/islands/${tier.id}.png`),
-      `/assets/equipment/islands/${tier.id}.json`,
+      `loot-equipment-${selectedTier.id}`,
+      assetUrl(`/assets/equipment/islands/${selectedTier.id}.png`),
+      `/assets/equipment/islands/${selectedTier.id}.json`,
     );
+  }
 }
 export function lootIcon(
   scene: Phaser.Scene,

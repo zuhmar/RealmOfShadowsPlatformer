@@ -1,6 +1,8 @@
+import { lootIcon } from './loot-effects';
+import { decorationSize } from '@ros/shared';
 import { terrainPlatform } from './terrain';
 import Phaser from 'phaser';
-import { HOUSE_LAYOUTS, houseSize, CARPENTRY_RECIPES, type GameMap } from '@ros/game-data';
+import { HOUSE_LAYOUTS, houseSize, type GameMap } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 import { preloadHousing } from './housing';
@@ -26,7 +28,7 @@ export function preloadHouseInterior(scene: Phaser.Scene) {
     );
 }
 export class HouseInterior {
-  private items: Phaser.GameObjects.Image[] = [];
+  private items: Phaser.GameObjects.GameObject[] = [];
   private signature = '';
   private backdrop: Phaser.GameObjects.TileSprite;
   private sky: Phaser.GameObjects.Image;
@@ -207,9 +209,24 @@ export class HouseInterior {
     this.items = [];
     const layout = HOUSE_LAYOUTS[houseSize(this.map.id)!];
     for (const f of furniture) {
-      const r = CARPENTRY_RECIPES.find((r) => r.id === f.item),
+      const r = decorationSize(f.item, f.display),
         y = layout.floors[f.floor ?? 0];
       if (!r || y === undefined) continue;
+      if (f.display) {
+        const icon = lootIcon(this.scene, f.item, 60)
+          .setPosition(this.map.width / 2 + f.x, y - 38)
+          .setDepth(3)
+          .setName('house-display');
+        this.items.push(icon);
+        const stand = this.scene.add
+          .tileSprite(this.map.width / 2 + f.x, y - 8, 64, 8, 'house-interior', 'floor-strip')
+          .setOrigin(0.5, 0)
+          .setTileScale(8 / this.scene.textures.getFrame('house-interior', 'floor-strip').height)
+          .setDepth(3)
+          .setName('display-stand');
+        this.items.push(stand);
+        continue;
+      }
       const im = this.scene.add
         .image(this.map.width / 2 + f.x, y, 'housing-art', f.item)
         .setOrigin(0.5, 1);

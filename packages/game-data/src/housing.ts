@@ -21,8 +21,8 @@ export const CARPENTRY_RECIPES = [
     level: 1,
     cost: { 'oak-plank': 5 },
     xp: 20,
-    width: 64,
-    height: 42,
+    width: 110,
+    height: 72,
   },
   {
     id: 'oak-chair',
@@ -30,8 +30,8 @@ export const CARPENTRY_RECIPES = [
     level: 1,
     cost: { 'oak-plank': 3 },
     xp: 12,
-    width: 30,
-    height: 48,
+    width: 52,
+    height: 82,
   },
   {
     id: 'oak-bed',
@@ -39,8 +39,8 @@ export const CARPENTRY_RECIPES = [
     level: 3,
     cost: { 'oak-plank': 10 },
     xp: 35,
-    width: 90,
-    height: 48,
+    width: 154,
+    height: 82,
   },
   {
     id: 'oak-chest',
@@ -48,8 +48,8 @@ export const CARPENTRY_RECIPES = [
     level: 5,
     cost: { 'oak-plank': 8, 'iron-bar': 1 },
     xp: 30,
-    width: 55,
-    height: 40,
+    width: 94,
+    height: 68,
   },
 ] as const;
 export const CARPENTRY_ITEMS = Object.fromEntries(

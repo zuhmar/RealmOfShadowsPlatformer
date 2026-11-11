@@ -1,11 +1,12 @@
+import { lootIcon } from './loot-effects';
 import Phaser from 'phaser';
-import { CARPENTRY_RECIPES, HOUSE_LAYOUTS, houseSize, type GameMap } from '@ros/game-data';
-import { furniturePlacement, type Player } from '@ros/shared';
+import { HOUSE_LAYOUTS, houseSize, type GameMap } from '@ros/game-data';
+import { furniturePlacement, decorationSelection, type Player } from '@ros/shared';
 export type FurnitureTarget = { x: number; floor: number; valid: boolean; reason: string };
 export type FurnitureSelection = { item: string; onTarget: (target: FurnitureTarget) => void };
 /** World-space preview shared by mouse and touch; actual placement stays server-authoritative. */
 export class FurniturePlacement {
-  private ghost?: Phaser.GameObjects.Image;
+  private ghost?: Phaser.GameObjects.Image | Phaser.GameObjects.Container;
   private outline: Phaser.GameObjects.Graphics;
   private point?: { x: number; y: number };
   private item = '';
@@ -29,7 +30,10 @@ export class FurniturePlacement {
     });
   }
   update(p: Player | undefined, selection: FurnitureSelection | undefined) {
-    const recipe = CARPENTRY_RECIPES.find((r) => r.id === selection?.item);
+    let recipe: ReturnType<typeof decorationSelection> | undefined;
+    try {
+      if (p && selection) recipe = decorationSelection(p, selection.item);
+    } catch {}
     if (!p || !selection || !recipe?.width || p.houseOwnerId !== p.id || !houseSize(p.mapId)) {
       this.active = false;
       this.item = '';
@@ -45,15 +49,16 @@ export class FurniturePlacement {
       this.item = selection.item;
       this.signature = '';
       this.point = { x: p.x + 90, y: p.y - 10 };
-      this.ghost = this.scene.add
-        .image(0, 0, 'housing-art', recipe.id)
-        .setOrigin(0.5, 1)
-        .setDepth(11)
-        .setAlpha(0.65)
-        .setName('furniture-placement-preview');
-      this.ghost.setScale(
-        Math.min(recipe.width / this.ghost.width, recipe.height / this.ghost.height),
-      );
+      if (recipe.display) {
+        this.ghost = lootIcon(this.scene, recipe.id, 60)
+          .setDepth(11)
+          .setAlpha(0.65)
+          .setName('furniture-placement-preview');
+      } else {
+        const image = this.scene.add.image(0, 0, 'housing-art', recipe.id).setOrigin(0.5, 1);
+        image.setScale(Math.min(recipe.width / image.width, recipe.height / image.height));
+        this.ghost = image.setDepth(11).setAlpha(0.65).setName('furniture-placement-preview');
+      }
     }
     const layout = HOUSE_LAYOUTS[houseSize(this.map.id)!];
     const point = this.point!;
@@ -66,7 +71,7 @@ export class FurniturePlacement {
     let valid = true,
       reason = 'Ready to place';
     try {
-      const check = furniturePlacement(p, recipe.id, x);
+      const check = furniturePlacement(p, selection.item, x);
       if (floor !== check.floor) throw new Error('Choose a spot on the floor you are standing on.');
     } catch (e) {
       valid = false;
@@ -74,9 +79,8 @@ export class FurniturePlacement {
     }
     const y = layout.floors[Math.max(0, floor)];
     const color = valid ? 0xa6e16a : 0xf27b85;
-    this.ghost!.setPosition(layout.width / 2 + x, y)
-      .setVisible(true)
-      .setTint(color);
+    this.ghost!.setPosition(layout.width / 2 + x, recipe.display ? y - 38 : y).setVisible(true);
+    if (this.ghost instanceof Phaser.GameObjects.Image) this.ghost.setTint(color);
     this.outline
       .clear()
       .lineStyle(2, color, 0.9)

@@ -889,6 +889,7 @@ export class MapRoom extends Room {
         if (!nearHousing(p)) throw new Error('Stand on the housing platform.');
         const next = await persistHousing(structuredClone(p), v);
         p.housing = next.housing;
+        p.gear = next.gear;
         p.carpentry = next.carpentry;
         p.inventory = next.inventory;
         p.housingRevision = next.housingRevision;

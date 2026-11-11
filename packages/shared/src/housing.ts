@@ -6,14 +6,27 @@ import {
   HOUSING_PLATFORM,
   houseStageCost,
   gatheringXpNeeded,
+  itemDefinition,
+  provisionRecipe,
+  GATHERING_TOOLS,
+  equipmentDefinition,
+  weaponKind,
   type PlotSize,
 } from '@ros/game-data';
 import type { Player } from './index';
+import type { Gear } from './equipment';
 export type Housing = {
   size: PlotSize;
   stage: number;
   invited: string[];
-  furniture: { id: string; item: string; x: number; floor?: number }[];
+  furniture: {
+    id: string;
+    item: string;
+    x: number;
+    floor?: number;
+    display?: boolean;
+    gear?: Gear;
+  }[];
 };
 export type HousingView = {
   ownerId: string;
@@ -56,12 +69,83 @@ function train(p: Player, xp: number) {
   }
   if (s.level >= 100) s.xp = 0;
 }
+const DISPLAY_LOOT = new Set([
+  'fang',
+  'oak-plank',
+  'teleport-crystal',
+  'forest-bear-key',
+  'wolf-pelt',
+  'thorn-silk',
+  'boar-tusk',
+  'bear-claw',
+  'forest-guardian-ring',
+  'forest-bear-trophy',
+  'bat-wing',
+  'golem-core',
+  'shard-stinger',
+  'wyrm-scale',
+  'crystal-boss-key',
+  'crystal-wyrm-trophy',
+  'iron-ore',
+  'oak-logs',
+  'greenleaf',
+  'brook-trout',
+  'silver-minnow',
+  'golden-carp',
+  'crystal-ore',
+  'crystalwood',
+  'glowcap',
+  'crystal-fish',
+  'glowfin',
+  'prismatic-eel',
+]);
+export function decorationSize(item: string, display = false) {
+  const furniture = CARPENTRY_RECIPES.find((r) => r.id === item && r.width > 0);
+  return !display && furniture ? furniture : { id: item, width: 64, height: 72 };
+}
+export function decorationSelection(p: Player, id: string) {
+  if (id.startsWith('gear:')) {
+    const gear = p.gear?.find((g) => g.id === id.slice(5));
+    if (!gear || !gear.identified) throw new Error('Identify your equipment before displaying it.');
+    if (
+      Object.values(p.equippedGear ?? {}).includes(gear.id) ||
+      (gear.slot === 'weapon' && !p.equippedGear?.weapon && p.weapon === gear.base)
+    )
+      throw new Error('Unequip this equipment before displaying it.');
+    return { ...decorationSize(gear.base, true), display: true, gear };
+  }
+  if (id.startsWith('display:')) {
+    const item = id.slice(8),
+      definition = itemDefinition(item);
+    if (
+      !definition ||
+      !['resource', 'material', 'weapon', 'armor', 'accessory'].includes(definition.type) ||
+      !(
+        DISPLAY_LOOT.has(item) ||
+        equipmentDefinition(item) ||
+        weaponKind(item) !== 'unarmed' ||
+        item.endsWith('-bar')
+      ) ||
+      CARPENTRY_RECIPES.some((r) => r.id === item && r.width > 0) ||
+      provisionRecipe(item) ||
+      GATHERING_TOOLS.some((t) => t.id === item) ||
+      item.startsWith('recipe:') ||
+      (p.inventory[item] ?? 0) < 1
+    )
+      throw new Error('Choose an owned loot item or unequipped equipment to display.');
+    if ((p.weapon === item || p.accessory === item) && p.inventory[item] < 2)
+      throw new Error('Unequip this item before displaying it.');
+    return { ...decorationSize(item, true), display: true, gear: undefined };
+  }
+  const r = CARPENTRY_RECIPES.find((r) => r.id === id && r.width > 0);
+  if (!r || (p.inventory[id] ?? 0) < 1) throw new Error('Craft furniture before placing it.');
+  return { ...r, display: false, gear: undefined };
+}
 export function furniturePlacement(p: Player, id: string, position: unknown) {
   if (p.houseOwnerId !== p.id) throw new Error('Only the owner can change this house.');
   const h = p.housing,
-    r = CARPENTRY_RECIPES.find((r) => r.id === id);
-  if (!h || h.stage !== 3 || !r?.width || (p.inventory[id] ?? 0) < 1)
-    throw new Error('Finish your house and craft furniture first.');
+    r = decorationSelection(p, id);
+  if (!h || h.stage !== 3) throw new Error('Finish your house and craft furniture first.');
   const size = houseSize(p.mapId);
   if (!size || p.houseOwnerId !== p.id) throw new Error('Enter your house to place furniture.');
   const layout = HOUSE_LAYOUTS[size],
@@ -75,7 +159,7 @@ export function furniturePlacement(p: Player, id: string, position: unknown) {
     throw new Error(`This house holds up to ${layout.capacity} decorations.`);
   if (
     h.furniture.some((f) => {
-      const other = CARPENTRY_RECIPES.find((r) => r.id === f.item)!;
+      const other = decorationSize(f.item, f.display);
       return (f.floor ?? 0) === floor && Math.abs(f.x - x) < (other.width + r.width) / 2 + 4;
     })
   )
@@ -128,20 +212,28 @@ export function changeHousing(
     p.inventory[id] = (p.inventory[id] ?? 0) + quantity;
     train(p, r.xp * quantity);
   } else if (value.action === 'place') {
-    const { h, x, floor } = furniturePlacement(p, id, value.x);
-    p.inventory[id]--;
+    const { h, r, x, floor } = furniturePlacement(p, id, value.x);
+    if (r.gear) p.gear = p.gear!.filter((g) => g.id !== r.gear!.id);
+    else p.inventory[r.id]--;
     h.furniture.push({
       id: `f${(p.housingRevision ?? 0) + 1}-${h.furniture.length}`,
-      item: id,
+      item: r.id,
       x,
       floor,
+      ...(r.display ? { display: true } : {}),
+      ...(r.gear ? { gear: structuredClone(r.gear) } : {}),
     });
   } else if (value.action === 'remove') {
     const h = p.housing,
       i = h?.furniture.findIndex((f) => f.id === id) ?? -1;
     if (!h || i < 0) throw new Error('Unknown furniture.');
-    const [f] = h.furniture.splice(i, 1);
-    p.inventory[f.item] = (p.inventory[f.item] ?? 0) + 1;
+    const f = h.furniture[i];
+    if (f.gear && (p.gear ?? []).some((g) => g.id === f.gear!.id))
+      throw new Error('Equipment is already in your bag.');
+    h.furniture.splice(i, 1);
+    if (f.gear) {
+      (p.gear ??= []).push(structuredClone(f.gear));
+    } else p.inventory[f.item] = (p.inventory[f.item] ?? 0) + 1;
   } else if (value.action === 'invite' || value.action === 'revoke') {
     if (!p.housing || !id || id === p.id || id.length > 100)
       throw new Error('Choose another adventurer.');
