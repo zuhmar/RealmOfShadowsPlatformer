@@ -1,0 +1,153 @@
+{
+  "frames": {
+    "woods": {
+      "frame": {
+        "x": 50,
+        "y": 127,
+        "w": 528,
+        "h": 162
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 528,
+        "h": 162
+      },
+      "sourceSize": {
+        "w": 528,
+        "h": 162
+      }
+    },
+    "crystal": {
+      "frame": {
+        "x": 677,
+        "y": 128,
+        "w": 528,
+        "h": 161
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 528,
+        "h": 161
+      },
+      "sourceSize": {
+        "w": 528,
+        "h": 161
+      }
+    },
+    "swamp": {
+      "frame": {
+        "x": 47,
+        "y": 409,
+        "w": 533,
+        "h": 177
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 533,
+        "h": 177
+      },
+      "sourceSize": {
+        "w": 533,
+        "h": 177
+      }
+    },
+    "frost": {
+      "frame": {
+        "x": 674,
+        "y": 415,
+        "w": 533,
+        "h": 171
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 533,
+        "h": 171
+      },
+      "sourceSize": {
+        "w": 533,
+        "h": 171
+      }
+    },
+    "ember": {
+      "frame": {
+        "x": 41,
+        "y": 704,
+        "w": 546,
+        "h": 173
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 546,
+        "h": 173
+      },
+      "sourceSize": {
+        "w": 546,
+        "h": 173
+      }
+    },
+    "celestial": {
+      "frame": {
+        "x": 668,
+        "y": 705,
+        "w": 545,
+        "h": 171
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 545,
+        "h": 171
+      },
+      "sourceSize": {
+        "w": 545,
+        "h": 171
+      }
+    },
+    "shadow": {
+      "frame": {
+        "x": 33,
+        "y": 995,
+        "w": 561,
+        "h": 196
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 561,
+        "h": 196
+      },
+      "sourceSize": {
+        "w": 561,
+        "h": 196
+      }
+    }
+  },
+  "meta": {
+    "image": "island-display-stands.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "view": "front elevation",
+    "source": "exec-c0f6d7b7-4544-4ad4-a15c-d0ab72714945.png"
+  }
+}

@@ -60,6 +60,9 @@ try {
         .filter((o) => o.name === 'house-display')
         .map((o) => ({
           theme: o.list[0].getData('theme'),
+          texture: o.list[0].list[0].texture?.key,
+          frame: o.list[0].list[0].frame?.name,
+          uniform: o.list[0].list[0].scaleX === o.list[0].list[0].scaleY,
           halo: o.list[0].list[1]?.y,
           animated: s.tweens.getTweensOf(o.list[0].list).length > 0,
         }));
@@ -74,6 +77,9 @@ try {
     'celestial',
     'shadow',
   ]);
+  expect(
+    first.every((s) => s.texture === 'island-display-stands' && s.frame === s.theme && s.uniform),
+  ).toBe(true);
   expect(first.map((s) => s.animated)).toEqual([false, false, false, false, false, true, true]);
   await page.waitForTimeout(300);
   const next = await state();

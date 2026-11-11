@@ -1,4 +1,4 @@
-import { itemDisplay } from './display-stands';
+import { itemDisplay, preloadDisplayStands } from './display-stands';
 import { decorationSize } from '@ros/shared';
 import { terrainPlatform } from './terrain';
 import Phaser from 'phaser';
@@ -8,6 +8,7 @@ import { assetUrl } from './assets';
 import { preloadHousing } from './housing';
 export function preloadHouseInterior(scene: Phaser.Scene) {
   preloadHousing(scene);
+  preloadDisplayStands(scene);
   if (!scene.textures.exists('house-outdoors'))
     scene.load.image('house-outdoors', assetUrl('/assets/backgrounds/elderwood-village.png'));
   if (!scene.textures.exists('house-window'))
