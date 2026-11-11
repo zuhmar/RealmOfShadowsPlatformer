@@ -1,0 +1,10 @@
+{
+  "background": "roadmap-background.png",
+  "generatedSource": "exec-5a35b952-4276-49af-a0bd-8bb76c70a0b7.png",
+  "characters": [
+    "knight-armed-crystal",
+    "mage-armed-crystal"
+  ],
+  "frame": "idle-0",
+  "method": "Original in-game sprite pixels placed over generated poster, no character redrawing."
+}
