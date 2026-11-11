@@ -2,109 +2,109 @@
   "frames": {
     "ledge": {
       "frame": {
-        "x": 31,
-        "y": 138,
-        "w": 825,
-        "h": 73
+        "x": 26,
+        "y": 98,
+        "w": 707,
+        "h": 208
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 825,
-        "h": 73
+        "w": 707,
+        "h": 208
       },
       "sourceSize": {
-        "w": 825,
-        "h": 73
+        "w": 707,
+        "h": 208
       }
     },
     "ground": {
       "frame": {
-        "x": 934,
-        "y": 100,
-        "w": 794,
-        "h": 122
+        "x": 795,
+        "y": 99,
+        "w": 715,
+        "h": 172
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 794,
-        "h": 122
+        "w": 715,
+        "h": 172
       },
       "sourceSize": {
-        "w": 794,
-        "h": 122
+        "w": 715,
+        "h": 172
       }
     },
     "timber": {
       "frame": {
-        "x": 45,
-        "y": 413,
-        "w": 797,
-        "h": 57
+        "x": 43,
+        "y": 451,
+        "w": 683,
+        "h": 114
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 797,
-        "h": 57
+        "w": 683,
+        "h": 114
       },
       "sourceSize": {
-        "w": 797,
-        "h": 57
+        "w": 683,
+        "h": 114
       }
     },
     "dock": {
       "frame": {
-        "x": 919,
-        "y": 384,
-        "w": 824,
-        "h": 120
+        "x": 797,
+        "y": 419,
+        "w": 710,
+        "h": 193
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 824,
-        "h": 120
+        "w": 710,
+        "h": 193
       },
       "sourceSize": {
-        "w": 824,
-        "h": 120
+        "w": 710,
+        "h": 193
       }
     },
     "ladder": {
       "frame": {
-        "x": 394,
-        "y": 574,
-        "w": 100,
-        "h": 296
+        "x": 290,
+        "y": 667,
+        "w": 188,
+        "h": 349
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 100,
-        "h": 296
+        "w": 188,
+        "h": 349
       },
       "sourceSize": {
-        "w": 100,
-        "h": 296
+        "w": 188,
+        "h": 349
       }
     },
     "soil": {
       "frame": {
-        "x": 930,
-        "y": 614,
-        "w": 800,
+        "x": 816,
+        "y": 720,
+        "w": 670,
         "h": 230
       },
       "rotated": false,
@@ -112,11 +112,11 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 800,
+        "w": 670,
         "h": 230
       },
       "sourceSize": {
-        "w": 800,
+        "w": 670,
         "h": 230
       }
     }
@@ -124,10 +124,15 @@
   "meta": {
     "image": "village-terrain.png",
     "size": {
-      "w": 1774,
-      "h": 887
+      "w": 1536,
+      "h": 1024
     },
-    "source": "exec-6297a987-545c-49f7-8f87-ade5dd690371.png",
-    "view": "front elevation"
+    "source": "exec-2a44db18-e426-4d15-aa2e-36b9bef7d8c6.png",
+    "styleReference": "elderwood-village-props.png",
+    "view": "front elevation",
+    "ladder": {
+      "start": 80,
+      "repeat": 61
+    }
   }
 }

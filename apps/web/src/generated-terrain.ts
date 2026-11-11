@@ -85,36 +85,43 @@ function horizontal(
   paint(ctx, f, x, y, scale, 0, 0, cap, f.h);
   paint(ctx, f, end, y, scale, f.w - cap, 0, cap, f.h);
 }
-function soil(ctx: CanvasRenderingContext2D, f: Source, width: number, y: number, height: number) {
-  const scale = 0.65,
-    tw = f.w * scale,
+function soil(
+  ctx: CanvasRenderingContext2D,
+  f: Source,
+  width: number,
+  y: number,
+  height: number,
+  scale = 0.65,
+) {
+  const tw = f.w * scale,
     th = f.h * scale;
-  for (let top = y; top < height; top += th)
-    for (let left = 0; left < width; left += tw)
-      paint(
-        ctx,
-        f,
-        left,
-        top,
-        scale,
-        0,
-        0,
-        Math.min(f.w, (width - left) / scale),
-        Math.min(f.h, (height - top) / scale),
-      );
+  let row = 0;
+  for (let top = y; top < height; top += th, row++) {
+    for (let left = 0; left < width; left += tw) {
+      const sw = Math.min(f.w, (width - left) / scale);
+      ctx.save();
+      // Reflect alternating rows so dark soil meets dark soil, without visible stripe resets.
+      if (row % 2 === 0) {
+        ctx.translate(0, top + th);
+        ctx.scale(1, -1);
+        paint(ctx, f, left, 0, scale, 0, 0, sw, f.h);
+      } else paint(ctx, f, left, top, scale, 0, 0, sw, f.h);
+      ctx.restore();
+    }
+  }
 }
 /** A small repeating generated soil texture fills below the map without a giant baked canvas. */
 export function generatedSoil(scene: Phaser.Scene, map: GameMap, theme: GeneratedTerrainTheme) {
   const ground = map.platforms.find((p) => !p.oneWay);
   if (!ground) return;
   const f = source(scene, theme, 'soil'),
-    scale = 0.65,
-    key = `terrain-soil-art-hd:${theme}`;
+    scale = Math.round(f.h * 0.65) / f.h,
+    key = `terrain-soil-art-matched-v3:${theme}`;
   const width = Math.floor(f.w * scale),
-    height = Math.floor(f.h * scale);
+    height = Math.round(f.h * scale) * 2;
   const { texture, ctx, density } = raster(scene, key, width, height);
   if (!texture.canvas.dataset.rendered) {
-    paint(ctx, f, 0, 0, scale);
+    soil(ctx, f, width, 0, height, scale);
     texture.refresh();
     texture.canvas.dataset.rendered = 'true';
   }
@@ -146,15 +153,16 @@ export function generatedPlatform(
       : kind === 'dock'
         ? 82 / frame.h
         : kind === 'ground'
-          ? 0.7
+          ? 85 / frame.h
           : 70 / frame.h;
+  const bakedFoundation = !p.oneWay && map.id.startsWith('house-');
   const pad = 4,
-    height = !p.oneWay ? Math.max(180, map.height - p.y + 160) : Math.ceil(frame.h * scale);
-  const key = `terrain-generated-hd-v2:${theme}:${map.id}:${p.id}`;
+    height = bakedFoundation ? Math.max(180, map.height - p.y + 160) : Math.ceil(frame.h * scale);
+  const key = `terrain-generated-hd-v4:${theme}:${map.id}:${p.id}`;
   remember(scene, map.id, key);
   const { texture, ctx, density } = raster(scene, key, p.width + pad * 2, height + pad * 2);
   if (!texture.canvas.dataset.rendered) {
-    if (!p.oneWay) {
+    if (bakedFoundation) {
       ctx.save();
       ctx.translate(pad, pad);
       soil(ctx, source(scene, theme, 'soil'), p.width, Math.floor(frame.h * scale) - 3, height);
@@ -186,22 +194,23 @@ export function generatedPlatform(
 }
 export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: GeneratedTerrainTheme) {
   const frame = source(scene, theme, 'ladder'),
-    scale = 48 / frame.w;
+    artWidth = theme === 'woods' ? 60 : 48,
+    scale = artWidth / frame.w;
   const height = l.bottom - l.top,
     pad = 20,
-    width = 64,
+    width = artWidth + 16,
     fullHeight = height + pad * 2;
-  const key = `ladder-generated-hd-v2:${theme}:${height}`;
+  const key = `ladder-generated-hd-v3:${theme}:${height}`;
   const { texture, ctx, density } = raster(scene, key, width, fullHeight);
   if (!texture.canvas.dataset.rendered) {
-    const x = (width - 48) / 2;
-    const cap = 24,
+    const x = (width - artWidth) / 2;
+    const cap = 32,
       edge = cap * scale,
       top = pad - 14,
       bottom = pad + height + 4;
     // Select a whole rung interval for repeats so the rails and rungs meet naturally.
-    const start = theme === 'woods' ? 92 : 60,
-      repeat = theme === 'woods' ? 42 : 40;
+    const start = theme === 'woods' ? 90 : 80,
+      repeat = theme === 'woods' ? 70 : 61;
     for (let y = top + edge; y < bottom - edge; ) {
       const size = Math.min(repeat * scale, bottom - edge - y);
       paint(ctx, frame, x, y, scale, 0, start, frame.w, size / scale);

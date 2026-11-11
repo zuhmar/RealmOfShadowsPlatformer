@@ -2,122 +2,122 @@
   "frames": {
     "ledge": {
       "frame": {
-        "x": 21,
-        "y": 184,
-        "w": 725,
-        "h": 72
+        "x": 28,
+        "y": 109,
+        "w": 712,
+        "h": 197
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 725,
-        "h": 72
+        "w": 712,
+        "h": 197
       },
       "sourceSize": {
-        "w": 725,
-        "h": 72
+        "w": 712,
+        "h": 197
       }
     },
     "ground": {
       "frame": {
-        "x": 790,
-        "y": 152,
-        "w": 725,
-        "h": 122
+        "x": 803,
+        "y": 96,
+        "w": 686,
+        "h": 197
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 725,
-        "h": 122
+        "w": 686,
+        "h": 197
       },
       "sourceSize": {
-        "w": 725,
-        "h": 122
+        "w": 686,
+        "h": 197
       }
     },
     "timber": {
       "frame": {
-        "x": 21,
-        "y": 484,
-        "w": 726,
-        "h": 57
+        "x": 32,
+        "y": 430,
+        "w": 696,
+        "h": 118
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 726,
-        "h": 57
+        "w": 696,
+        "h": 118
       },
       "sourceSize": {
-        "w": 726,
-        "h": 57
+        "w": 696,
+        "h": 118
       }
     },
     "dock": {
       "frame": {
-        "x": 790,
-        "y": 469,
-        "w": 725,
-        "h": 111
+        "x": 798,
+        "y": 415,
+        "w": 694,
+        "h": 170
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 725,
-        "h": 111
+        "w": 694,
+        "h": 170
       },
       "sourceSize": {
-        "w": 725,
-        "h": 111
+        "w": 694,
+        "h": 170
       }
     },
     "ladder": {
       "frame": {
-        "x": 322,
-        "y": 654,
-        "w": 123,
-        "h": 353
+        "x": 244,
+        "y": 628,
+        "w": 282,
+        "h": 376
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 123,
-        "h": 353
+        "w": 282,
+        "h": 376
       },
       "sourceSize": {
-        "w": 123,
-        "h": 353
+        "w": 282,
+        "h": 376
       }
     },
     "soil": {
       "frame": {
-        "x": 802,
-        "y": 732,
-        "w": 700,
-        "h": 230
+        "x": 804,
+        "y": 716,
+        "w": 670,
+        "h": 224
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 700,
-        "h": 230
+        "w": 670,
+        "h": 224
       },
       "sourceSize": {
-        "w": 700,
-        "h": 230
+        "w": 670,
+        "h": 224
       }
     }
   },
@@ -127,7 +127,12 @@
       "w": 1536,
       "h": 1024
     },
-    "source": "exec-de94f352-5cbb-4a25-bc65-ba2de043dae3.png",
-    "view": "front elevation"
+    "source": "exec-2cbe1c09-8c08-4a0c-bd70-908561214d00.png",
+    "styleReference": "whispering-woods-props.png",
+    "view": "front elevation",
+    "ladder": {
+      "start": 90,
+      "repeat": 70
+    }
   }
 }
