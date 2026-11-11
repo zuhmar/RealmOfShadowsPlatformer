@@ -86,47 +86,66 @@ try {
   await page.getByRole('button', { name: /Enter world/ }).click();
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
   await expect(page.locator('.world-title')).toContainText('Small House');
-  await page.getByRole('button', { name: 'Housing', exact: true }).click();
-  await page.getByRole('button', { name: 'Storage', exact: true }).click();
-  await page.getByRole('button', { name: 'Chest 1 · Floor 1', exact: true }).click();
+  await page.screenshot({ path: 'artifacts/chest-world.png' });
+  // Small-house chest at world x500 is rendered at 1.05 zoom.
+  async function openChest() {
+    await page.locator('.phaser-host canvas').click({ position: { x: 525, y: 665 } });
+    await expect(page.getByRole('dialog', { name: 'Chest storage', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Housing sections' })).toHaveCount(0);
+  }
+  await openChest();
   const bag = page.getByRole('region', { name: 'Bag items', exact: true });
   const chest = page.getByRole('region', { name: 'Chest items', exact: true });
-  await bag.getByRole('button', { name: 'Deposit 1', exact: true }).first().click();
-  await expect(chest.getByText('×1', { exact: true })).toBeVisible();
+  await bag.getByRole('button', { name: /Wolf Fang, 2/i }).click();
+  await page.getByRole('button', { name: 'Deposit 1', exact: true }).click();
+  await expect(chest.getByRole('button', { name: /Wolf Fang, 1/i })).toBeVisible();
   await page.waitForTimeout(850);
-  await bag.getByRole('button', { name: 'Deposit equipment', exact: true }).click();
-  await expect(chest.getByText('Cavern Keepsake', { exact: true })).toBeVisible();
+  await bag.getByRole('button', { name: 'Cavern Keepsake, 1', exact: true }).click();
+  await page.getByRole('button', { name: 'Deposit equipment', exact: true }).click();
+  await expect(
+    chest.getByRole('button', { name: 'Cavern Keepsake, 1', exact: true }),
+  ).toBeVisible();
   await expect
-    .poll(async () => {
-      const d = (await db.character.findUnique({ where: { id: c.id } })).data;
-      return d.housing.furniture[0].storage?.gear.length;
-    })
+    .poll(
+      async () =>
+        (await db.character.findUnique({ where: { id: c.id } })).data.housing.furniture[0].storage
+          ?.gear.length,
+    )
     .toBe(1);
   let stored = (await db.character.findUnique({ where: { id: c.id } })).data;
   expect(stored.housing.furniture[0].storage.gear[0]).toEqual(gear);
   await page.screenshot({ path: 'artifacts/chest-storage-desktop.png' });
-  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.getByRole('button', { name: 'Close chest storage', exact: true }).click();
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   await expect(page.locator('.site-header')).toBeVisible();
   await page.getByRole('button', { name: /Enter world/ }).click();
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
-  await page.getByRole('button', { name: 'Housing', exact: true }).click();
-  await page.getByRole('button', { name: 'Storage', exact: true }).click();
-  await page.getByRole('button', { name: 'Chest 1 · Floor 1', exact: true }).click();
-  await expect(chest.getByText('Cavern Keepsake', { exact: true })).toBeVisible();
-  await chest.getByRole('button', { name: 'Withdraw equipment', exact: true }).click();
-  await expect(bag.getByText('Cavern Keepsake', { exact: true })).toBeVisible();
+  await openChest();
+  await chest.getByRole('button', { name: 'Cavern Keepsake, 1', exact: true }).click();
+  await page.getByRole('button', { name: 'Withdraw equipment', exact: true }).click();
+  await expect(bag.getByRole('button', { name: 'Cavern Keepsake, 1', exact: true })).toBeVisible();
   await page.waitForTimeout(850);
-  await chest.getByRole('button', { name: 'Withdraw 1', exact: true }).click();
-  await expect(chest.getByText('Empty', { exact: true })).toBeVisible();
+  await chest.getByRole('button', { name: /Wolf Fang, 1/i }).click();
+  await page.getByRole('button', { name: 'Withdraw 1', exact: true }).click();
+  await expect(chest.getByRole('button', { name: 'Empty chest slot', exact: true })).toHaveCount(
+    40,
+  );
   stored = (await db.character.findUnique({ where: { id: c.id } })).data;
   expect(stored.gear[0]).toEqual(gear);
   expect(stored.inventory.fang).toBe(2);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: 'artifacts/chest-storage-mobile.png' });
+  await page.getByRole('button', { name: 'Close chest storage', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate house', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Decorate house', exact: true })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Housing sections' })).toHaveCount(0);
+  await page.screenshot({ path: 'artifacts/decoration-popup-mobile.png' });
+  await page.getByRole('button', { name: 'Place Oak Table', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Decorate house', exact: true })).toHaveCount(0);
+  await expect(page.getByLabel('Furniture placement', { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
   console.log(
-    'PASS chest deposits, withdrawals, full gear preservation, saved re-entry and desktop/mobile UI.',
+    'PASS standalone chest slot-grid popup, item transfers, preserved gear, saved re-entry, mobile decoration popup and direct placement.',
   );
 } finally {
   await browser.close();

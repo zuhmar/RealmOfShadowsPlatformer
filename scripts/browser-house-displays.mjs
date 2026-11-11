@@ -87,8 +87,7 @@ try {
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
   await expect(page.locator('.world-title')).toContainText('Small House');
   async function decorate() {
-    await page.getByRole('button', { name: 'Housing', exact: true }).click();
-    await page.getByRole('button', { name: 'Decorate', exact: true }).click();
+    await page.getByRole('button', { name: 'Decorate house', exact: true }).click();
   }
   async function place(button, x) {
     await decorate();
@@ -129,7 +128,7 @@ try {
   stored = (await db.character.findUnique({ where: { id: c.id } })).data;
   expect(stored.gear[0]).toEqual(gear);
   expect(stored.housing.furniture).toHaveLength(3);
-  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.getByRole('button', { name: 'Close decorate house', exact: true }).click();
   await page.getByRole('button', { name: 'Leave world', exact: true }).click();
   await expect(page.locator('.site-header')).toBeVisible();
   await page.getByRole('button', { name: /Enter world/ }).click();

@@ -103,8 +103,7 @@ try {
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
   await expect(page.locator('.world-title')).toContainText('Small House');
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
-  await page.getByRole('button', { name: 'Housing', exact: true }).click();
-  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate house', exact: true }).click();
   await page.waitForTimeout(850);
   await expect(page.getByLabel('Furniture position')).toHaveCount(0);
   await page.getByRole('button', { name: 'Place Oak Table', exact: true }).click();
@@ -121,14 +120,12 @@ try {
         (await db.character.findUnique({ where: { id: c.id } })).data.housing.furniture.length,
     )
     .toBe(1);
-  await page.getByRole('button', { name: 'Housing', exact: true }).click();
-  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate house', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Return to bag', exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/housing-panel-desktop.png' });
-  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.getByRole('button', { name: 'Close decorate house', exact: true }).click();
   await page.screenshot({ path: 'artifacts/housing-small-desktop.png' });
-  await page.getByRole('button', { name: 'Housing', exact: true }).click();
-  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate house', exact: true }).click();
   await page.getByRole('button', { name: 'Place Oak Table', exact: true }).click();
   await page.locator('.phaser-host canvas').click({ position: { x: 110, y: 650 } });
   await page.waitForTimeout(200);
@@ -141,8 +138,7 @@ try {
   );
   await page.getByRole('button', { name: 'Cancel placement', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: 'Housing', exact: true }).click();
-  await page.getByRole('button', { name: 'Decorate', exact: true }).click();
+  await page.getByRole('button', { name: 'Decorate house', exact: true }).click();
   await page.getByRole('button', { name: 'Place Oak Table', exact: true }).click();
   await page.touchscreen.tap(280, 550);
   await expect(page.getByRole('button', { name: 'Place furniture', exact: true })).toBeEnabled();

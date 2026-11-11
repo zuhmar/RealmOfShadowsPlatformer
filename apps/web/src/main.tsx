@@ -1,6 +1,8 @@
 import { decorationSelection } from '@ros/shared';
 import type { FurnitureTarget } from './furniture-placement';
 import { houseSize } from '@ros/game-data';
+import { StoragePanel } from './StoragePanel';
+import { HousePopup } from './HousePopup';
 import { BagPanel } from './BagPanel';
 import { HousingPanel } from './HousingPanel';
 import { recipeFromScroll } from '@ros/game-data';
@@ -137,7 +139,7 @@ function App() {
   });
   bridge.current.onChest = (id) => {
     setChestId(id);
-    setPanel('housing');
+    setPanel('storage');
   };
   const snapshotRef = useRef<Snapshot | null>(null);
   useEffect(() => {
@@ -1067,6 +1069,12 @@ function App() {
                       <small>{label}</small>
                     </button>
                   ))}
+                  {houseSize(p.mapId) && p.houseOwnerId === p.id && (
+                    <button onClick={() => setPanel('decorate')} aria-label="Decorate house">
+                      <ItemIcon id="oak-chair" />
+                      <small>Decorate</small>
+                    </button>
+                  )}
                   <button onClick={() => setPanel('housing')} aria-label="Housing">
                     <ItemIcon id="house-small" />
                     <small>Home</small>
@@ -1467,7 +1475,26 @@ function App() {
           onClose={() => setPanel(null)}
         />
       )}
-      {panel && panel !== 'map' && panel !== 'inventory' && p && (
+      {panel === 'storage' && p && (
+        <StoragePanel
+          player={p}
+          chestId={chestId}
+          send={bridge.current.send}
+          onClose={() => setPanel(null)}
+        />
+      )}
+      {panel === 'decorate' && p && houseSize(p.mapId) && p.houseOwnerId === p.id && (
+        <HousePopup title="Decorate house" onClose={() => setPanel(null)}>
+          <HousingPanel
+            mode="decorate"
+            player={p}
+            players={snapshot?.players ?? []}
+            onPlace={selectFurniture}
+            send={bridge.current.send}
+          />
+        </HousePopup>
+      )}
+      {panel && !['map', 'inventory', 'storage', 'decorate'].includes(panel) && p && (
         <div className={`modal-backdrop ${panel === 'housing' ? 'housing-open-backdrop' : ''}`}>
           <section className={`modal wide ${panel === 'housing' ? 'housing-open-modal' : ''}`}>
             <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
@@ -1495,7 +1522,7 @@ function App() {
             {panel === 'housing' && (
               <HousingPanel
                 player={p}
-                initialChest={chestId}
+                onDecorate={() => setPanel('decorate')}
                 players={snapshot?.players ?? []}
                 invitedHomes={housingInvitations}
                 onPlace={selectFurniture}

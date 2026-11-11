@@ -3999,3 +3999,36 @@ footer {
   .character-carousel .offline-activities { width: 100%; }
   .character-carousel select { max-width: 100%; }
 }
+
+.house-popup .housing-options article {
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.storage-caption {
+  text-align: center;
+  color: #c5a7d9;
+}
+.storage-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.house-popup input[type='number'] {
+  max-width: 140px;
+  margin-left: 10px;
+}
+.bag-item-backdrop .bag-backdrop {
+  background: rgba(10, 5, 20, 0.85);
+}
+.house-popup .housing-options {
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+}
+.house-popup .housing-options article {
+  text-align: center;
+}
+.house-popup .housing-options article > svg {
+  width: 86px;
+  height: 70px;
+}
