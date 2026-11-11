@@ -63,8 +63,10 @@ try {
           texture: o.list[0].list[0].texture?.key,
           frame: o.list[0].list[0].frame?.name,
           uniform: o.list[0].list[0].scaleX === o.list[0].list[0].scaleY,
-          halo: o.list[0].list[1]?.y,
-          animated: s.tweens.getTweensOf(o.list[0].list).length > 0,
+          effectTexture: o.list[0].list[1]?.texture?.key,
+          effectFrame: o.list[0].list[1]?.frame?.name,
+          animated: !!o.list[0].list[1]?.anims?.isPlaying,
+          allSprites: o.list[0].list.every((child) => ['Image', 'Sprite'].includes(child.type)),
         }));
     });
   const first = await state();
@@ -83,8 +85,11 @@ try {
   expect(first.map((s) => s.animated)).toEqual([false, false, false, false, false, true, true]);
   await page.waitForTimeout(300);
   const next = await state();
-  expect(next[5].halo).not.toBe(first[5].halo);
-  expect(next[6].halo).not.toBe(first[6].halo);
+  expect(first.every((s) => s.allSprites)).toBe(true);
+  expect(first[5].effectTexture).toBe('display-stand-effects');
+  expect(first[6].effectTexture).toBe('display-stand-effects');
+  await expect.poll(async () => (await state())[5].effectFrame).not.toBe(first[5].effectFrame);
+  await expect.poll(async () => (await state())[6].effectFrame).not.toBe(first[6].effectFrame);
   await page.screenshot({ path: 'artifacts/island-display-stands.png' });
   await page.evaluate(() => {
     window.stands.bridge.furniturePlacement = {
