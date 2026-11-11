@@ -103,6 +103,7 @@ function App() {
   const [playerId, setPlayerId] = useState('');
   const [chatOpen, setChatOpen] = useState(() => window.innerWidth > 700);
   const [panel, setPanel] = useState<string | null>(null);
+  const [chestId, setChestId] = useState<string | undefined>();
   const [placingFurniture, setPlacingFurniture] = useState<string | null>(null);
   const [furnitureTarget, setFurnitureTarget] = useState<FurnitureTarget | null>(null);
   const [placementPending, setPlacementPending] = useState<number | null>(null);
@@ -134,6 +135,10 @@ function App() {
     held: {},
     send: (t, d) => roomRef.current?.send(t, d),
   });
+  bridge.current.onChest = (id) => {
+    setChestId(id);
+    setPanel('housing');
+  };
   const snapshotRef = useRef<Snapshot | null>(null);
   useEffect(() => {
     const resume = () => hudUpdates.current?.flush();
@@ -1490,6 +1495,7 @@ function App() {
             {panel === 'housing' && (
               <HousingPanel
                 player={p}
+                initialChest={chestId}
                 players={snapshot?.players ?? []}
                 invitedHomes={housingInvitations}
                 onPlace={selectFurniture}

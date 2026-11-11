@@ -26,6 +26,7 @@ export type Housing = {
     floor?: number;
     display?: boolean;
     gear?: Gear;
+    storage?: { items: Record<string, number>; gear: Gear[] };
   }[];
 };
 export type HousingView = {
@@ -52,7 +53,7 @@ export function housingView(owner: Player, viewer: Player): HousingView | undefi
     ownerName: owner.name,
     size: owner.housing.size,
     stage: owner.housing.stage,
-    furniture: structuredClone(owner.housing.furniture),
+    furniture: owner.housing.furniture.map(({ storage: _storage, ...f }) => structuredClone(f)),
   };
 }
 function spend(p: Player, cost: Record<string, number>) {
@@ -168,7 +169,7 @@ export function furniturePlacement(p: Player, id: string, position: unknown) {
 }
 export function changeHousing(
   p: Player,
-  value: { action?: unknown; id?: unknown; x?: unknown; quantity?: unknown },
+  value: { action?: unknown; id?: unknown; x?: unknown; quantity?: unknown; item?: unknown },
 ) {
   if (!nearHousing(p)) throw new Error('Return to your house or the Elderwood housing platform.');
   if (houseSize(p.mapId) && p.houseOwnerId !== p.id)
@@ -223,11 +224,53 @@ export function changeHousing(
       ...(r.display ? { display: true } : {}),
       ...(r.gear ? { gear: structuredClone(r.gear) } : {}),
     });
+  } else if (value.action === 'deposit' || value.action === 'withdraw') {
+    const chest = storageChest(p, id);
+    const item = typeof value.item === 'string' ? value.item : '';
+    const quantity = value.quantity === undefined ? 1 : value.quantity;
+    if (!Number.isSafeInteger(quantity) || (quantity as number) < 1)
+      throw new Error('Choose a positive whole quantity.');
+    const n = quantity as number;
+    const stored = chest.storage ?? { items: {}, gear: [] };
+    const depositing = value.action === 'deposit';
+    if (item.startsWith('gear:')) {
+      const source = depositing ? (p.gear ?? []) : stored.gear;
+      const g = source.find((g) => g.id === item.slice(5));
+      if (!g || n !== 1) throw new Error('Choose available equipment.');
+      if (
+        depositing &&
+        (Object.values(p.equippedGear ?? {}).includes(g.id) ||
+          (g.slot === 'weapon' && !p.equippedGear?.weapon && p.weapon === g.base))
+      )
+        throw new Error('Unequip equipment before storing it.');
+      if (depositing && storageSlots(stored) >= CHEST_CAPACITY) throw new Error('Chest is full.');
+      if (!depositing && (p.gear ?? []).some((x) => x.id === g.id))
+        throw new Error('Equipment is already in your bag.');
+      source.splice(source.indexOf(g), 1);
+      (depositing ? stored.gear : (p.gear ??= [])).push(structuredClone(g));
+    } else {
+      const source = depositing ? p.inventory : stored.items;
+      const target = depositing ? stored.items : p.inventory;
+      if (!itemDefinition(item) || !Object.hasOwn(source, item) || (source[item] ?? 0) < n)
+        throw new Error('Not enough items.');
+      if (depositing && (p.weapon === item || p.accessory === item) && source[item] - n < 1)
+        throw new Error('Unequip this item before storing it.');
+      if (depositing && !(stored.items[item] > 0) && storageSlots(stored) >= CHEST_CAPACITY)
+        throw new Error('Chest is full.');
+      const total = (target[item] ?? 0) + n;
+      if (!Number.isSafeInteger(total)) throw new Error('Stack is too large.');
+      source[item] -= n;
+      target[item] = total;
+      if (!depositing && !source[item]) delete source[item];
+    }
+    chest.storage = stored;
   } else if (value.action === 'remove') {
     const h = p.housing,
       i = h?.furniture.findIndex((f) => f.id === id) ?? -1;
     if (!h || i < 0) throw new Error('Unknown furniture.');
     const f = h.furniture[i];
+    if (f.storage && storageSlots(f.storage))
+      throw new Error('Empty the chest before picking it up.');
     if (f.gear && (p.gear ?? []).some((g) => g.id === f.gear!.id))
       throw new Error('Equipment is already in your bag.');
     h.furniture.splice(i, 1);
@@ -243,4 +286,21 @@ export function changeHousing(
     } else p.housing.invited = p.housing.invited.filter((v) => v !== id);
   } else throw new Error('Unknown housing action.');
   p.housingRevision = (p.housingRevision ?? 0) + 1;
+}
+
+export const CHEST_CAPACITY = 40;
+export function storageSlots(storage: { items: Record<string, number>; gear: Gear[] }) {
+  return Object.values(storage.items).filter((n) => n > 0).length + storage.gear.length;
+}
+export function storageChest(p: Player, id: string) {
+  const size = houseSize(p.mapId);
+  const chest = p.housing?.furniture.find(
+    (f) => f.id === id && f.item === 'oak-chest' && !f.display,
+  );
+  if (!size || p.houseOwnerId !== p.id || p.housing?.stage !== 3 || !chest)
+    throw new Error('Enter your own house and choose a placed chest.');
+  const y = HOUSE_LAYOUTS[size].floors[chest.floor ?? 0];
+  if (Math.abs(p.x - (HOUSE_LAYOUTS[size].width / 2 + chest.x)) > 150 || Math.abs(p.y - y) > 70)
+    throw new Error('Walk closer to the chest.');
+  return chest;
 }

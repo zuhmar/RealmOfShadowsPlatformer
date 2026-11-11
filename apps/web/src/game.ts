@@ -45,6 +45,7 @@ export type Bridge = {
   furniturePlacement?: FurnitureSelection;
   send: (type: string, data: unknown) => void;
   onReady?: () => void;
+  onChest?: (id: string) => void;
   prepareMap?: (id: string) => void;
   onLoadProgress?: (percent: number) => void;
 };
@@ -232,9 +233,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const m = this.map;
       const woods = m.island === 'Whispering Woods';
       if (houseSize(m.id))
-        this.interior = new HouseInterior(this, m, () => {
-          if (!bridge.furniturePlacement) bridge.send('housing', { action: 'exit' });
-        });
+        this.interior = new HouseInterior(
+          this,
+          m,
+          () => {
+            if (!bridge.furniturePlacement) bridge.send('housing', { action: 'exit' });
+          },
+          (id) => {
+            if (!bridge.furniturePlacement) bridge.onChest?.(id);
+          },
+        );
       else if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
       else if (m.island === 'Crystal Caverns')
         this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));

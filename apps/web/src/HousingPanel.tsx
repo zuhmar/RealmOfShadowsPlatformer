@@ -8,7 +8,14 @@ import {
   houseStageCost,
   itemDefinition,
 } from '@ros/game-data';
-import { nearHousing, decorationSelection, type Player } from '@ros/shared';
+import {
+  nearHousing,
+  decorationSelection,
+  CHEST_CAPACITY,
+  storageSlots,
+  storageChest,
+  type Player,
+} from '@ros/shared';
 import { ItemIcon } from './ItemIcon';
 const costs = (cost: Record<string, number>) =>
   Object.entries(cost)
@@ -20,7 +27,9 @@ export function HousingPanel({
   invitedHomes = [],
   send,
   onPlace,
+  initialChest,
 }: {
+  initialChest?: string;
   player: Player;
   players: Player[];
   invitedHomes?: { id: string; name: string }[];
@@ -30,7 +39,9 @@ export function HousingPanel({
   useEffect(() => {
     send('housing', { action: 'list' });
   }, []);
-  const [tab, setTab] = useState('Build'),
+  const [tab, setTab] = useState(initialChest ? 'Storage' : 'Build'),
+    [chestId, setChestId] = useState(initialChest ?? ''),
+    [transferQuantity, setTransferQuantity] = useState(1),
     [recipe, setRecipe] = useState('oak-plank'),
     [quantity, setQuantity] = useState(1),
     [pending, setPending] = useState(false);
@@ -41,6 +52,20 @@ export function HousingPanel({
     visiting = !!view && view.ownerId !== p.id,
     inside = !!houseSize(p.mapId),
     layout = h ? HOUSE_LAYOUTS[h.size] : undefined;
+  const chest = h?.furniture.find((f) => f.id === chestId && f.item === 'oak-chest' && !f.display);
+  let chestNear = false;
+  try {
+    storageChest(p, chestId);
+    chestNear = true;
+  } catch {
+    /* Walk to the selected chest. */
+  }
+  const transfer = (action: string, item: string, count: number) => {
+    if (pending) return;
+    setPending(true);
+    send('housing', { action, id: chestId, item, quantity: Math.min(transferQuantity, count) });
+    setTimeout(() => setPending(false), 800);
+  };
   const act = (action: string, id?: string) => {
     if (pending) return;
     setPending(true);
@@ -73,7 +98,7 @@ export function HousingPanel({
         </p>
       )}
       <nav className="housing-tabs" aria-label="Housing sections">
-        {['Build', 'Craft', 'Decorate', 'Guests'].map((t) => (
+        {['Build', 'Craft', 'Decorate', 'Storage', 'Guests'].map((t) => (
           <button key={t} aria-pressed={tab === t} onClick={() => setTab(t)}>
             {t}
           </button>
@@ -309,6 +334,94 @@ export function HousingPanel({
             <p>Claim a plot and finish building your house first.</p>
           )}
         </>
+      )}
+      {!visiting && tab === 'Storage' && (
+        <section aria-label="Chest storage">
+          <h3>Chest storage</h3>
+          <p>
+            Click a placed chest inside your house. Each chest holds 40 item stacks or equipment
+            pieces. Only you can access its contents.
+          </p>
+          <div className="housing-tabs">
+            {h?.furniture
+              .filter((f) => f.item === 'oak-chest' && !f.display)
+              .map((f, i) => (
+                <button key={f.id} aria-pressed={chestId === f.id} onClick={() => setChestId(f.id)}>
+                  Chest {i + 1} · Floor {(f.floor ?? 0) + 1}
+                </button>
+              ))}
+          </div>
+          {!chest && <p>Place an Oak Chest and select it to open storage.</p>}
+          {chest && (
+            <>
+              <p>
+                {storageSlots(chest.storage ?? { items: {}, gear: [] })}/{CHEST_CAPACITY} spaces
+                used
+              </p>
+              {!chestNear && <p>Walk closer to this chest to deposit or withdraw.</p>}
+              <label>
+                Transfer quantity{' '}
+                <input
+                  aria-label="Transfer quantity"
+                  type="number"
+                  min="1"
+                  max="1000000"
+                  value={transferQuantity}
+                  onChange={(e) =>
+                    setTransferQuantity(
+                      Math.max(1, Math.min(1000000, Math.floor(Number(e.target.value) || 1))),
+                    )
+                  }
+                />
+              </label>
+              {(['Bag', 'Chest'] as const).map((side) => {
+                const bag = side === 'Bag';
+                const items = bag ? p.inventory : (chest.storage?.items ?? {});
+                const gear = bag ? (p.gear ?? []) : (chest.storage?.gear ?? []);
+                const action = bag ? 'deposit' : 'withdraw';
+                return (
+                  <section key={side} aria-label={`${side} items`}>
+                    <h4>{side}</h4>
+                    <div className="housing-options">
+                      {Object.entries(items)
+                        .filter(([, n]) => n > 0)
+                        .map(([id, n]) => (
+                          <article key={id}>
+                            <ItemIcon id={id} />
+                            <b>{itemDefinition(id)?.name ?? id}</b>
+                            <p>×{n}</p>
+                            <button
+                              disabled={!chestNear || pending}
+                              onClick={() => transfer(action, id, n)}
+                            >
+                              {bag ? 'Deposit' : 'Withdraw'} {Math.min(n, transferQuantity)}
+                            </button>
+                          </article>
+                        ))}
+                      {gear.map((g) => (
+                        <article key={g.id}>
+                          <ItemIcon id={g.base} />
+                          <b>{g.identified ? g.name : 'Unidentified equipment'}</b>
+                          <button
+                            disabled={
+                              !chestNear ||
+                              pending ||
+                              (bag && Object.values(p.equippedGear ?? {}).includes(g.id))
+                            }
+                            onClick={() => transfer(action, `gear:${g.id}`, 1)}
+                          >
+                            {bag ? 'Deposit' : 'Withdraw'} equipment
+                          </button>
+                        </article>
+                      ))}
+                      {!Object.values(items).some((n) => n > 0) && !gear.length && <p>Empty</p>}
+                    </div>
+                  </section>
+                );
+              })}
+            </>
+          )}
+        </section>
       )}
       {tab === 'Guests' && (
         <>

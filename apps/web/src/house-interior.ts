@@ -39,6 +39,7 @@ export class HouseInterior {
     private scene: Phaser.Scene,
     private map: GameMap,
     exit: () => void,
+    private openChest?: (id: string) => void,
   ) {
     const layout = HOUSE_LAYOUTS[houseSize(map.id)!];
     const bounds = map.interiorBounds!;
@@ -235,6 +236,9 @@ export class HouseInterior {
       im.setScale(Math.min(r.width / im.width, r.height / im.height))
         .setDepth(3)
         .setName('house-furniture');
+      if (f.item === 'oak-chest' && p?.houseOwnerId === p?.id) {
+        im.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.openChest?.(f.id));
+      }
       this.items.push(im);
     }
   }
