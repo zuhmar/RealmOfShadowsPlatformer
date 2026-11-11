@@ -28,6 +28,18 @@ export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTer
       `/assets/ui/${theme}-terrain.json`,
     );
 }
+/** Match retained sprite detail while keeping every uploaded texture within 4096px. */
+function raster(scene: Phaser.Scene, key: string, width: number, height: number) {
+  const density = Math.max(1, Math.min(2, Math.floor((4096 / Math.max(width, height)) * 2) / 2));
+  const texture = scene.textures.exists(key)
+    ? (scene.textures.get(key) as Phaser.Textures.CanvasTexture)
+    : scene.textures.createCanvas(key, Math.ceil(width * density), Math.ceil(height * density))!;
+  const ctx = texture.context;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.setTransform(density, 0, 0, density, 0, 0);
+  return { texture, ctx, density };
+}
 function source(scene: Phaser.Scene, theme: GeneratedTerrainTheme, name: string) {
   const f = scene.textures.getFrame(`${theme}-terrain-art`, name);
   return {
@@ -97,20 +109,20 @@ export function generatedSoil(scene: Phaser.Scene, map: GameMap, theme: Generate
   if (!ground) return;
   const f = source(scene, theme, 'soil'),
     scale = 0.65,
-    key = `terrain-soil-art:${theme}`;
-  if (!scene.textures.exists(key)) {
-    const texture = scene.textures.createCanvas(
-      key,
-      Math.floor(f.w * scale),
-      Math.floor(f.h * scale),
-    )!;
-    paint(texture.context, f, 0, 0, scale);
+    key = `terrain-soil-art-hd:${theme}`;
+  const width = Math.floor(f.w * scale),
+    height = Math.floor(f.h * scale);
+  const { texture, ctx, density } = raster(scene, key, width, height);
+  if (!texture.canvas.dataset.rendered) {
+    paint(ctx, f, 0, 0, scale);
     texture.refresh();
+    texture.canvas.dataset.rendered = 'true';
   }
   return scene.add
     .tileSprite(0, ground.y + 60, map.width, map.height + 1600, key)
     .setOrigin(0)
     .setDepth(-1)
+    .setTileScale(1 / density)
     .setName('terrain-soil')
     .setData({ generated: true, sourceAtlas: `${theme}-terrain-art` });
 }
@@ -138,15 +150,10 @@ export function generatedPlatform(
           : 70 / frame.h;
   const pad = 4,
     height = !p.oneWay ? Math.max(180, map.height - p.y + 160) : Math.ceil(frame.h * scale);
-  const key = `terrain-generated-v1:${theme}:${map.id}:${p.id}`;
+  const key = `terrain-generated-hd-v2:${theme}:${map.id}:${p.id}`;
   remember(scene, map.id, key);
-  if (!scene.textures.exists(key)) {
-    const texture = scene.textures.createCanvas(
-      key,
-      Math.ceil(p.width + pad * 2),
-      Math.ceil(height + pad * 2),
-    )!;
-    const ctx = texture.context;
+  const { texture, ctx, density } = raster(scene, key, p.width + pad * 2, height + pad * 2);
+  if (!texture.canvas.dataset.rendered) {
     if (!p.oneWay) {
       ctx.save();
       ctx.translate(pad, pad);
@@ -155,10 +162,12 @@ export function generatedPlatform(
     }
     horizontal(ctx, frame, pad, pad, p.width, scale);
     texture.refresh();
+    texture.canvas.dataset.rendered = 'true';
   }
   return scene.add
     .image(p.x, p.y, key)
-    .setOrigin(pad / (p.width + pad * 2), pad / (height + pad * 2))
+    .setOrigin((pad * density) / texture.width, (pad * density) / texture.height)
+    .setScale(1 / density)
     .setDepth(0)
     .setName('terrain-platform')
     .setData({
@@ -167,6 +176,7 @@ export function generatedPlatform(
       artSurfaceY: 0,
       terrainWidth: p.width,
       terrainHeight: height,
+      rasterDensity: density,
       theme,
       continuous: true,
       generated: true,
@@ -181,11 +191,10 @@ export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: Generated
     pad = 20,
     width = 64,
     fullHeight = height + pad * 2;
-  const key = `ladder-generated-v1:${theme}:${height}`;
-  if (!scene.textures.exists(key)) {
-    const texture = scene.textures.createCanvas(key, width, fullHeight)!;
-    const ctx = texture.context,
-      x = (width - 48) / 2;
+  const key = `ladder-generated-hd-v2:${theme}:${height}`;
+  const { texture, ctx, density } = raster(scene, key, width, fullHeight);
+  if (!texture.canvas.dataset.rendered) {
+    const x = (width - 48) / 2;
     const cap = 24,
       edge = cap * scale,
       top = pad - 14,
@@ -201,10 +210,12 @@ export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: Generated
     paint(ctx, frame, x, top, scale, 0, 0, frame.w, cap);
     paint(ctx, frame, x, bottom - edge, scale, 0, frame.h - cap, frame.w, cap);
     texture.refresh();
+    texture.canvas.dataset.rendered = 'true';
   }
   return scene.add
     .image(l.x, l.top, key)
-    .setOrigin(0.5, pad / fullHeight)
+    .setOrigin(0.5, (pad * density) / texture.height)
+    .setScale(1 / density)
     .setDepth(3)
     .setName('terrain-ladder')
     .setData({
@@ -216,6 +227,7 @@ export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: Generated
       continuous: true,
       generated: true,
       sourceAtlas: `${theme}-terrain-art`,
+      rasterDensity: density,
       railTop: l.top - 14,
       railBottom: l.bottom + 4,
     });

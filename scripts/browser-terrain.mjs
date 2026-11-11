@@ -104,6 +104,8 @@ try {
           surface: p.getData('surfaceY'),
           continuous: p.getData('continuous'),
           generated: p.getData('generated'),
+          rasterDensity: p.getData('rasterDensity'),
+          rasterWidth: p.texture.getSourceImage().width,
           sourceAtlas: p.getData('sourceAtlas'),
           scaleX: p.scaleX,
           scaleY: p.scaleY,
@@ -135,8 +137,12 @@ try {
       expect(p.x).toBe(c.x);
       expect(p.surface).toBe(c.y);
       expect(p.width).toBe(c.width);
-      expect(p.scaleX).toBe(1);
-      expect(p.scaleY).toBe(1);
+      expect(p.scaleX).toBe(1 / (p.rasterDensity ?? 1));
+      expect(p.scaleY).toBe(p.scaleX);
+      if (p.generated) {
+        expect(p.rasterDensity).toBeGreaterThan(1);
+        expect(p.rasterWidth).toBeLessThanOrEqual(4096);
+      }
     }
     for (const [i, l] of state.ladders.entries()) {
       const c = state.expectedLadders[i];
