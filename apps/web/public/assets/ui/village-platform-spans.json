@@ -1,0 +1,86 @@
+{
+  "frames": {
+    "medium": {
+      "frame": {
+        "x": 351,
+        "y": 165,
+        "w": 833,
+        "h": 115
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 833,
+        "h": 115
+      },
+      "sourceSize": {
+        "w": 833,
+        "h": 115
+      }
+    },
+    "long": {
+      "frame": {
+        "x": 34,
+        "y": 440,
+        "w": 1467,
+        "h": 115
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1467,
+        "h": 115
+      },
+      "sourceSize": {
+        "w": 1467,
+        "h": 115
+      }
+    },
+    "ground": {
+      "frame": {
+        "x": 13,
+        "y": 727,
+        "w": 1509,
+        "h": 169
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1509,
+        "h": 169
+      },
+      "sourceSize": {
+        "w": 1509,
+        "h": 169
+      }
+    }
+  },
+  "meta": {
+    "image": "village-platform-spans.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-c9822553-1ca5-45be-b36d-fd80b4d8ca7e.png",
+    "view": "front elevation",
+    "wholePlatformSpans": true,
+    "ground": {
+      "repeatStart": 496,
+      "repeatEnd": 792,
+      "edgeError": 2.6953699489240535e-05,
+      "fill": {
+        "x": 738,
+        "y": 153,
+        "w": 32,
+        "h": 8
+      },
+      "worldHeight": 85
+    }
+  }
+}

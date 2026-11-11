@@ -1,6 +1,8 @@
 import type Phaser from 'phaser';
 import type { GameMap, Platform, Ladder } from '@ros/game-data';
 import { assetUrl } from './assets';
+import villageSpans from '../public/assets/ui/village-platform-spans.json';
+import woodsSpans from '../public/assets/ui/woods-platform-spans.json';
 export type GeneratedTerrainTheme = 'woods' | 'village';
 const caches = new WeakMap<Phaser.Game, Map<string, Set<string>>>();
 function remember(scene: Phaser.Scene, map: string, key: string) {
@@ -19,14 +21,17 @@ function remember(scene: Phaser.Scene, map: string, key: string) {
     groups.delete(oldest);
   }
 }
+const spans = (theme: GeneratedTerrainTheme) => (theme === 'woods' ? woodsSpans : villageSpans);
 export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTerrainTheme) {
-  const key = `${theme}-terrain-art`;
-  if (!scene.textures.exists(key))
-    scene.load.atlas(
-      key,
-      assetUrl(`/assets/ui/${theme}-terrain.png`),
-      `/assets/ui/${theme}-terrain.json`,
-    );
+  for (const kind of ['terrain', 'platform-spans']) {
+    const key = kind === 'terrain' ? `${theme}-terrain-art` : `${theme}-platform-spans`;
+    if (!scene.textures.exists(key))
+      scene.load.atlas(
+        key,
+        assetUrl(`/assets/ui/${theme}-${kind}.png`),
+        `/assets/ui/${theme}-${kind}.json`,
+      );
+  }
 }
 /** Match retained sprite detail while keeping every uploaded texture within 4096px. */
 function raster(scene: Phaser.Scene, key: string, width: number, height: number) {
@@ -40,8 +45,14 @@ function raster(scene: Phaser.Scene, key: string, width: number, height: number)
   ctx.setTransform(density, 0, 0, density, 0, 0);
   return { texture, ctx, density };
 }
-function source(scene: Phaser.Scene, theme: GeneratedTerrainTheme, name: string) {
-  const f = scene.textures.getFrame(`${theme}-terrain-art`, name);
+function source(
+  scene: Phaser.Scene,
+  theme: GeneratedTerrainTheme,
+  name: string,
+  wholeSpan = false,
+) {
+  const key = wholeSpan ? `${theme}-platform-spans` : `${theme}-terrain-art`;
+  const f = scene.textures.getFrame(key, name);
   return {
     image: f.source.image as HTMLImageElement,
     x: f.cutX,
@@ -64,74 +75,36 @@ function paint(
 ) {
   ctx.drawImage(f.image, f.x + sx, f.y + sy, sw, sh, x, y, sw * scale, sh * scale);
 }
-/** Extend the authored center strip; keep one end cap at each end. Never stretch the artwork. */
-function horizontal(
-  ctx: CanvasRenderingContext2D,
-  f: Source,
-  x: number,
-  y: number,
-  width: number,
-  scale: number,
-) {
-  const cap = Math.min(60, width / (scale * 3)),
-    edge = cap * scale;
-  const end = x + width - edge;
-  const nativeBody = f.w - cap * 2;
-  for (let at = x + edge; at < end; ) {
-    const length = Math.min(nativeBody * scale, end - at);
-    paint(ctx, f, at, y, scale, cap, 0, length / scale, f.h);
-    at += length;
-  }
-  paint(ctx, f, x, y, scale, 0, 0, cap, f.h);
-  paint(ctx, f, end, y, scale, f.w - cap, 0, cap, f.h);
+/** The fill comes from undecorated earth in the ground drawing itself, never from a second soil style. */
+function groundFill(scene: Phaser.Scene, theme: GeneratedTerrainTheme) {
+  const f = source(scene, theme, 'ground', true),
+    cut = spans(theme).meta.ground.fill;
+  return { ...f, x: f.x + cut.x, y: f.y + cut.y, w: cut.w, h: cut.h };
 }
-function soil(
-  ctx: CanvasRenderingContext2D,
-  f: Source,
-  width: number,
-  y: number,
-  height: number,
-  scale = 0.65,
-) {
-  const tw = f.w * scale,
-    th = f.h * scale;
-  let row = 0;
-  for (let top = y; top < height; top += th, row++) {
-    for (let left = 0; left < width; left += tw) {
-      const sw = Math.min(f.w, (width - left) / scale);
-      ctx.save();
-      // Reflect alternating rows so dark soil meets dark soil, without visible stripe resets.
-      if (row % 2 === 0) {
-        ctx.translate(0, top + th);
-        ctx.scale(1, -1);
-        paint(ctx, f, left, 0, scale, 0, 0, sw, f.h);
-      } else paint(ctx, f, left, top, scale, 0, 0, sw, f.h);
-      ctx.restore();
-    }
-  }
-}
-/** A small repeating generated soil texture fills below the map without a giant baked canvas. */
 export function generatedSoil(scene: Phaser.Scene, map: GameMap, theme: GeneratedTerrainTheme) {
   const ground = map.platforms.find((p) => !p.oneWay);
   if (!ground) return;
-  const f = source(scene, theme, 'soil'),
-    scale = Math.round(f.h * 0.65) / f.h,
-    key = `terrain-soil-art-matched-v3:${theme}`;
-  const width = Math.floor(f.w * scale),
-    height = Math.round(f.h * scale) * 2;
-  const { texture, ctx, density } = raster(scene, key, width, height);
+  const f = groundFill(scene, theme),
+    key = `ground-fill-v5:${theme}`;
+  const { texture, ctx, density } = raster(scene, key, f.w, f.h);
   if (!texture.canvas.dataset.rendered) {
-    soil(ctx, f, width, 0, height, scale);
+    paint(ctx, f, 0, 0, 1);
     texture.refresh();
     texture.canvas.dataset.rendered = 'true';
   }
+  const join = ground.y + spans(theme).meta.ground.worldHeight;
   return scene.add
-    .tileSprite(0, ground.y + 60, map.width, map.height + 1600, key)
+    .tileSprite(ground.x, join - 1, ground.width, map.height + 1600, key)
     .setOrigin(0)
     .setDepth(-1)
     .setTileScale(1 / density)
     .setName('terrain-soil')
-    .setData({ generated: true, sourceAtlas: `${theme}-terrain-art` });
+    .setData({
+      generated: true,
+      sourceAtlas: `${theme}-platform-spans`,
+      surfaceJoinY: join,
+      groundOriginX: ground.x,
+    });
 }
 export function generatedPlatform(
   scene: Phaser.Scene,
@@ -139,43 +112,84 @@ export function generatedPlatform(
   p: Platform,
   theme: GeneratedTerrainTheme,
 ) {
-  const kind = !p.oneWay
-    ? 'ground'
-    : p.id === 'fishing-dock'
-      ? 'dock'
-      : theme === 'village'
-        ? 'timber'
-        : 'ledge';
-  const frame = source(scene, theme, kind);
-  const scale =
-    kind === 'timber'
-      ? 36 / frame.h
-      : kind === 'dock'
-        ? 82 / frame.h
-        : kind === 'ground'
-          ? 85 / frame.h
-          : 70 / frame.h;
-  const bakedFoundation = !p.oneWay && map.id.startsWith('house-');
-  const pad = 4,
-    height = bakedFoundation ? Math.max(180, map.height - p.y + 160) : Math.ceil(frame.h * scale);
-  const key = `terrain-generated-hd-v4:${theme}:${map.id}:${p.id}`;
-  remember(scene, map.id, key);
-  const { texture, ctx, density } = raster(scene, key, p.width + pad * 2, height + pad * 2);
-  if (!texture.canvas.dataset.rendered) {
-    if (bakedFoundation) {
-      ctx.save();
-      ctx.translate(pad, pad);
-      soil(ctx, source(scene, theme, 'soil'), p.width, Math.floor(frame.h * scale) - 3, height);
-      ctx.restore();
+  if (!p.oneWay) {
+    const f = source(scene, theme, 'ground', true),
+      spec = spans(theme).meta.ground;
+    const scale = spec.worldHeight / f.h,
+      pad = 4;
+    const height = map.id.startsWith('house-')
+      ? Math.max(spec.worldHeight, map.height - p.y + 160)
+      : spec.worldHeight;
+    const key = `ground-connected-v5:${theme}:${map.id}:${p.id}`;
+    remember(scene, map.id, key);
+    const { texture, ctx, density } = raster(scene, key, p.width + pad * 2, height + pad * 2);
+    if (!texture.canvas.dataset.rendered) {
+      const length = (spec.repeatEnd - spec.repeatStart) * scale;
+      for (let x = 0; x < p.width; x += length) {
+        const size = Math.min(length, p.width - x);
+        paint(ctx, f, pad + x, pad, scale, spec.repeatStart, 0, size / scale, f.h);
+      }
+      // Houses use this same bank beneath their foundation, without a scenery soil layer.
+      if (height > spec.worldHeight) {
+        const fill = groundFill(scene, theme);
+        for (let y = spec.worldHeight; y < height; y += fill.h)
+          for (let x = 0; x < p.width; x += fill.w)
+            paint(
+              ctx,
+              fill,
+              pad + x,
+              pad + y,
+              1,
+              0,
+              0,
+              Math.min(fill.w, p.width - x),
+              Math.min(fill.h, height - y),
+            );
+      }
+      texture.refresh();
+      texture.canvas.dataset.rendered = 'true';
     }
-    horizontal(ctx, frame, pad, pad, p.width, scale);
-    texture.refresh();
-    texture.canvas.dataset.rendered = 'true';
+    return scene.add
+      .image(p.x, p.y, key)
+      .setOrigin((pad * density) / texture.width, (pad * density) / texture.height)
+      .setScale(1 / density)
+      .setDepth(0)
+      .setName('terrain-platform')
+      .setData({
+        platformId: p.id,
+        surfaceY: p.y,
+        artSurfaceY: 0,
+        terrainWidth: p.width,
+        terrainHeight: height,
+        rasterDensity: density,
+        theme,
+        continuous: true,
+        generated: true,
+        sourceAtlas: `${theme}-platform-spans`,
+        material: 'terrain',
+        surfaceJoinY: p.y + spec.worldHeight,
+      });
   }
+  const dock = p.id === 'fishing-dock';
+  const names = theme === 'woods' ? ['short', 'medium', 'long'] : ['medium', 'long'];
+  const target = theme === 'woods' ? 70 : 36;
+  const name = dock
+    ? 'dock'
+    : names.reduce((best, next) => {
+        const a = scene.textures.getFrame(`${theme}-platform-spans`, best),
+          b = scene.textures.getFrame(`${theme}-platform-spans`, next);
+        return Math.abs(Math.log((b.height * p.width) / b.width / target)) <
+          Math.abs(Math.log((a.height * p.width) / a.width / target))
+          ? next
+          : best;
+      });
+  const atlas = dock ? `${theme}-terrain-art` : `${theme}-platform-spans`;
+  const f = scene.textures.getFrame(atlas, name),
+    scale = p.width / f.width;
   return scene.add
-    .image(p.x, p.y, key)
-    .setOrigin((pad * density) / texture.width, (pad * density) / texture.height)
-    .setScale(1 / density)
+    .image(p.x, p.y, atlas, name)
+    .setOrigin(0)
+    .setScale(scale)
     .setDepth(0)
     .setName('terrain-platform')
     .setData({
@@ -183,13 +197,14 @@ export function generatedPlatform(
       surfaceY: p.y,
       artSurfaceY: 0,
       terrainWidth: p.width,
-      terrainHeight: height,
-      rasterDensity: density,
+      terrainHeight: f.height * scale,
+      rasterDensity: 1 / scale,
       theme,
       continuous: true,
       generated: true,
-      sourceAtlas: `${theme}-terrain-art`,
-      material: kind === 'timber' ? 'timber' : kind === 'dock' ? 'fishing' : 'terrain',
+      sourceAtlas: atlas,
+      material: dock ? 'fishing' : theme === 'village' ? 'timber' : 'terrain',
+      wholeSpan: true,
     });
 }
 export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: GeneratedTerrainTheme) {

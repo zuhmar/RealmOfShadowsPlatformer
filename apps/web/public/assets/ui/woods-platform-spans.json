@@ -1,0 +1,106 @@
+{
+  "frames": {
+    "short": {
+      "frame": {
+        "x": 448,
+        "y": 66,
+        "w": 636,
+        "h": 170
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 636,
+        "h": 170
+      },
+      "sourceSize": {
+        "w": 636,
+        "h": 170
+      }
+    },
+    "medium": {
+      "frame": {
+        "x": 255,
+        "y": 303,
+        "w": 1022,
+        "h": 170
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1022,
+        "h": 170
+      },
+      "sourceSize": {
+        "w": 1022,
+        "h": 170
+      }
+    },
+    "long": {
+      "frame": {
+        "x": 21,
+        "y": 544,
+        "w": 1492,
+        "h": 169
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1492,
+        "h": 169
+      },
+      "sourceSize": {
+        "w": 1492,
+        "h": 169
+      }
+    },
+    "ground": {
+      "frame": {
+        "x": 20,
+        "y": 783,
+        "w": 1498,
+        "h": 179
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1498,
+        "h": 179
+      },
+      "sourceSize": {
+        "w": 1498,
+        "h": 179
+      }
+    }
+  },
+  "meta": {
+    "image": "woods-platform-spans.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-fb829a10-e632-4f01-93c9-6ecf93564655.png",
+    "view": "front elevation",
+    "wholePlatformSpans": true,
+    "ground": {
+      "repeatStart": 396,
+      "repeatEnd": 940,
+      "edgeError": 0.00018702776287682354,
+      "fill": {
+        "x": 733,
+        "y": 163,
+        "w": 32,
+        "h": 8
+      },
+      "worldHeight": 85
+    }
+  }
+}

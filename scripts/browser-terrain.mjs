@@ -107,6 +107,10 @@ try {
           rasterDensity: p.getData('rasterDensity'),
           rasterWidth: p.texture.getSourceImage().width,
           sourceAtlas: p.getData('sourceAtlas'),
+          textureKey: p.texture.key,
+          wholeSpan: p.getData('wholeSpan'),
+          joinY: p.getData('surfaceJoinY'),
+          boundsWidth: p.getBounds().width,
           scaleX: p.scaleX,
           scaleY: p.scaleY,
         })),
@@ -119,6 +123,7 @@ try {
           continuous: l.getData('continuous'),
           generated: l.getData('generated'),
         })),
+        soilJoin: s.children.getByName('terrain-soil')?.getData('surfaceJoinY'),
         expected: s.map.platforms,
         expectedLadders: s.map.ladders,
         bodies: s.floor.getChildren().length,
@@ -132,12 +137,20 @@ try {
       expect(p.continuous).toBe(true);
       if (id === 'village' || id.startsWith('woods')) {
         expect(p.generated).toBe(true);
-        expect(p.sourceAtlas).toBe(id === 'village' ? 'village-terrain-art' : 'woods-terrain-art');
+        const theme = id === 'village' ? 'village' : 'woods';
+        expect(p.sourceAtlas).toBe(
+          c.id === 'fishing-dock' ? `${theme}-terrain-art` : `${theme}-platform-spans`,
+        );
+        if (c.oneWay) {
+          expect(p.wholeSpan).toBe(true);
+          expect(p.textureKey).toBe(p.sourceAtlas);
+          expect(p.boundsWidth).toBeCloseTo(c.width, 4);
+        } else expect(p.joinY).toBe(state.soilJoin);
       }
       expect(p.x).toBe(c.x);
       expect(p.surface).toBe(c.y);
       expect(p.width).toBe(c.width);
-      expect(p.scaleX).toBe(1 / (p.rasterDensity ?? 1));
+      expect(p.scaleX).toBeCloseTo(1 / (p.rasterDensity ?? 1), 8);
       expect(p.scaleY).toBe(p.scaleX);
       if (p.generated) {
         expect(p.rasterDensity).toBeGreaterThan(1);
