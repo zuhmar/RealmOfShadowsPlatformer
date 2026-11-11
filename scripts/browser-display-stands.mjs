@@ -63,9 +63,9 @@ try {
           texture: o.list[0].list[0].texture?.key,
           frame: o.list[0].list[0].frame?.name,
           uniform: o.list[0].list[0].scaleX === o.list[0].list[0].scaleY,
-          effectTexture: o.list[0].list[1]?.texture?.key,
-          effectFrame: o.list[0].list[1]?.frame?.name,
-          animated: !!o.list[0].list[1]?.anims?.isPlaying,
+          effectTexture: o.list[0].list[0]?.texture?.key,
+          effectFrame: o.list[0].list[0]?.frame?.name,
+          animated: !!o.list[0].list[0]?.anims?.isPlaying,
           allSprites: o.list[0].list.every((child) => ['Image', 'Sprite'].includes(child.type)),
         }));
     });
@@ -80,14 +80,20 @@ try {
     'shadow',
   ]);
   expect(
-    first.every((s) => s.texture === 'island-display-stands' && s.frame === s.theme && s.uniform),
+    first.every(
+      (s, i) =>
+        s.uniform &&
+        (i < 5
+          ? s.texture === 'island-display-stands' && s.frame === s.theme
+          : s.texture === 'animated-display-stands' && s.frame.startsWith(`${s.theme}-`)),
+    ),
   ).toBe(true);
   expect(first.map((s) => s.animated)).toEqual([false, false, false, false, false, true, true]);
   await page.waitForTimeout(300);
-  const next = await state();
+
   expect(first.every((s) => s.allSprites)).toBe(true);
-  expect(first[5].effectTexture).toBe('display-stand-effects');
-  expect(first[6].effectTexture).toBe('display-stand-effects');
+  expect(first[5].effectTexture).toBe('animated-display-stands');
+  expect(first[6].effectTexture).toBe('animated-display-stands');
   await expect.poll(async () => (await state())[5].effectFrame).not.toBe(first[5].effectFrame);
   await expect.poll(async () => (await state())[6].effectFrame).not.toBe(first[6].effectFrame);
   await page.screenshot({ path: 'artifacts/island-display-stands.png' });
