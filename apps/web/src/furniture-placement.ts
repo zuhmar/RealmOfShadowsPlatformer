@@ -55,7 +55,7 @@ export class FurniturePlacement {
           .setAlpha(0.65)
           .setName('furniture-placement-preview');
       } else {
-        const image = this.scene.add.image(0, 0, 'housing-art', recipe.id).setOrigin(0.5, 1);
+        const image = this.scene.add.image(0, 0, 'front-furniture', recipe.id).setOrigin(0.5, 1);
         image.setScale(Math.min(recipe.width / image.width, recipe.height / image.height));
         this.ghost = image.setDepth(11).setAlpha(0.65).setName('furniture-placement-preview');
       }

@@ -1,3 +1,4 @@
+import frontFurniture from '../public/assets/ui/front-furniture.json';
 import housing from '../public/assets/ui/housing.json';
 import { recipeFromScroll, GATHERING_TOOLS } from '@ros/game-data';
 import { RecipeSprite } from './RecipeSprite';
@@ -17,6 +18,15 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  if (id && Object.hasOwn(frontFurniture.frames, id))
+    return (
+      <RecipeSprite
+        atlas={frontFurniture}
+        sheet="front-furniture"
+        id={id}
+        label={itemDefinition(id)?.name ?? id}
+      />
+    );
   if (id && Object.hasOwn(housing.frames, id))
     return (
       <RecipeSprite

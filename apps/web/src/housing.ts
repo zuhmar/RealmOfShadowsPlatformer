@@ -3,6 +3,12 @@ import { CARPENTRY_RECIPES, HOUSING_PLOTS, HOUSING_PLATFORM } from '@ros/game-da
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 export function preloadHousing(scene: Phaser.Scene) {
+  if (!scene.textures.exists('front-furniture'))
+    scene.load.atlas(
+      'front-furniture',
+      assetUrl('/assets/ui/front-furniture.png'),
+      '/assets/ui/front-furniture.json',
+    );
   if (!scene.textures.exists('housing-art'))
     scene.load.atlas('housing-art', assetUrl('/assets/ui/housing.png'), '/assets/ui/housing.json');
 }

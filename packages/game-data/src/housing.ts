@@ -40,7 +40,7 @@ export const CARPENTRY_RECIPES = [
     cost: { 'oak-plank': 10 },
     xp: 35,
     width: 154,
-    height: 82,
+    height: 124,
   },
   {
     id: 'oak-chest',

@@ -1,0 +1,93 @@
+{
+  "frames": {
+    "oak-table": {
+      "frame": {
+        "x": 59,
+        "y": 183,
+        "w": 543,
+        "h": 341
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 543,
+        "h": 341
+      },
+      "sourceSize": {
+        "w": 543,
+        "h": 341
+      }
+    },
+    "oak-chair": {
+      "frame": {
+        "x": 809,
+        "y": 72,
+        "w": 281,
+        "h": 452
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 281,
+        "h": 452
+      },
+      "sourceSize": {
+        "w": 281,
+        "h": 452
+      }
+    },
+    "oak-bed": {
+      "frame": {
+        "x": 43,
+        "y": 731,
+        "w": 545,
+        "h": 451
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 545,
+        "h": 451
+      },
+      "sourceSize": {
+        "w": 545,
+        "h": 451
+      }
+    },
+    "oak-chest": {
+      "frame": {
+        "x": 674,
+        "y": 741,
+        "w": 539,
+        "h": 408
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 539,
+        "h": 408
+      },
+      "sourceSize": {
+        "w": 539,
+        "h": 408
+      }
+    }
+  },
+  "meta": {
+    "image": "front-furniture.png",
+    "size": {
+      "w": 1261,
+      "h": 1247
+    },
+    "view": "front elevation",
+    "source": "exec-a7611ff7-584b-46da-9659-1ff184b3fcd5.png"
+  }
+}

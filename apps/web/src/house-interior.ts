@@ -219,16 +219,18 @@ export class HouseInterior {
           .setName('house-display');
         this.items.push(icon);
         const stand = this.scene.add
-          .tileSprite(this.map.width / 2 + f.x, y - 8, 64, 8, 'house-interior', 'floor-strip')
-          .setOrigin(0.5, 0)
-          .setTileScale(8 / this.scene.textures.getFrame('house-interior', 'floor-strip').height)
+          .graphics()
+          .setPosition(this.map.width / 2 + f.x - 32, y - 8)
           .setDepth(3)
           .setName('display-stand');
+        stand.fillStyle(0x5c351e).fillRoundedRect(0, 0, 64, 8, 2);
+        stand.fillStyle(0xb78043).fillRect(2, 1, 60, 5);
+        stand.fillStyle(0xe3b675).fillRect(3, 1, 58, 1);
         this.items.push(stand);
         continue;
       }
       const im = this.scene.add
-        .image(this.map.width / 2 + f.x, y, 'housing-art', f.item)
+        .image(this.map.width / 2 + f.x, y, 'front-furniture', f.item)
         .setOrigin(0.5, 1);
       im.setScale(Math.min(r.width / im.width, r.height / im.height))
         .setDepth(3)

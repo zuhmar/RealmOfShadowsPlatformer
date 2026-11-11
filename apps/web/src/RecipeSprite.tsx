@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { assetUrl } from './assets';
 type Atlas = {
   frames: Record<string, { frame: { x: number; y: number; w: number; h: number } }>;
@@ -14,6 +15,7 @@ export function RecipeSprite({
   id: string;
   label: string;
 }) {
+  const clipId = useId();
   const f = atlas.frames[id]?.frame;
   if (!f) return null;
   return (
@@ -25,7 +27,13 @@ export function RecipeSprite({
       aria-label={label}
       style={{ verticalAlign: 'middle', flexShrink: 0 }}
     >
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={f.x} y={f.y} width={f.w} height={f.h} />
+        </clipPath>
+      </defs>
       <image
+        clipPath={`url(#${clipId})`}
         href={assetUrl(`/assets/ui/${sheet}.png`)}
         width={atlas.meta.size.w}
         height={atlas.meta.size.h}

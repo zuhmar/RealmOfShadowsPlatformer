@@ -1,3 +1,4 @@
+import frontFurniture from '../public/assets/ui/front-furniture.json';
 import housing from '../public/assets/ui/housing.json';
 import { preloadHousing } from './housing';
 import { recipeFromScroll, GATHERING_TOOLS } from '@ros/game-data';
@@ -94,7 +95,10 @@ export function lootIcon(
     kind = weaponKind(item);
   let key = 'loot-basics',
     frame: string | undefined = 'fang';
-  if (Object.hasOwn(housing.frames, item)) {
+  if (Object.hasOwn(frontFurniture.frames, item)) {
+    key = 'front-furniture';
+    frame = item;
+  } else if (Object.hasOwn(housing.frames, item)) {
     key = 'housing-art';
     frame = item;
   } else if (item === 'oak-plank') {
