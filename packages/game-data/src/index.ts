@@ -633,3 +633,5 @@ export function weaponSkillDescription(id: string | null | undefined) {
           : `Sweep up to ${s.maxTargets} enemies with +${s.meleeReach}px reach.`;
   return `Rank ${s.rank} · ${detail}${kind === 'dagger' ? '' : ` ${s.damageMultiplier.toFixed(2)}× damage.`}`;
 }
+
+export * from './display-stands';

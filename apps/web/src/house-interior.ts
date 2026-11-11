@@ -1,4 +1,4 @@
-import { lootIcon } from './loot-effects';
+import { itemDisplay } from './display-stands';
 import { decorationSize } from '@ros/shared';
 import { terrainPlatform } from './terrain';
 import Phaser from 'phaser';
@@ -214,20 +214,11 @@ export class HouseInterior {
         y = layout.floors[f.floor ?? 0];
       if (!r || y === undefined) continue;
       if (f.display) {
-        const icon = lootIcon(this.scene, f.item, 60)
-          .setPosition(this.map.width / 2 + f.x, y - 38)
-          .setDepth(3)
-          .setName('house-display');
-        this.items.push(icon);
-        const stand = this.scene.add
-          .graphics()
-          .setPosition(this.map.width / 2 + f.x - 32, y - 8)
-          .setDepth(3)
-          .setName('display-stand');
-        stand.fillStyle(0x5c351e).fillRoundedRect(0, 0, 64, 8, 2);
-        stand.fillStyle(0xb78043).fillRect(2, 1, 60, 5);
-        stand.fillStyle(0xe3b675).fillRect(3, 1, 58, 1);
-        this.items.push(stand);
+        this.items.push(
+          itemDisplay(this.scene, f.item)
+            .setPosition(this.map.width / 2 + f.x, y)
+            .setDepth(3),
+        );
         continue;
       }
       const im = this.scene.add

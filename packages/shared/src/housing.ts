@@ -102,7 +102,7 @@ const DISPLAY_LOOT = new Set([
 ]);
 export function decorationSize(item: string, display = false) {
   const furniture = CARPENTRY_RECIPES.find((r) => r.id === item && r.width > 0);
-  return !display && furniture ? furniture : { id: item, width: 64, height: 72 };
+  return !display && furniture ? furniture : { id: item, width: 64, height: 90 };
 }
 export function decorationSelection(p: Player, id: string) {
   if (id.startsWith('gear:')) {

@@ -1,4 +1,4 @@
-import { lootIcon } from './loot-effects';
+import { itemDisplay } from './display-stands';
 import Phaser from 'phaser';
 import { HOUSE_LAYOUTS, houseSize, type GameMap } from '@ros/game-data';
 import { furniturePlacement, decorationSelection, type Player } from '@ros/shared';
@@ -39,7 +39,8 @@ export class FurniturePlacement {
       this.item = '';
       this.point = undefined;
       this.signature = '';
-      this.ghost?.setVisible(false);
+      this.ghost?.destroy();
+      this.ghost = undefined;
       this.outline.clear();
       return;
     }
@@ -50,7 +51,7 @@ export class FurniturePlacement {
       this.signature = '';
       this.point = { x: p.x + 90, y: p.y - 10 };
       if (recipe.display) {
-        this.ghost = lootIcon(this.scene, recipe.id, 60)
+        this.ghost = itemDisplay(this.scene, recipe.id)
           .setDepth(11)
           .setAlpha(0.65)
           .setName('furniture-placement-preview');
@@ -79,7 +80,7 @@ export class FurniturePlacement {
     }
     const y = layout.floors[Math.max(0, floor)];
     const color = valid ? 0xa6e16a : 0xf27b85;
-    this.ghost!.setPosition(layout.width / 2 + x, recipe.display ? y - 38 : y).setVisible(true);
+    this.ghost!.setPosition(layout.width / 2 + x, y).setVisible(true);
     if (this.ghost instanceof Phaser.GameObjects.Image) this.ghost.setTint(color);
     this.outline
       .clear()
