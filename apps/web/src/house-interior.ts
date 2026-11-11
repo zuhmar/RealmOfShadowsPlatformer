@@ -1,3 +1,4 @@
+import { preloadGeneratedTerrain } from './generated-terrain';
 import { itemDisplay, preloadDisplayStands } from './display-stands';
 import { decorationSize } from '@ros/shared';
 import { terrainPlatform } from './terrain';
@@ -7,6 +8,7 @@ import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 import { preloadHousing } from './housing';
 export function preloadHouseInterior(scene: Phaser.Scene) {
+  preloadGeneratedTerrain(scene, 'village');
   preloadHousing(scene);
   preloadDisplayStands(scene);
   if (!scene.textures.exists('house-outdoors'))

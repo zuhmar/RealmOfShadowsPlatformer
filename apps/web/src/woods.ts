@@ -1,9 +1,11 @@
+import { preloadGeneratedTerrain, generatedSoil } from './generated-terrain';
 import { terrainPlatform, terrainLadder } from './terrain';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import { WOODS_PROPS, WOODS_AREA_PROPS, backgroundArtwork } from './woods-layout';
 export function preloadWoods(scene: Phaser.Scene, map?: GameMap) {
+  preloadGeneratedTerrain(scene, 'woods');
   scene.load.atlas(
     'woods-resources',
     assetUrl('/assets/props/woods-resource-nodes.png'),
@@ -22,7 +24,6 @@ export function preloadWoods(scene: Phaser.Scene, map?: GameMap) {
 }
 export class WoodsScenery {
   background: Phaser.GameObjects.Image;
-  soil?: Phaser.GameObjects.Rectangle;
   platforms: Phaser.GameObjects.Image[] = [];
   ladders: Phaser.GameObjects.Image[] = [];
   props: Phaser.GameObjects.Image[] = [];
@@ -39,12 +40,7 @@ export class WoodsScenery {
         `woods-background:${map.background ?? '/assets/backgrounds/whispering-woods.png'}`,
       )
       .setDepth(-30);
-    const ground = map.platforms.find((p) => !p.oneWay);
-    if (ground)
-      this.soil = scene.add
-        .rectangle(0, ground.y + 60, map.width, map.height + 1400, 0x654732)
-        .setOrigin(0, 0)
-        .setDepth(-1);
+    generatedSoil(scene, map, 'woods');
     for (const platform of map.platforms)
       this.platforms.push(terrainPlatform(scene, map, platform, 'woods'));
     for (const ladder of map.ladders) this.ladders.push(terrainLadder(scene, ladder, 'woods'));
@@ -71,20 +67,6 @@ export class WoodsScenery {
           .setInteractive({ useHandCursor: true })
           .on('pointerdown', () => onGather(node.id));
         this.resources.push(image);
-      } else {
-        const ripple = scene.add
-          .ellipse(node.x + 22, node.y + 30, 30, 7, 0xbef5f1, 0.25)
-          .setStrokeStyle(1, 0xd1ffff, 0.7)
-          .setDepth(2);
-        scene.tweens.add({
-          targets: ripple,
-          scaleX: 1.4,
-          alpha: 0.1,
-          duration: 1100,
-          yoyo: true,
-          repeat: -1,
-        });
-        this.resources.push(ripple);
       }
       const label = scene.add
         .text(

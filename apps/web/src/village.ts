@@ -1,3 +1,4 @@
+import { preloadGeneratedTerrain, generatedSoil } from './generated-terrain';
 import { preloadCraftingStations, craftingStation } from './crafting-stations';
 import { terrainPlatform, terrainLadder } from './terrain';
 import { artworkStrip } from './artwork';
@@ -7,6 +8,7 @@ import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 
 export function preloadVillage(scene: Phaser.Scene) {
+  preloadGeneratedTerrain(scene, 'village');
   preloadCraftingStations(scene);
   scene.load.image('village-background', assetUrl('/assets/backgrounds/elderwood-village.png'));
   for (const [name, folder] of [
@@ -33,10 +35,7 @@ export class VillageScenery {
   ) {
     this.background = scene.add.image(0, 0, 'village-background').setDepth(-30);
     const ground = map.platforms.find((p) => !p.oneWay)!;
-    scene.add
-      .rectangle(0, ground.y + 110, map.width, map.height + 1400, 0x80603f)
-      .setOrigin(0)
-      .setDepth(-1);
+    generatedSoil(scene, map, 'village');
     for (const p of map.platforms) this.platforms.push(terrainPlatform(scene, map, p, 'village'));
     const place = (
       texture: string,

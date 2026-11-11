@@ -1,3 +1,4 @@
+import { generatedPlatform, generatedLadder } from './generated-terrain';
 import type Phaser from 'phaser';
 import type { GameMap, Ladder, Platform } from '@ros/game-data';
 
@@ -85,6 +86,10 @@ export function terrainPlatform(
   p: Platform,
   theme: TerrainTheme,
 ) {
+  if (theme !== 'crystal') return generatedPlatform(scene, map, p, theme);
+  return legacyPlatform(scene, map, p, theme);
+}
+function legacyPlatform(scene: Phaser.Scene, map: GameMap, p: Platform, theme: TerrainTheme) {
   const c = palettes[theme],
     rng = randomFor(`${map.id}:${p.id}`),
     w = p.width;
@@ -260,6 +265,10 @@ export function terrainPlatform(
 }
 /** Full-height rails and evenly spaced rungs; join hardware sits on the actual surfaces. */
 export function terrainLadder(scene: Phaser.Scene, l: Ladder, theme: TerrainTheme) {
+  if (theme !== 'crystal') return generatedLadder(scene, l, theme);
+  return legacyLadder(scene, l, theme);
+}
+function legacyLadder(scene: Phaser.Scene, l: Ladder, theme: TerrainTheme) {
   const c = palettes[theme],
     height = l.bottom - l.top;
   const key = `terrain-ladder-v1:${theme}:${height}`,

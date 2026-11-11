@@ -103,6 +103,8 @@ try {
           width: p.getData('terrainWidth'),
           surface: p.getData('surfaceY'),
           continuous: p.getData('continuous'),
+          generated: p.getData('generated'),
+          sourceAtlas: p.getData('sourceAtlas'),
           scaleX: p.scaleX,
           scaleY: p.scaleY,
         })),
@@ -113,6 +115,7 @@ try {
           railTop: l.getData('railTop'),
           railBottom: l.getData('railBottom'),
           continuous: l.getData('continuous'),
+          generated: l.getData('generated'),
         })),
         expected: s.map.platforms,
         expectedLadders: s.map.ladders,
@@ -125,6 +128,10 @@ try {
     for (const p of state.platforms) {
       const c = state.expected.find((c) => c.id === p.id);
       expect(p.continuous).toBe(true);
+      if (id === 'village' || id.startsWith('woods')) {
+        expect(p.generated).toBe(true);
+        expect(p.sourceAtlas).toBe(id === 'village' ? 'village-terrain-art' : 'woods-terrain-art');
+      }
       expect(p.x).toBe(c.x);
       expect(p.surface).toBe(c.y);
       expect(p.width).toBe(c.width);
@@ -134,6 +141,7 @@ try {
     for (const [i, l] of state.ladders.entries()) {
       const c = state.expectedLadders[i];
       expect(l.continuous).toBe(true);
+      if (id === 'village' || id.startsWith('woods')) expect(l.generated).toBe(true);
       expect(l.x).toBe(c.x);
       expect(l.top).toBe(c.top);
       expect(l.bottom).toBe(c.bottom);
@@ -172,6 +180,7 @@ try {
     'PASS: all nine maps have one continuous world-scale platform per collider and one connected full-height ladder per route; desktop/mobile screenshots recorded.',
   );
 } catch (e) {
+  console.log('ORIGINAL ERROR', e.stack);
   console.log(
     'STATE',
     await page.evaluate(() => {

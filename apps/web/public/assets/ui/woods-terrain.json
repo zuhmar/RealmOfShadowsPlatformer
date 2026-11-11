@@ -1,0 +1,133 @@
+{
+  "frames": {
+    "ledge": {
+      "frame": {
+        "x": 21,
+        "y": 184,
+        "w": 725,
+        "h": 72
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 725,
+        "h": 72
+      },
+      "sourceSize": {
+        "w": 725,
+        "h": 72
+      }
+    },
+    "ground": {
+      "frame": {
+        "x": 790,
+        "y": 152,
+        "w": 725,
+        "h": 122
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 725,
+        "h": 122
+      },
+      "sourceSize": {
+        "w": 725,
+        "h": 122
+      }
+    },
+    "timber": {
+      "frame": {
+        "x": 21,
+        "y": 484,
+        "w": 726,
+        "h": 57
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 726,
+        "h": 57
+      },
+      "sourceSize": {
+        "w": 726,
+        "h": 57
+      }
+    },
+    "dock": {
+      "frame": {
+        "x": 790,
+        "y": 469,
+        "w": 725,
+        "h": 111
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 725,
+        "h": 111
+      },
+      "sourceSize": {
+        "w": 725,
+        "h": 111
+      }
+    },
+    "ladder": {
+      "frame": {
+        "x": 322,
+        "y": 654,
+        "w": 123,
+        "h": 353
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 123,
+        "h": 353
+      },
+      "sourceSize": {
+        "w": 123,
+        "h": 353
+      }
+    },
+    "soil": {
+      "frame": {
+        "x": 802,
+        "y": 732,
+        "w": 700,
+        "h": 230
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 700,
+        "h": 230
+      },
+      "sourceSize": {
+        "w": 700,
+        "h": 230
+      }
+    }
+  },
+  "meta": {
+    "image": "woods-terrain.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-de94f352-5cbb-4a25-bc65-ba2de043dae3.png",
+    "view": "front elevation"
+  }
+}

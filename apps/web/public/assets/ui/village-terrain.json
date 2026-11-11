@@ -1,0 +1,133 @@
+{
+  "frames": {
+    "ledge": {
+      "frame": {
+        "x": 31,
+        "y": 138,
+        "w": 825,
+        "h": 73
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 825,
+        "h": 73
+      },
+      "sourceSize": {
+        "w": 825,
+        "h": 73
+      }
+    },
+    "ground": {
+      "frame": {
+        "x": 934,
+        "y": 100,
+        "w": 794,
+        "h": 122
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 794,
+        "h": 122
+      },
+      "sourceSize": {
+        "w": 794,
+        "h": 122
+      }
+    },
+    "timber": {
+      "frame": {
+        "x": 45,
+        "y": 413,
+        "w": 797,
+        "h": 57
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 797,
+        "h": 57
+      },
+      "sourceSize": {
+        "w": 797,
+        "h": 57
+      }
+    },
+    "dock": {
+      "frame": {
+        "x": 919,
+        "y": 384,
+        "w": 824,
+        "h": 120
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 824,
+        "h": 120
+      },
+      "sourceSize": {
+        "w": 824,
+        "h": 120
+      }
+    },
+    "ladder": {
+      "frame": {
+        "x": 394,
+        "y": 574,
+        "w": 100,
+        "h": 296
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 296
+      },
+      "sourceSize": {
+        "w": 100,
+        "h": 296
+      }
+    },
+    "soil": {
+      "frame": {
+        "x": 930,
+        "y": 614,
+        "w": 800,
+        "h": 230
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 800,
+        "h": 230
+      },
+      "sourceSize": {
+        "w": 800,
+        "h": 230
+      }
+    }
+  },
+  "meta": {
+    "image": "village-terrain.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "source": "exec-6297a987-545c-49f7-8f87-ade5dd690371.png",
+    "view": "front elevation"
+  }
+}
