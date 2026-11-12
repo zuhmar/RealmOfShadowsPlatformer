@@ -16,6 +16,21 @@ page.on('response', (r) => {
 });
 try {
   await mkdir('artifacts', { recursive: true });
+  let staleTerrainRequests = 0;
+  // Simulate an independently cached atlas response from an earlier deployment.
+  await page.route(
+    /\/assets\/ui\/(?:woods|village|crystal)-(?:platform-spans|terrain|clean-ladder)\.json(?:\?.*)?$/,
+    async (route) => {
+      // Vite serves bundled JSON imports as modules during development.
+      if (route.request().resourceType() === 'script') return route.continue();
+      staleTerrainRequests++;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ frames: { ground: { frame: { x: 0, y: 0, w: 1, h: 1 } } } }),
+      });
+    },
+  );
   await page.goto('http://localhost:5173');
   await page.evaluate(
     async (shared) => {
@@ -106,6 +121,11 @@ try {
           generated: p.getData('generated'),
           rasterDensity: p.getData('rasterDensity'),
           rasterWidth: p.texture.getSourceImage().width,
+          atlasBounded:
+            p.frame.cutX >= 0 &&
+            p.frame.cutY >= 0 &&
+            p.frame.cutX + p.frame.cutWidth <= p.frame.source.width &&
+            p.frame.cutY + p.frame.cutHeight <= p.frame.source.height,
           sourceAtlas: p.getData('sourceAtlas'),
           textureKey: p.texture.key,
           wholeSpan: p.getData('wholeSpan'),
@@ -144,6 +164,7 @@ try {
     for (const p of state.platforms) {
       const c = state.expected.find((c) => c.id === p.id);
       expect(p.continuous).toBe(true);
+      expect(p.atlasBounded).toBe(true);
       if (id === 'village' || id.startsWith('woods') || id.startsWith('crystal')) {
         expect(p.generated).toBe(true);
         const theme = id === 'village' ? 'village' : id.startsWith('crystal') ? 'crystal' : 'woods';
@@ -208,6 +229,7 @@ try {
       colliders: state.bodies,
     });
   }
+  expect(staleTerrainRequests).toBe(0);
   expect(errors).toEqual([]);
   await writeFile('artifacts/terrain-review.json', JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));

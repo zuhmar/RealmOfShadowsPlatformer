@@ -1,3 +1,6 @@
+import woodsTerrain from '../public/assets/ui/woods-terrain.json';
+import villageTerrain from '../public/assets/ui/village-terrain.json';
+import crystalTerrain from '../public/assets/ui/crystal-terrain.json';
 import crystalSpans from '../public/assets/ui/crystal-platform-spans.json';
 import type Phaser from 'phaser';
 import type { GameMap, Platform, Ladder } from '@ros/game-data';
@@ -35,7 +38,7 @@ export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTer
     scene.load.atlas(
       'woods-clean-ladder',
       assetUrl('/assets/ui/woods-clean-ladder.png'),
-      '/assets/ui/woods-clean-ladder.json',
+      woodsLadder,
     );
   for (const kind of ['terrain', 'platform-spans']) {
     const key = kind === 'terrain' ? `${theme}-terrain-art` : `${theme}-platform-spans`;
@@ -43,7 +46,13 @@ export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTer
       scene.load.atlas(
         key,
         assetUrl(`/assets/ui/${theme}-${kind}.png`),
-        `/assets/ui/${theme}-${kind}.json`,
+        kind === 'platform-spans'
+          ? spans(theme)
+          : theme === 'woods'
+            ? woodsTerrain
+            : theme === 'village'
+              ? villageTerrain
+              : crystalTerrain,
       );
   }
 }
