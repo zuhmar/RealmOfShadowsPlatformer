@@ -1,0 +1,48 @@
+{
+  "frames": {
+    "ladder": {
+      "frame": {
+        "x": 308,
+        "y": 668,
+        "w": 153,
+        "h": 349
+      }
+    },
+    "dock": {
+      "frame": {
+        "x": 753,
+        "y": 761,
+        "w": 742,
+        "h": 217
+      }
+    }
+  },
+  "meta": {
+    "image": "crystal-terrain.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1",
+    "ground": {
+      "worldHeight": 85,
+      "repeatStart": 146,
+      "repeatEnd": 634,
+      "fill": {
+        "x": 300,
+        "y": 219,
+        "w": 32,
+        "h": 8
+      }
+    },
+    "ladder": {
+      "cap": 30,
+      "railStart": 17,
+      "railHeight": 10,
+      "rungStart": 34,
+      "rungHeight": 27,
+      "start": 34,
+      "repeat": 56
+    }
+  }
+}

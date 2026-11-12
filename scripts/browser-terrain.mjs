@@ -144,9 +144,9 @@ try {
     for (const p of state.platforms) {
       const c = state.expected.find((c) => c.id === p.id);
       expect(p.continuous).toBe(true);
-      if (id === 'village' || id.startsWith('woods')) {
+      if (id === 'village' || id.startsWith('woods') || id.startsWith('crystal')) {
         expect(p.generated).toBe(true);
-        const theme = id === 'village' ? 'village' : 'woods';
+        const theme = id === 'village' ? 'village' : id.startsWith('crystal') ? 'crystal' : 'woods';
         expect(p.sourceAtlas).toBe(
           c.id === 'fishing-dock' ? `${theme}-terrain-art` : `${theme}-platform-spans`,
         );
@@ -166,7 +166,7 @@ try {
         expect(p.rasterWidth).toBeLessThanOrEqual(4096);
       }
     }
-    if (id === 'village' || id.startsWith('woods')) {
+    if (id === 'village' || id.startsWith('woods') || id.startsWith('crystal')) {
       expect(state.groundedProps.length).toBeGreaterThan(0);
       for (const prop of state.groundedProps)
         expect(prop.baseline).toBeCloseTo(prop.surface + prop.inset, 6);
@@ -174,7 +174,8 @@ try {
     for (const [i, l] of state.ladders.entries()) {
       const c = state.expectedLadders[i];
       expect(l.continuous).toBe(true);
-      if (id === 'village' || id.startsWith('woods')) expect(l.generated).toBe(true);
+      if (id === 'village' || id.startsWith('woods') || id.startsWith('crystal'))
+        expect(l.generated).toBe(true);
       if (id.startsWith('woods')) expect(l.sourceAtlas).toBe('woods-clean-ladder');
       expect(l.x).toBe(c.x);
       expect(l.top).toBe(c.top);

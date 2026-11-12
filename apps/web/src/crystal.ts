@@ -1,9 +1,12 @@
+import { preloadGeneratedTerrain, generatedSoil } from './generated-terrain';
+import { groundProp } from './prop-grounding';
 import { terrainPlatform, terrainLadder } from './terrain';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
 import type { GameMap } from '@ros/game-data';
 import { backgroundArtwork } from './woods-layout';
 export function preloadCrystal(scene: Phaser.Scene, map: GameMap) {
+  preloadGeneratedTerrain(scene, 'crystal');
   scene.load.image(`crystal-background:${map.background}`, assetUrl(map.background!));
   scene.load.atlas(
     'crystal-scenery',
@@ -52,10 +55,7 @@ export class CrystalScenery {
   ) {
     this.background = scene.add.image(0, 0, `crystal-background:${map.background}`).setDepth(-30);
     const ground = map.platforms.find((p) => !p.oneWay)!;
-    scene.add
-      .rectangle(0, ground.y + 48, map.width, map.height + 1000, 0x24385c)
-      .setOrigin(0)
-      .setDepth(-2);
+    generatedSoil(scene, map, 'crystal');
     for (const p of map.platforms) this.platforms.push(terrainPlatform(scene, map, p, 'crystal'));
     for (const l of map.ladders) this.ladders.push(terrainLadder(scene, l, 'crystal'));
     const offsets =
@@ -66,16 +66,14 @@ export class CrystalScenery {
           : map.id === 'crystal-boss'
             ? [450, 1550]
             : [1000, 1700, 2100];
-    offsets.forEach((x, i) =>
-      scene.add
+    offsets.forEach((x, i) => {
+      const image = scene.add
         .image(x, ground.y, 'crystal-scenery', i % 2 ? 'cart' : 'cluster')
         .setOrigin(0.5, 1)
-        .setScale(
-          (i % 2 ? 65 : 105) /
-            scene.textures.getFrame('crystal-scenery', i % 2 ? 'cart' : 'cluster').height,
-        )
-        .setDepth(1),
-    );
+        .setDepth(1);
+      image.setScale((i % 2 ? 65 : 105) / image.height);
+      groundProp(scene, image, x, ground.y, 'ground');
+    });
     for (const node of map.resources ?? []) {
       if (node.skill !== 'Fishing') {
         const image = scene.add
@@ -86,6 +84,7 @@ export class CrystalScenery {
           .setScale(node.height / image.height)
           .setInteractive({ useHandCursor: true })
           .on('pointerdown', () => onGather(node.id));
+        groundProp(scene, image, node.x, node.y, node.platform);
       }
       scene.add
         .text(node.x, node.y - (node.height || 55) - 24, `${node.skill} · Lv. ${node.level ?? 1}`, {

@@ -1,10 +1,11 @@
+import crystalSpans from '../public/assets/ui/crystal-platform-spans.json';
 import type Phaser from 'phaser';
 import type { GameMap, Platform, Ladder } from '@ros/game-data';
 import { assetUrl } from './assets';
 import villageSpans from '../public/assets/ui/village-platform-spans.json';
 import woodsSpans from '../public/assets/ui/woods-platform-spans.json';
 import woodsLadder from '../public/assets/ui/woods-clean-ladder.json';
-export type GeneratedTerrainTheme = 'woods' | 'village';
+export type GeneratedTerrainTheme = 'woods' | 'village' | 'crystal';
 const caches = new WeakMap<Phaser.Game, Map<string, Set<string>>>();
 function remember(scene: Phaser.Scene, map: string, key: string) {
   let groups = caches.get(scene.game);
@@ -22,7 +23,8 @@ function remember(scene: Phaser.Scene, map: string, key: string) {
     groups.delete(oldest);
   }
 }
-const spans = (theme: GeneratedTerrainTheme) => (theme === 'woods' ? woodsSpans : villageSpans);
+const spans = (theme: GeneratedTerrainTheme) =>
+  theme === 'crystal' ? crystalSpans : theme === 'woods' ? woodsSpans : villageSpans;
 export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTerrainTheme) {
   if (theme === 'woods' && !scene.textures.exists('woods-clean-ladder'))
     scene.load.atlas(
@@ -183,8 +185,8 @@ export function generatedPlatform(
       });
   }
   const dock = p.id === 'fishing-dock';
-  const names = theme === 'woods' ? ['short', 'medium', 'long'] : ['medium', 'long'];
-  const target = theme === 'woods' ? 70 : 36;
+  const names = theme !== 'village' ? ['short', 'medium', 'long'] : ['medium', 'long'];
+  const target = theme !== 'village' ? 70 : 36;
   const name = dock
     ? 'dock'
     : names.reduce((best, next) => {
@@ -231,15 +233,30 @@ export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: Generated
   const { texture, ctx, density } = raster(scene, key, width, fullHeight);
   if (!texture.canvas.dataset.rendered) {
     const x = (width - artWidth) / 2;
-    const cap = theme === 'woods' ? woodsLadder.meta.ladder.cap : 32,
+    const cap =
+        theme === 'crystal'
+          ? crystalSpans.meta.ladder.cap
+          : theme === 'woods'
+            ? woodsLadder.meta.ladder.cap
+            : 32,
       edge = cap * scale,
       top = pad - 14,
       bottom = pad + height + 4;
     // Select a whole rung interval for repeats so the rails and rungs meet naturally.
-    const start = theme === 'woods' ? woodsLadder.meta.ladder.start : 80,
-      repeat = theme === 'woods' ? woodsLadder.meta.ladder.repeat : 61;
-    if (theme === 'woods') {
-      const clip = woodsLadder.meta.ladder;
+    const start =
+        theme === 'crystal'
+          ? crystalSpans.meta.ladder.start
+          : theme === 'woods'
+            ? woodsLadder.meta.ladder.start
+            : 80,
+      repeat =
+        theme === 'crystal'
+          ? crystalSpans.meta.ladder.repeat
+          : theme === 'woods'
+            ? woodsLadder.meta.ladder.repeat
+            : 61;
+    if (theme !== 'village') {
+      const clip = theme === 'crystal' ? crystalSpans.meta.ladder : woodsLadder.meta.ladder;
       // Fill only the plain rails, then place complete rungs. A partial repeat must never cut a rung in half.
       for (let y = top + edge; y < bottom - edge; ) {
         const size = Math.min(clip.railHeight * scale, bottom - edge - y);
@@ -290,7 +307,12 @@ export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: Generated
       theme,
       continuous: true,
       generated: true,
-      sourceAtlas: theme === 'woods' ? 'woods-clean-ladder' : `${theme}-terrain-art`,
+      sourceAtlas:
+        theme === 'crystal'
+          ? 'crystal-terrain-art'
+          : theme === 'woods'
+            ? 'woods-clean-ladder'
+            : `${theme}-terrain-art`,
       rasterDensity: density,
       railTop: l.top - 14,
       railBottom: l.bottom + 4,

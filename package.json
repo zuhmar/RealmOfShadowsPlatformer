@@ -42,7 +42,8 @@
     "test:browser:world-map": "node --env-file-if-exists=apps/server/.env scripts/browser-world-map.mjs",
     "test:browser:island-weapons": "node scripts/browser-island-weapons.mjs",
     "test:browser:murkmire": "node scripts/browser-murkmire.mjs",
-    "test:browser:murkmire-flow": "node --env-file-if-exists=apps/server/.env scripts/browser-murkmire-flow.mjs"
+    "test:browser:murkmire-flow": "node --env-file-if-exists=apps/server/.env scripts/browser-murkmire-flow.mjs",
+    "test:browser:crystal-terrain": "node scripts/browser-crystal-terrain.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

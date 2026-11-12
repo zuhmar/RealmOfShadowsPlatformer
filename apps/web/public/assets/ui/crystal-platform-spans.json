@@ -1,0 +1,64 @@
+{
+  "frames": {
+    "short": {
+      "frame": {
+        "x": 604,
+        "y": 105,
+        "w": 566,
+        "h": 112
+      }
+    },
+    "medium": {
+      "frame": {
+        "x": 384,
+        "y": 302,
+        "w": 1006,
+        "h": 125
+      }
+    },
+    "long": {
+      "frame": {
+        "x": 12,
+        "y": 504,
+        "w": 1750,
+        "h": 78
+      }
+    },
+    "ground": {
+      "frame": {
+        "x": 4,
+        "y": 664,
+        "w": 1766,
+        "h": 192
+      }
+    }
+  },
+  "meta": {
+    "image": "crystal-platform-spans.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "scale": "1",
+    "ground": {
+      "worldHeight": 85,
+      "repeatStart": 152,
+      "repeatEnd": 1052,
+      "fill": {
+        "x": 883,
+        "y": 191,
+        "w": 1,
+        "h": 1
+      }
+    },
+    "ladder": {
+      "cap": 30,
+      "railStart": 17,
+      "railHeight": 10,
+      "rungStart": 34,
+      "rungHeight": 27,
+      "start": 34,
+      "repeat": 56
+    }
+  }
+}
