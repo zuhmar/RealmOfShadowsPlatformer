@@ -2,85 +2,90 @@
   "frames": {
     "medium": {
       "frame": {
-        "x": 351,
-        "y": 165,
-        "w": 833,
-        "h": 115
+        "x": 437,
+        "y": 49,
+        "w": 1296,
+        "h": 150
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 833,
-        "h": 115
+        "w": 1296,
+        "h": 150
       },
       "sourceSize": {
-        "w": 833,
-        "h": 115
+        "w": 1296,
+        "h": 150
       }
     },
     "long": {
       "frame": {
-        "x": 34,
-        "y": 440,
-        "w": 1467,
-        "h": 115
+        "x": 12,
+        "y": 302,
+        "w": 2147,
+        "h": 92
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1467,
-        "h": 115
+        "w": 2147,
+        "h": 92
       },
       "sourceSize": {
-        "w": 1467,
-        "h": 115
+        "w": 2147,
+        "h": 92
       }
     },
     "ground": {
       "frame": {
-        "x": 13,
-        "y": 727,
-        "w": 1509,
-        "h": 169
+        "x": 16,
+        "y": 500,
+        "w": 2141,
+        "h": 195
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1509,
-        "h": 169
+        "w": 2141,
+        "h": 195
       },
       "sourceSize": {
-        "w": 1509,
-        "h": 169
+        "w": 2141,
+        "h": 195
       }
     }
   },
   "meta": {
     "image": "village-platform-spans.png",
     "size": {
-      "w": 1536,
-      "h": 1024
+      "w": 2172,
+      "h": 724
     },
-    "source": "exec-c9822553-1ca5-45be-b36d-fd80b4d8ca7e.png",
+    "source": "exec-fc080ade-3e51-482d-9042-c90dda82d14e.png",
     "view": "front elevation",
     "wholePlatformSpans": true,
     "ground": {
-      "repeatStart": 496,
-      "repeatEnd": 792,
-      "edgeError": 2.6953699489240535e-05,
+      "repeatStart": 697,
+      "repeatEnd": 1468,
+      "edgeError": 0.0007019703636389526,
       "fill": {
-        "x": 738,
-        "y": 153,
-        "w": 32,
-        "h": 8
+        "x": 1070,
+        "y": 193,
+        "w": 1,
+        "h": 1
       },
       "worldHeight": 85
+    },
+    "walkSurfaces": {
+      "medium": 2,
+      "long": 2,
+      "ground": 13
     }
   }
 }

@@ -205,3 +205,5 @@ provides channel/role setup, member welcomes, cosmetic class roles, showcase
 posting, updates, and moderation commands. It runs separately from the game;
 `render.discord.yaml` is its optional worker blueprint. Store credentials in
 private hosting environment variables, never in the repository.
+
+Elderwood and Whispering Woods use regenerated whole-platform atlases: oak plank decks with integrated braces and a cobblestone-edged village bank; layered warm stone, earth, moss and roots for the forest. Measured interior repeats and soil sampled from each bank keep ground joins cohesive. Platform layouts and collision routes are unchanged; check `node scripts/browser-terrain.mjs` for desktop/mobile captures.

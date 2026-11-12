@@ -2,105 +2,111 @@
   "frames": {
     "short": {
       "frame": {
-        "x": 448,
-        "y": 66,
-        "w": 636,
-        "h": 170
+        "x": 532,
+        "y": 34,
+        "w": 708,
+        "h": 202
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 636,
-        "h": 170
+        "w": 708,
+        "h": 202
       },
       "sourceSize": {
-        "w": 636,
-        "h": 170
+        "w": 708,
+        "h": 202
       }
     },
     "medium": {
       "frame": {
-        "x": 255,
-        "y": 303,
-        "w": 1022,
-        "h": 170
+        "x": 295,
+        "y": 262,
+        "w": 1183,
+        "h": 226
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1022,
-        "h": 170
+        "w": 1183,
+        "h": 226
       },
       "sourceSize": {
-        "w": 1022,
-        "h": 170
+        "w": 1183,
+        "h": 226
       }
     },
     "long": {
       "frame": {
-        "x": 21,
-        "y": 544,
-        "w": 1492,
-        "h": 169
+        "x": 13,
+        "y": 524,
+        "w": 1750,
+        "h": 137
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1492,
-        "h": 169
+        "w": 1750,
+        "h": 137
       },
       "sourceSize": {
-        "w": 1492,
-        "h": 169
+        "w": 1750,
+        "h": 137
       }
     },
     "ground": {
       "frame": {
-        "x": 20,
-        "y": 783,
-        "w": 1498,
-        "h": 179
+        "x": 10,
+        "y": 711,
+        "w": 1756,
+        "h": 152
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1498,
-        "h": 179
+        "w": 1756,
+        "h": 152
       },
       "sourceSize": {
-        "w": 1498,
-        "h": 179
+        "w": 1756,
+        "h": 152
       }
     }
   },
   "meta": {
     "image": "woods-platform-spans.png",
     "size": {
-      "w": 1536,
-      "h": 1024
+      "w": 1774,
+      "h": 887
     },
-    "source": "exec-fb829a10-e632-4f01-93c9-6ecf93564655.png",
+    "source": "exec-2e934384-6047-4053-ba7a-736a7343f73e.png",
     "view": "front elevation",
     "wholePlatformSpans": true,
     "ground": {
-      "repeatStart": 396,
-      "repeatEnd": 940,
-      "edgeError": 0.00018702776287682354,
+      "repeatStart": 383,
+      "repeatEnd": 1324,
+      "edgeError": 0.0008581234781494297,
       "fill": {
-        "x": 733,
-        "y": 163,
-        "w": 32,
-        "h": 8
+        "x": 878,
+        "y": 150,
+        "w": 1,
+        "h": 1
       },
       "worldHeight": 85
+    },
+    "walkSurfaces": {
+      "short": 31,
+      "medium": 43,
+      "long": 29,
+      "ground": 20
     }
   }
 }

@@ -25,6 +25,11 @@ function remember(scene: Phaser.Scene, map: string, key: string) {
 }
 const spans = (theme: GeneratedTerrainTheme) =>
   theme === 'crystal' ? crystalSpans : theme === 'woods' ? woodsSpans : villageSpans;
+function walkingSurface(theme: GeneratedTerrainTheme, name: string) {
+  if (theme === 'crystal') return 0;
+  const art = theme === 'woods' ? woodsSpans : villageSpans;
+  return (art.meta.walkSurfaces as Record<string, number>)[name] ?? 0;
+}
 export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTerrainTheme) {
   if (theme === 'woods' && !scene.textures.exists('woods-clean-ladder'))
     scene.load.atlas(
@@ -99,14 +104,18 @@ export function generatedSoil(scene: Phaser.Scene, map: GameMap, theme: Generate
   const ground = map.platforms.find((p) => !p.oneWay);
   if (!ground) return;
   const f = groundFill(scene, theme),
-    key = `ground-fill-v5:${theme}`;
+    key = `ground-fill-v6:${theme}`;
   const { texture, ctx, density } = raster(scene, key, f.w, f.h);
   if (!texture.canvas.dataset.rendered) {
     paint(ctx, f, 0, 0, 1);
     texture.refresh();
     texture.canvas.dataset.rendered = 'true';
   }
-  const join = ground.y + spans(theme).meta.ground.worldHeight;
+  const spec = spans(theme).meta.ground;
+  const join =
+    ground.y +
+    spec.worldHeight -
+    (walkingSurface(theme, 'ground') * spec.worldHeight) / source(scene, theme, 'ground', true).h;
   return scene.add
     .tileSprite(ground.x, join - 1, ground.width, map.height + 1600, key)
     .setOrigin(0)
@@ -130,11 +139,12 @@ export function generatedPlatform(
     const f = source(scene, theme, 'ground', true),
       spec = spans(theme).meta.ground;
     const scale = spec.worldHeight / f.h,
+      surface = walkingSurface(theme, 'ground') * scale,
       pad = 4;
     const height = map.id.startsWith('house-')
       ? Math.max(spec.worldHeight, map.height - p.y + 160)
       : spec.worldHeight;
-    const key = `ground-connected-v5:${theme}:${map.id}:${p.id}`;
+    const key = `ground-connected-v6:${theme}:${map.id}:${p.id}`;
     remember(scene, map.id, key);
     const { texture, ctx, density } = raster(scene, key, p.width + pad * 2, height + pad * 2);
     if (!texture.canvas.dataset.rendered) {
@@ -146,26 +156,24 @@ export function generatedPlatform(
       // Houses use this same bank beneath their foundation, without a scenery soil layer.
       if (height > spec.worldHeight) {
         const fill = groundFill(scene, theme);
-        for (let y = spec.worldHeight; y < height; y += fill.h)
-          for (let x = 0; x < p.width; x += fill.w)
-            paint(
-              ctx,
-              fill,
-              pad + x,
-              pad + y,
-              1,
-              0,
-              0,
-              Math.min(fill.w, p.width - x),
-              Math.min(fill.h, height - y),
-            );
+        const tile = document.createElement('canvas');
+        tile.width = fill.w;
+        tile.height = fill.h;
+        tile
+          .getContext('2d')!
+          .drawImage(fill.image, fill.x, fill.y, fill.w, fill.h, 0, 0, fill.w, fill.h);
+        ctx.save();
+        ctx.translate(pad, pad + spec.worldHeight);
+        ctx.fillStyle = ctx.createPattern(tile, 'repeat')!;
+        ctx.fillRect(0, 0, p.width, height - spec.worldHeight);
+        ctx.restore();
       }
       texture.refresh();
       texture.canvas.dataset.rendered = 'true';
     }
     return scene.add
       .image(p.x, p.y, key)
-      .setOrigin((pad * density) / texture.width, (pad * density) / texture.height)
+      .setOrigin((pad * density) / texture.width, ((pad + surface) * density) / texture.height)
       .setScale(1 / density)
       .setDepth(0)
       .setName('terrain-platform')
@@ -181,7 +189,7 @@ export function generatedPlatform(
         generated: true,
         sourceAtlas: `${theme}-platform-spans`,
         material: 'terrain',
-        surfaceJoinY: p.y + spec.worldHeight,
+        surfaceJoinY: p.y + spec.worldHeight - surface,
       });
   }
   const dock = p.id === 'fishing-dock';
@@ -202,7 +210,7 @@ export function generatedPlatform(
     scale = p.width / f.width;
   return scene.add
     .image(p.x, p.y, atlas, name)
-    .setOrigin(0)
+    .setOrigin(0, walkingSurface(theme, name) / f.height)
     .setScale(scale)
     .setDepth(0)
     .setName('terrain-platform')
