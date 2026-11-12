@@ -1,0 +1,112 @@
+{
+  "origins": [
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    },
+    {
+      "x": 0.5,
+      "y": 1
+    }
+  ],
+  "scale": 0.45714285714285713,
+  "height": 80,
+  "animations": {
+    "idle": {
+      "frames": [
+        "idle-0",
+        "idle-1",
+        "idle-2",
+        "idle-3"
+      ],
+      "frameRate": 4,
+      "repeat": -1
+    },
+    "walk": {
+      "frames": [
+        "walk-0",
+        "walk-1",
+        "walk-2",
+        "walk-3"
+      ],
+      "frameRate": 8,
+      "repeat": -1
+    },
+    "attack": {
+      "frames": [
+        "attack-0",
+        "attack-1",
+        "attack-2",
+        "attack-3"
+      ],
+      "frameRate": 8,
+      "repeat": 0
+    },
+    "death": {
+      "frames": [
+        "death-0",
+        "death-1",
+        "death-2",
+        "death-3"
+      ],
+      "frameRate": 6,
+      "repeat": 0
+    }
+  }
+}

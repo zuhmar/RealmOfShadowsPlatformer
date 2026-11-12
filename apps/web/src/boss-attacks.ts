@@ -1,12 +1,23 @@
+import venomAtlas from '../public/assets/effects/hydra-venom.json';
 import { skillEffect } from './combat-effects';
 import Phaser from 'phaser';
 import { BOSS_ATTACK } from '@ros/game-data';
 import type { Wolf, Event } from '@ros/shared';
+const venomWidth = (kind: 'warning' | 'impact') =>
+  Math.max(
+    ...Object.entries(venomAtlas.frames)
+      .filter(([name]) => name.startsWith(kind))
+      .map(([, entry]) => entry.frame.w),
+  );
 /** Snapshot-backed warning survives joining mid-windup and never follows a dodging player. */
 export class BossWarnings {
   private marks = new Map<
     string,
-    { area: Phaser.GameObjects.Graphics; label: Phaser.GameObjects.Text }
+    {
+      area: Phaser.GameObjects.Graphics;
+      label: Phaser.GameObjects.Text;
+      venom?: Phaser.GameObjects.Sprite;
+    }
   >();
   constructor(private scene: Phaser.Scene) {}
   sync(monsters: Wolf[], now: number) {
@@ -37,6 +48,24 @@ export class BossWarnings {
       const r = zone.radius,
         h = BOSS_ATTACK.height,
         remaining = Math.max(0, zone.impactAt - now);
+      if (monster.monster === 'hydra') {
+        mark.area.setVisible(false);
+        mark.venom ??= this.scene.add
+          .sprite(zone.x, zone.y, 'hydra-venom', 'warning-0')
+          .setDepth(12)
+          .setName('boss-venom-warning');
+        const frame = Math.min(7, Math.floor(((now - zone.startedAt) / BOSS_ATTACK.windup) * 8));
+        mark.venom
+          .setFrame(`warning-${frame}`)
+          .setOrigin(0.5, 0.83)
+          .setPosition(zone.x, zone.y)
+          .setScale((r * 2) / venomWidth('warning'));
+        mark.label
+          .setScale(1 / this.scene.cameras.main.zoom)
+          .setPosition(zone.x, zone.y - h - 25)
+          .setText(`VENOM ERUPTION ${Math.ceil(remaining / 100) / 10}s — MOVE!`);
+        continue;
+      }
       const g = mark.area;
       g.clear()
         .setPosition(zone.x, zone.y)
@@ -61,6 +90,7 @@ export class BossWarnings {
     }
     for (const [id, mark] of this.marks)
       if (!active.has(id)) {
+        mark.venom?.destroy();
         mark.area.destroy();
         mark.label.destroy();
         this.marks.delete(id);
@@ -68,6 +98,25 @@ export class BossWarnings {
   }
 }
 export function bossImpact(scene: Phaser.Scene, event: Event) {
+  if (event.monster === 'hydra') {
+    if (!scene.anims.exists('hydra-venom-impact'))
+      scene.anims.create({
+        key: 'hydra-venom-impact',
+        frames: Array.from({ length: 8 }, (_, i) => ({ key: 'hydra-venom', frame: `impact-${i}` })),
+        frameRate: 12,
+        repeat: 0,
+      });
+    const sprite = scene.add
+      .sprite(event.x, event.y, 'hydra-venom', 'impact-0')
+      .setOrigin(0.5, 0.83)
+      .setDepth(18)
+      .setName('boss-venom-impact');
+    sprite
+      .setScale(((event.radius ?? BOSS_ATTACK.radius) * 2) / venomWidth('impact'))
+      .play('hydra-venom-impact')
+      .once('animationcomplete', () => sprite.destroy());
+    return;
+  }
   if (event.monster === 'crystal-wyrm') {
     skillEffect(scene, {
       ...event,

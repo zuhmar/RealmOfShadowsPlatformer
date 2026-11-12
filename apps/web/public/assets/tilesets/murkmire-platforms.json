@@ -1,0 +1,92 @@
+{
+  "frames": {
+    "short": {
+      "frame": {
+        "x": 446,
+        "y": 64,
+        "w": 640,
+        "h": 172
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 640,
+        "h": 172
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 172
+      }
+    },
+    "medium": {
+      "frame": {
+        "x": 253,
+        "y": 301,
+        "w": 1025,
+        "h": 173
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1025,
+        "h": 173
+      },
+      "sourceSize": {
+        "w": 1025,
+        "h": 173
+      }
+    },
+    "long": {
+      "frame": {
+        "x": 20,
+        "y": 543,
+        "w": 1494,
+        "h": 171
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1494,
+        "h": 171
+      },
+      "sourceSize": {
+        "w": 1494,
+        "h": 171
+      }
+    },
+    "ground": {
+      "frame": {
+        "x": 19,
+        "y": 782,
+        "w": 1500,
+        "h": 183
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 1500,
+        "h": 183
+      },
+      "sourceSize": {
+        "w": 1500,
+        "h": 183
+      }
+    }
+  },
+  "meta": {
+    "image": "murkmire-platforms.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}

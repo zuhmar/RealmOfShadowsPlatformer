@@ -18,7 +18,17 @@ test('every island has its own destination theme; purple is reserved for Shadow 
     for (const p of map.portals)
       assert.equal(
         portalThemeFor(map.id, p.target),
-        map.id.startsWith('crystal') || p.target.startsWith('crystal') ? 'crystal' : 'woods',
+        p.target.startsWith('murkmire')
+          ? 'murkmire'
+          : p.target.startsWith('crystal')
+            ? 'crystal'
+            : p.target.startsWith('woods')
+              ? 'woods'
+              : map.id.startsWith('murkmire')
+                ? 'murkmire'
+                : map.id.startsWith('crystal')
+                  ? 'crystal'
+                  : 'woods',
       );
 });
 test('all seven portal sheets have eight bounded frames and measured anchors', () => {

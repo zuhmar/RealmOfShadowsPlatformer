@@ -1,7 +1,9 @@
-import {CRYSTAL_MONSTERS} from './crystal';
+import { MURKMIRE_MONSTERS } from './murkmire';
+import { CRYSTAL_MONSTERS } from './crystal';
 export const BOSS_QUEST_KILLS = 1;
 export const WOODS_MONSTERS = {
   ...CRYSTAL_MONSTERS,
+  ...MURKMIRE_MONSTERS,
   wolf: {
     name: 'Wolf',
     boss: false,

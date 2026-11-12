@@ -1,3 +1,4 @@
+import { MurkmireQuests } from './MurkmireQuests';
 import { decorationSelection } from '@ros/shared';
 import type { FurnitureTarget } from './furniture-placement';
 import { houseSize } from '@ros/game-data';
@@ -404,6 +405,7 @@ function App() {
       if (npc.id === 'carpentry-station') setPanel('housing');
       if (npc.id === 'mira') setPanel('mira');
       if (npc.id === 'bram') setPanel('bram');
+      if (npc.id === 'mirewarden') setPanel('murkmire-quests');
       if (npc.id === 'mentor') setPanel('crystal-quests');
       if (npc.id === 'cooking-station' || npc.id === 'alchemy-station') {
         setRecipeSkill(npc.id === 'cooking-station' ? 'Cooking' : 'Alchemy');
@@ -611,6 +613,7 @@ function App() {
       !!connectionStatus ||
       panel === 'mira' ||
       panel === 'bram' ||
+      panel === 'murkmire-quests' ||
       panel === 'crystal-quests' ||
       panel === 'recipes';
     if (
@@ -618,6 +621,7 @@ function App() {
       placingFurniture ||
       panel === 'mira' ||
       panel === 'bram' ||
+      panel === 'murkmire-quests' ||
       panel === 'crystal-quests' ||
       panel === 'recipes'
     )
@@ -1512,6 +1516,8 @@ function App() {
                     quests: 'Adventure journal.',
                     mira: 'Mira · Village guide',
                     bram: 'Bram’s Forge',
+                    'murkmire-quests': 'Mire Warden · Murkmire Swamp',
+                    'crystal-quests': 'Cavern Mentor · Crystal Caverns',
                     map: 'Beyond the Elderwood.',
                     settings: 'Hunt your way.',
                     recipes: 'Cooking & Alchemy',
@@ -1659,6 +1665,19 @@ function App() {
                   if (questPending) return;
                   setQuestPending(true);
                   room?.send('quest', { questId: quest.id, action });
+                }}
+              />
+            )}
+            {(panel === 'quests' || panel === 'murkmire-quests') && (
+              <MurkmireQuests
+                player={p}
+                dialog={panel === 'murkmire-quests'}
+                near={nearNpc(p, map, 'mirewarden')}
+                pending={questPending}
+                send={(type, payload) => {
+                  if (questPending) return;
+                  setQuestPending(true);
+                  bridge.current.send(type, payload);
                 }}
               />
             )}

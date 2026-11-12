@@ -13,6 +13,12 @@ export function usePortal(p: Player, source: GameMap) {
     !p.bossKills?.['forest-bear']
   )
     throw new Error('Defeat the Forest Bear to earn Crystal Caverns access.');
+  if (
+    target.island === 'Murkmire Swamp' &&
+    !p.unlockedIslands?.includes('murkmire') &&
+    !p.bossKills?.['crystal-wyrm']
+  )
+    throw new Error('Defeat the Crystal Wyrm to unlock Murkmire Swamp.');
   if (p.level < target.requiredLevel) throw new Error(`Reach level ${target.requiredLevel} first.`);
   if (portal.key && !(p.inventory[portal.key] >= 1))
     throw new Error(

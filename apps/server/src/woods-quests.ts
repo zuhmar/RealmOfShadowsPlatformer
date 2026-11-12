@@ -1,7 +1,7 @@
-import { WOODS_QUESTS as WOODS_ONLY, CRYSTAL_QUESTS } from '@ros/game-data';
+import { WOODS_QUESTS as WOODS_ONLY, CRYSTAL_QUESTS, MURKMIRE_QUESTS } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { db, json } from './db.js';
-const WOODS_QUESTS = { ...WOODS_ONLY, ...CRYSTAL_QUESTS };
+const WOODS_QUESTS = { ...WOODS_ONLY, ...CRYSTAL_QUESTS, ...MURKMIRE_QUESTS };
 type WoodsQuestId = keyof typeof WOODS_QUESTS;
 export async function changeWoodsQuest(
   snapshot: Player,

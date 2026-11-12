@@ -1,3 +1,4 @@
+import murkmireItems from '../public/assets/ui/murkmire-items.json';
 import frontFurniture from '../public/assets/ui/front-furniture.json';
 import housing from '../public/assets/ui/housing.json';
 import { recipeFromScroll, GATHERING_TOOLS } from '@ros/game-data';
@@ -18,6 +19,15 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  if (id && Object.hasOwn(murkmireItems.frames, id))
+    return (
+      <RecipeSprite
+        atlas={murkmireItems}
+        sheet="murkmire-items"
+        id={id}
+        label={itemDefinition(id)?.name ?? id}
+      />
+    );
   if (id && Object.hasOwn(frontFurniture.frames, id))
     return (
       <RecipeSprite

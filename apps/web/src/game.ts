@@ -1,3 +1,4 @@
+import { MurkmireScenery, preloadMurkmire, mireWarden } from './murkmire';
 import { FurniturePlacement, type FurnitureSelection } from './furniture-placement';
 import { constrainHouseActor } from '@ros/shared';
 import { HouseInterior, preloadHouseInterior } from './house-interior';
@@ -67,6 +68,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     characters = new Map<string, CharacterVisual>();
     woods?: WoodsScenery;
     crystal?: CrystalScenery;
+    murkmire?: MurkmireScenery;
     village?: VillageScenery;
     housing?: HousingScenery;
     interior?: HouseInterior;
@@ -100,6 +102,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       preloadWoodsMonster(this, loadingMap.monster);
       if (houseSize(loadingMap.id)) preloadHouseInterior(this);
       else if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
+      else if (loadingMap.island === 'Murkmire Swamp') preloadMurkmire(this, loadingMap);
       else if (loadingMap.island === 'Crystal Caverns') preloadCrystal(this, loadingMap);
       else {
         preloadVillage(this);
@@ -115,6 +118,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     backgroundKey(map: GameMap) {
       if (map.island === 'Whispering Woods')
         return `woods-background:${map.background ?? '/assets/backgrounds/whispering-woods.png'}`;
+      if (map.island === 'Murkmire Swamp') return `murkmire-background:${map.background}`;
       if (map.island === 'Crystal Caverns') return `crystal-background:${map.background}`;
       if (houseSize(map.id)) return 'house-interior';
       return 'village-background';
@@ -244,6 +248,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           },
         );
       else if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
+      else if (m.island === 'Murkmire Swamp')
+        this.murkmire = new MurkmireScenery(this, m, (id) => bridge.send('gather', id));
       else if (m.island === 'Crystal Caverns')
         this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
       else {
@@ -266,8 +272,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             this.add.image(
               p.x,
               p.y - 205,
-              p.key === 'crystal-boss-key' ? 'loot-crystal-drops' : 'forest-bear-key',
-              p.key === 'crystal-boss-key' ? 'crystal-boss-key' : undefined,
+              p.key === 'murkmire-boss-key'
+                ? 'loot-murkmire-items'
+                : p.key === 'crystal-boss-key'
+                  ? 'loot-crystal-drops'
+                  : 'forest-bear-key',
+              p.key === 'murkmire-boss-key'
+                ? 'murkmire-boss-key'
+                : p.key === 'crystal-boss-key'
+                  ? 'crystal-boss-key'
+                  : undefined,
             ),
             42,
             28,
@@ -279,7 +293,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             p.x,
             p.y - 164,
             p.key
-              ? `${p.label}\n${p.key === 'crystal-boss-key' ? 'Crystal Wyrm' : 'Forest Bear'} Key ×1`
+              ? `${p.label}\n${p.key === 'murkmire-boss-key' ? 'Hydra' : p.key === 'crystal-boss-key' ? 'Crystal Wyrm' : 'Forest Bear'} Key ×1`
               : p.label,
             {
               fontSize: '14px',
@@ -295,22 +309,29 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       for (const npc of m.npcs) {
         const c =
-          npc.id === 'carpentry-station'
-            ? craftingStation(this, 'carpentry', npc.x, npc.y, 74, 110).setName(npc.id)
-            : npc.id === 'cooking-station' || npc.id === 'alchemy-station'
-              ? provisionStation(this, npc.x, npc.y, npc.id === 'cooking-station')
-              : factionFigure(
-                  this,
-                  npc.x,
-                  npc.y,
-                  npc.allegiance ?? 'celestial',
-                  npc.id === 'bram' ? 90 : 80,
-                  npc.id,
-                );
+          npc.id === 'mirewarden'
+            ? mireWarden(this, npc.x, npc.y)
+            : npc.id === 'carpentry-station'
+              ? craftingStation(this, 'carpentry', npc.x, npc.y, 74, 110).setName(npc.id)
+              : npc.id === 'cooking-station' || npc.id === 'alchemy-station'
+                ? provisionStation(this, npc.x, npc.y, npc.id === 'cooking-station')
+                : factionFigure(
+                    this,
+                    npc.x,
+                    npc.y,
+                    npc.allegiance ?? 'celestial',
+                    npc.id === 'bram' ? 90 : 80,
+                    npc.id,
+                  );
         this.add
           .text(
             npc.x,
-            npc.y - (npc.id === 'bram' ? 112 : npc.id?.endsWith('-station') ? 110 : 80),
+            npc.y -
+              (npc.id === 'bram' || npc.id === 'mirewarden'
+                ? 112
+                : npc.id?.endsWith('-station')
+                  ? 110
+                  : 80),
             `${npc.name}\n${npc.role}`,
             {
               fontFamily: 'Georgia',
@@ -337,6 +358,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             .zone(npc.x, npc.y - 40, 80, 100)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => bridge.send('interact', { npcId: 'bram' }));
+        if (npc.id === 'mirewarden')
+          this.add
+            .zone(npc.x, npc.y - 40, 100, 120)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => bridge.send('interact', { npcId: 'mirewarden' }));
         if (npc.id === 'mentor')
           this.add
             .zone(npc.x, npc.y - 40, 100, 120)
@@ -614,6 +640,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       this.woods?.refresh();
       this.crystal?.refresh();
+      this.murkmire?.refresh();
       this.village?.refresh();
       this.interior?.refresh();
       if (!this.keys) return;

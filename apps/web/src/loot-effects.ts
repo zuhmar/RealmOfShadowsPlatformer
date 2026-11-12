@@ -1,3 +1,5 @@
+import murkmireProvisions from '../public/assets/ui/murkmire-provisions.json';
+import murkmireItems from '../public/assets/ui/murkmire-items.json';
 import frontFurniture from '../public/assets/ui/front-furniture.json';
 import housing from '../public/assets/ui/housing.json';
 import { preloadHousing } from './housing';
@@ -19,6 +21,18 @@ import lootAtlas from '../public/assets/ui/woods-loot.json';
 import resourcesAtlas from '../public/assets/ui/woods-resources.json';
 export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
   preloadHousing(scene);
+  if (map.island === 'Murkmire Swamp' || houseSize(map.id))
+    scene.load.atlas(
+      'murkmire-provisions',
+      assetUrl('/assets/ui/murkmire-provisions.png'),
+      '/assets/ui/murkmire-provisions.json',
+    );
+  if (map.island === 'Murkmire Swamp' || houseSize(map.id))
+    scene.load.atlas(
+      'loot-murkmire-items',
+      assetUrl('/assets/ui/murkmire-items.png'),
+      '/assets/ui/murkmire-items.json',
+    );
   for (const name of ['recipe-scrolls', 'recipe-bars'])
     if (!scene.textures.exists(name))
       scene.load.atlas(name, assetUrl(`/assets/ui/${name}.png`), `/assets/ui/${name}.json`);
@@ -95,7 +109,13 @@ export function lootIcon(
     kind = weaponKind(item);
   let key = 'loot-basics',
     frame: string | undefined = 'fang';
-  if (Object.hasOwn(frontFurniture.frames, item)) {
+  if (Object.hasOwn(murkmireProvisions.frames, item)) {
+    key = 'murkmire-provisions';
+    frame = item;
+  } else if (Object.hasOwn(murkmireItems.frames, item)) {
+    key = 'loot-murkmire-items';
+    frame = item;
+  } else if (Object.hasOwn(frontFurniture.frames, item)) {
     key = 'front-furniture';
     frame = item;
   } else if (Object.hasOwn(housing.frames, item)) {

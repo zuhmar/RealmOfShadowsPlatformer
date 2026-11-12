@@ -740,7 +740,12 @@ export class World {
       y: zone.y,
       radius: zone.radius,
       monster: w.monster,
-      text: w.monster === 'crystal-wyrm' ? 'CRYSTAL ERUPTION!' : 'GROUND SLAM!',
+      text:
+        w.monster === 'hydra'
+          ? 'VENOM ERUPTION!'
+          : w.monster === 'crystal-wyrm'
+            ? 'CRYSTAL ERUPTION!'
+            : 'GROUND SLAM!',
     });
     for (const p of this.players.values()) {
       if (
@@ -933,6 +938,35 @@ export class World {
           playerId: p.id,
         });
       }
+      if (w.monster === 'venom-toad' && Math.random() < 0.2) {
+        p.inventory['murkmire-boss-key'] = (p.inventory['murkmire-boss-key'] ?? 0) + 1;
+        this.events.push({
+          type: 'loot',
+          x: p.x,
+          y: p.y - 105,
+          text: 'Hydra Key',
+          loot: [{ item: 'murkmire-boss-key', quantity: 1 }],
+          playerId: p.id,
+        });
+      }
+      if (w.monster === 'hydra') {
+        p.bossKills ??= {};
+        p.bossKills.hydra = (p.bossKills.hydra ?? 0) + 1;
+        if (!p.firstClearRewards?.includes('hydra')) {
+          (p.firstClearRewards ??= []).push('hydra');
+          p.inventory['hydra-trophy'] = (p.inventory['hydra-trophy'] ?? 0) + 1;
+          p.gold += 1800;
+          this.events.push({
+            type: 'loot',
+            x: p.x,
+            y: p.y - 130,
+            text: 'Hydra defeated',
+            lootGold: 1800,
+            loot: [{ item: 'hydra-trophy', quantity: 1 }],
+            playerId: p.id,
+          });
+        }
+      }
       if (w.monster === 'crystal-wyrm') {
         p.bossKills ??= {};
         p.bossKills['crystal-wyrm'] = (p.bossKills['crystal-wyrm'] ?? 0) + 1;
@@ -976,6 +1010,10 @@ export class World {
       });
       const monster = w.monster ?? 'wolf';
       const materials = {
+        'bog-slime': 'slime-glob',
+        'swamp-lurker': 'lurker-bark',
+        'venom-toad': 'toad-gland',
+        hydra: 'hydra-fang',
         'cave-bat': 'bat-wing',
         'crystal-golem': 'golem-core',
         'shard-scorpion': 'shard-stinger',
@@ -1011,6 +1049,10 @@ export class World {
                   'thorn-spider': 4,
                   'wild-boar': 7,
                   'forest-bear': 10,
+                  'bog-slime': 21,
+                  'swamp-lurker': 24,
+                  'venom-toad': 27,
+                  hydra: 30,
                   'cave-bat': 11,
                   'crystal-golem': 14,
                   'shard-scorpion': 17,

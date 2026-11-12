@@ -1,0 +1,252 @@
+{
+  "frames": {
+    "mire-ore": {
+      "frame": {
+        "x": 36,
+        "y": 12,
+        "w": 281,
+        "h": 248
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 281,
+        "h": 248
+      },
+      "sourceSize": {
+        "w": 281,
+        "h": 248
+      }
+    },
+    "bogwood": {
+      "frame": {
+        "x": 385,
+        "y": 26,
+        "w": 318,
+        "h": 235
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 318,
+        "h": 235
+      },
+      "sourceSize": {
+        "w": 318,
+        "h": 235
+      }
+    },
+    "mirebloom": {
+      "frame": {
+        "x": 755,
+        "y": 14,
+        "w": 278,
+        "h": 245
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 278,
+        "h": 245
+      },
+      "sourceSize": {
+        "w": 278,
+        "h": 245
+      }
+    },
+    "mudfish": {
+      "frame": {
+        "x": 1108,
+        "y": 13,
+        "w": 314,
+        "h": 250
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 314,
+        "h": 250
+      },
+      "sourceSize": {
+        "w": 314,
+        "h": 250
+      }
+    },
+    "bog-catfish": {
+      "frame": {
+        "x": 16,
+        "y": 292,
+        "w": 331,
+        "h": 233
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 331,
+        "h": 233
+      },
+      "sourceSize": {
+        "w": 331,
+        "h": 233
+      }
+    },
+    "venomfin": {
+      "frame": {
+        "x": 391,
+        "y": 280,
+        "w": 314,
+        "h": 248
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 314,
+        "h": 248
+      },
+      "sourceSize": {
+        "w": 314,
+        "h": 248
+      }
+    },
+    "slime-glob": {
+      "frame": {
+        "x": 766,
+        "y": 298,
+        "w": 273,
+        "h": 218
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 273,
+        "h": 218
+      },
+      "sourceSize": {
+        "w": 273,
+        "h": 218
+      }
+    },
+    "lurker-bark": {
+      "frame": {
+        "x": 1111,
+        "y": 285,
+        "w": 309,
+        "h": 240
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 309,
+        "h": 240
+      },
+      "sourceSize": {
+        "w": 309,
+        "h": 240
+      }
+    },
+    "toad-gland": {
+      "frame": {
+        "x": 49,
+        "y": 551,
+        "w": 259,
+        "h": 254
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 259,
+        "h": 254
+      },
+      "sourceSize": {
+        "w": 259,
+        "h": 254
+      }
+    },
+    "hydra-fang": {
+      "frame": {
+        "x": 438,
+        "y": 558,
+        "w": 238,
+        "h": 247
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 238,
+        "h": 247
+      },
+      "sourceSize": {
+        "w": 238,
+        "h": 247
+      }
+    },
+    "murkmire-boss-key": {
+      "frame": {
+        "x": 756,
+        "y": 557,
+        "w": 276,
+        "h": 241
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 276,
+        "h": 241
+      },
+      "sourceSize": {
+        "w": 276,
+        "h": 241
+      }
+    },
+    "hydra-trophy": {
+      "frame": {
+        "x": 1107,
+        "y": 549,
+        "w": 320,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 320,
+        "h": 256
+      }
+    }
+  },
+  "meta": {
+    "image": "murkmire-items.png",
+    "size": {
+      "w": 1448,
+      "h": 1086
+    },
+    "scale": "1"
+  }
+}

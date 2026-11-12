@@ -40,7 +40,7 @@ export const ALL_RECIPES = [
   ...PROVISION_RECIPES.map((r) => ({
     id: r.id,
     name: r.name,
-    tier: r.characterLevel >= 11 ? 'crystal' : 'woods',
+    tier: r.characterLevel >= 21 ? 'swamp' : r.characterLevel >= 11 ? 'crystal' : 'woods',
     category: (r.skill === 'Cooking' ? 'cooking' : 'alchemy') as RecipeCategory,
   })),
 ];
@@ -53,7 +53,7 @@ export const recipeSource = (id: string) => {
   const r = recipeDiscovery(id),
     tier = EQUIPMENT_TIERS.find((t) => t.id === r?.tier);
   return tier
-    ? `${tier.islandName} monsters${['woods', 'crystal'].includes(tier.id) ? '' : ' (future island)'}`
+    ? `${tier.islandName} monsters${['woods', 'crystal', 'swamp'].includes(tier.id) ? '' : ' (future island)'}`
     : 'Unknown recipe';
 };
 export const RECIPE_SCROLL_ITEMS = Object.fromEntries(

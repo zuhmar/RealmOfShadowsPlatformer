@@ -1,3 +1,5 @@
+export * from './murkmire';
+import { MURKMIRE_MAPS, MURKMIRE_ITEMS, MURKMIRE_QUESTS } from './murkmire';
 export * from './housing';
 import { CARPENTRY_ITEMS, HOUSE_LAYOUTS, houseInteriorBounds } from './housing';
 export * from './recipes';
@@ -216,7 +218,7 @@ export const ISLANDS = [
     maxLevel: 30,
     monsters: ['Bog Slime', 'Swamp Lurker', 'Venom Toad'],
     boss: 'Hydra',
-    available: false,
+    available: true,
   },
   {
     id: 'frostfall',
@@ -304,7 +306,9 @@ for (const [stage, name, monster, background] of [
     ],
   };
 }
-Object.assign(MAPS, CRYSTAL_MAPS);
+Object.assign(MAPS, CRYSTAL_MAPS, MURKMIRE_MAPS);
+MAPS['crystal-3'].portals.push({ x: 2500, y: 800, target: 'murkmire', label: 'Murkmire Swamp' });
+MAPS['crystal-boss'].portals.push({ x: 1850, y: 800, target: 'murkmire', label: 'Murkmire Swamp' });
 MAPS['woods-3'].portals.push({
   x: 2300,
   y: 760,
@@ -320,6 +324,7 @@ export const STORY = {
 export const MIRA_WEAPON_KIT_LEDGER = 'mira-wolves-weapon-kit-v1';
 export const QUESTS = {
   ...CRYSTAL_QUESTS,
+  ...MURKMIRE_QUESTS,
   ...WOODS_QUESTS,
   'mira-wolves': {
     id: 'mira-wolves',
@@ -368,6 +373,7 @@ export const ITEMS = {
     icon: '◆',
   },
   ...CRYSTAL_ITEMS,
+  ...MURKMIRE_ITEMS,
   ...EQUIPMENT_ITEMS,
   ...TIER_MINING_ITEMS,
   ...WOODS_ITEMS,

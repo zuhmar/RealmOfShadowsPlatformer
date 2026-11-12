@@ -1,0 +1,252 @@
+{
+  "frames": {
+    "ore": {
+      "frame": {
+        "x": 27,
+        "y": 72,
+        "w": 326,
+        "h": 225
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 326,
+        "h": 225
+      },
+      "sourceSize": {
+        "w": 326,
+        "h": 225
+      }
+    },
+    "tree": {
+      "frame": {
+        "x": 406,
+        "y": 8,
+        "w": 344,
+        "h": 302
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 344,
+        "h": 302
+      },
+      "sourceSize": {
+        "w": 344,
+        "h": 302
+      }
+    },
+    "herbs": {
+      "frame": {
+        "x": 820,
+        "y": 62,
+        "w": 297,
+        "h": 242
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 297,
+        "h": 242
+      },
+      "sourceSize": {
+        "w": 297,
+        "h": 242
+      }
+    },
+    "cattails": {
+      "frame": {
+        "x": 1183,
+        "y": 18,
+        "w": 313,
+        "h": 281
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 313,
+        "h": 281
+      },
+      "sourceSize": {
+        "w": 313,
+        "h": 281
+      }
+    },
+    "stump": {
+      "frame": {
+        "x": 18,
+        "y": 382,
+        "w": 350,
+        "h": 228
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 350,
+        "h": 228
+      },
+      "sourceSize": {
+        "w": 350,
+        "h": 228
+      }
+    },
+    "mushrooms": {
+      "frame": {
+        "x": 426,
+        "y": 371,
+        "w": 300,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 300,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 300,
+        "h": 239
+      }
+    },
+    "root-arch": {
+      "frame": {
+        "x": 773,
+        "y": 361,
+        "w": 373,
+        "h": 246
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 373,
+        "h": 246
+      },
+      "sourceSize": {
+        "w": 373,
+        "h": 246
+      }
+    },
+    "boat": {
+      "frame": {
+        "x": 1167,
+        "y": 408,
+        "w": 356,
+        "h": 194
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 356,
+        "h": 194
+      },
+      "sourceSize": {
+        "w": 356,
+        "h": 194
+      }
+    },
+    "warden": {
+      "frame": {
+        "x": 52,
+        "y": 671,
+        "w": 285,
+        "h": 319
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 285,
+        "h": 319
+      },
+      "sourceSize": {
+        "w": 285,
+        "h": 319
+      }
+    },
+    "fishing": {
+      "frame": {
+        "x": 366,
+        "y": 710,
+        "w": 411,
+        "h": 275
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 411,
+        "h": 275
+      },
+      "sourceSize": {
+        "w": 411,
+        "h": 275
+      }
+    },
+    "pillar": {
+      "frame": {
+        "x": 834,
+        "y": 686,
+        "w": 250,
+        "h": 295
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 250,
+        "h": 295
+      },
+      "sourceSize": {
+        "w": 250,
+        "h": 295
+      }
+    },
+    "basin": {
+      "frame": {
+        "x": 1168,
+        "y": 732,
+        "w": 326,
+        "h": 237
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 326,
+        "h": 237
+      },
+      "sourceSize": {
+        "w": 326,
+        "h": 237
+      }
+    }
+  },
+  "meta": {
+    "image": "murkmire-scenery.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}

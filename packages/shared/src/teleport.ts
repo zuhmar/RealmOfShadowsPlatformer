@@ -38,6 +38,12 @@ export function teleportBlock(p: Player, id: string): string | null {
     !p.bossKills?.['forest-bear']
   )
     return 'Defeat Forest Bear to unlock Crystal Caverns.';
+  if (
+    target.island === 'Murkmire Swamp' &&
+    !p.unlockedIslands?.includes('murkmire') &&
+    !p.bossKills?.['crystal-wyrm']
+  )
+    return 'Defeat Crystal Wyrm to unlock Murkmire Swamp.';
   if (p.mapId === id) return 'You are here.';
   if (p.level < target.requiredLevel) return `Requires level ${target.requiredLevel}.`;
   if (!p.visitedAreas?.includes(id)) return 'Visit this area through its portal first.';

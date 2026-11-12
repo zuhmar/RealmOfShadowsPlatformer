@@ -248,6 +248,11 @@ export class MapRoom extends Room {
         delete p.gathering;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: 'bram' });
+      } else if (nearNpc(p, this.world.map, 'mirewarden')) {
+        p.auto = false;
+        delete p.gathering;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: 'mirewarden' });
       } else if (nearNpc(p, this.world.map, 'mentor')) {
         p.auto = false;
         delete p.gathering;
@@ -261,7 +266,9 @@ export class MapRoom extends Room {
         delete p.gathering;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: station.id });
-      } else if (payload?.npcId === 'mentor')
+      } else if (payload?.npcId === 'mirewarden')
+        c.send('notice', 'Climb to the Mire Warden’s ledge to speak.');
+      else if (payload?.npcId === 'mentor')
         c.send('notice', 'Climb to the Cavern Mentor’s ledge to speak.');
       else if (payload?.npcId === 'bram') c.send('notice', 'Walk closer to Bram.');
       else if (payload?.npcId === 'mira')
@@ -441,13 +448,16 @@ export class MapRoom extends Room {
     const giver = QUESTS[value.questId as keyof typeof QUESTS].npcId;
     if (
       !nearNpc(p, this.world.map, giver) ||
-      this.world.map.id !== (giver === 'mentor' ? 'crystal' : 'village')
+      this.world.map.id !==
+        (giver === 'mirewarden' ? 'murkmire' : giver === 'mentor' ? 'crystal' : 'village')
     ) {
       result(
         false,
-        giver === 'mentor'
-          ? 'Return to the Cavern Mentor.'
-          : 'Return to Mira in Elderwood Village to do that.',
+        giver === 'mirewarden'
+          ? 'Return to the Mire Warden.'
+          : giver === 'mentor'
+            ? 'Return to the Cavern Mentor.'
+            : 'Return to Mira in Elderwood Village to do that.',
       );
       return;
     }

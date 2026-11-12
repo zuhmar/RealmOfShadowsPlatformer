@@ -136,7 +136,7 @@ Configuration is prepared, not deployed:
 
 ## Scope and expansion
 
-The playable scope is Elderwood Village, four Whispering Woods areas and four Crystal Caverns areas, with quest progression, gathering/crafting, equipment identification and sales, class choice/talents, offline activities, reconnect recovery and audio. The next five hunting islands are defined but not playable. Parties, private boss instances, account recovery and production scaling remain future work. See [Crystal systems](docs/crystal-caverns.md) for mechanics and validation limits.
+The playable scope is Elderwood Village, four Whispering Woods areas and four Crystal Caverns areas and four Murkmire Swamp areas, with quest progression, gathering/crafting, equipment identification and sales, class choice/talents, offline activities, reconnect recovery and audio. The next four hunting islands are defined but not playable. Parties, private boss instances, account recovery and production scaling remain future work. See [Crystal systems](docs/crystal-caverns.md) and [Murkmire systems](docs/murkmire-swamp.md) for mechanics and validation limits.
 
 ### Trainable combat skills and attributes
 
