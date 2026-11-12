@@ -1,3 +1,4 @@
+import platformAtlas from '../public/assets/tilesets/murkmire-platforms.json';
 import Phaser from 'phaser';
 import type { GameMap, Platform } from '@ros/game-data';
 import { assetUrl } from './assets';
@@ -44,33 +45,40 @@ function platform(scene: Phaser.Scene, map: GameMap, p: Platform) {
   if (!p.oneWay) {
     // Repeat only the bank's interior; its lower earth is continued from the same generated art.
     const f = scene.textures.getFrame(atlas, 'ground');
-    const key = `murkmire-ground-bank:${p.width}`;
+    const key = `murkmire-ground-bank-v2:${p.width}`;
     if (!scene.textures.exists(key)) {
       const h = map.height - p.y + 400;
       const tex = scene.textures.createCanvas(key, p.width, h)!;
       const ctx = tex.context;
-      const scale = 85 / f.height,
-        start = Math.round(f.width * 0.15),
-        sw = Math.round(f.width * 0.65),
+      const spec = platformAtlas.meta.ground;
+      const scale = spec.worldHeight / f.height,
+        start = spec.repeatStart,
+        sw = spec.repeatEnd - spec.repeatStart,
         length = sw * scale;
       const image = f.source.image as HTMLImageElement;
       for (let x = 0; x < p.width; x += length) {
         const w = Math.min(length, p.width - x);
-        ctx.drawImage(image, f.cutX + start, f.cutY, w / scale, f.height, x, 0, w, 85);
+        ctx.drawImage(
+          image,
+          f.cutX + start,
+          f.cutY,
+          w / scale,
+          f.height,
+          x,
+          0,
+          w,
+          spec.worldHeight,
+        );
       }
-      for (let y = 84; y < h; y += 8)
-        for (let x = 0; x < p.width; x += 32)
-          ctx.drawImage(
-            image,
-            f.cutX + Math.round(f.width * 0.5),
-            f.cutY + f.height - 12,
-            32,
-            8,
-            x,
-            y,
-            32,
-            Math.min(8, h - y),
-          );
+      const fill = spec.fill;
+      const fillCanvas = document.createElement('canvas');
+      fillCanvas.width = fill.w;
+      fillCanvas.height = fill.h;
+      fillCanvas
+        .getContext('2d')!
+        .drawImage(image, f.cutX + fill.x, f.cutY + fill.y, fill.w, fill.h, 0, 0, fill.w, fill.h);
+      ctx.fillStyle = ctx.createPattern(fillCanvas, 'repeat')!;
+      ctx.fillRect(0, spec.worldHeight - 1, p.width, h - spec.worldHeight + 1);
       tex.refresh();
     }
     return scene.add

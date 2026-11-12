@@ -2,91 +2,102 @@
   "frames": {
     "short": {
       "frame": {
-        "x": 446,
-        "y": 64,
-        "w": 640,
-        "h": 172
+        "x": 557,
+        "y": 29,
+        "w": 650,
+        "h": 179
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 640,
-        "h": 172
+        "w": 650,
+        "h": 179
       },
       "sourceSize": {
-        "w": 640,
-        "h": 172
+        "w": 650,
+        "h": 179
       }
     },
     "medium": {
       "frame": {
-        "x": 253,
-        "y": 301,
-        "w": 1025,
-        "h": 173
+        "x": 321,
+        "y": 255,
+        "w": 1113,
+        "h": 182
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1025,
-        "h": 173
+        "w": 1113,
+        "h": 182
       },
       "sourceSize": {
-        "w": 1025,
-        "h": 173
+        "w": 1113,
+        "h": 182
       }
     },
     "long": {
       "frame": {
-        "x": 20,
-        "y": 543,
-        "w": 1494,
-        "h": 171
+        "x": 17,
+        "y": 488,
+        "w": 1740,
+        "h": 118
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1494,
-        "h": 171
+        "w": 1740,
+        "h": 118
       },
       "sourceSize": {
-        "w": 1494,
-        "h": 171
+        "w": 1740,
+        "h": 118
       }
     },
     "ground": {
       "frame": {
-        "x": 19,
-        "y": 782,
-        "w": 1500,
-        "h": 183
+        "x": 17,
+        "y": 691,
+        "w": 1739,
+        "h": 173
       },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 1500,
-        "h": 183
+        "w": 1739,
+        "h": 173
       },
       "sourceSize": {
-        "w": 1500,
-        "h": 183
+        "w": 1739,
+        "h": 173
       }
     }
   },
   "meta": {
     "image": "murkmire-platforms.png",
     "size": {
-      "w": 1536,
-      "h": 1024
+      "w": 1774,
+      "h": 887
     },
-    "scale": "1"
+    "scale": "1",
+    "ground": {
+      "worldHeight": 85,
+      "repeatStart": 556,
+      "repeatEnd": 1114,
+      "fill": {
+        "x": 869,
+        "y": 171,
+        "w": 1,
+        "h": 1
+      }
+    }
   }
 }
