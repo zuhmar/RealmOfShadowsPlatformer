@@ -1,3 +1,4 @@
+import { groundProp } from './prop-grounding';
 import { preloadGeneratedTerrain, generatedSoil } from './generated-terrain';
 import { preloadCraftingStations, craftingStation } from './crafting-stations';
 import { terrainPlatform, terrainLadder } from './terrain';
@@ -46,11 +47,17 @@ export class VillageScenery {
       depth: number,
     ) => {
       const f = scene.textures.getFrame(texture, frame);
-      return scene.add
-        .image(x, y, texture, frame)
-        .setOrigin(0.5, 1)
-        .setDisplaySize((height * f.width) / f.height, height)
-        .setDepth(depth);
+      return groundProp(
+        scene,
+        scene.add
+          .image(x, y, texture, frame)
+          .setOrigin(0.5, 1)
+          .setDisplaySize((height * f.width) / f.height, height)
+          .setDepth(depth),
+        x,
+        ground.y,
+        ground.id,
+      );
     };
     for (const [frame, x, height] of [
       ['guide-cottage', 430, 195],

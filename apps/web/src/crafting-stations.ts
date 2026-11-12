@@ -1,3 +1,4 @@
+import { groundProp } from './prop-grounding';
 import type Phaser from 'phaser';
 import { assetUrl } from './assets';
 export type CraftingStation = 'smelting' | 'blacksmithing' | 'carpentry' | 'cooking' | 'alchemy';
@@ -19,5 +20,5 @@ export function craftingStation(
 ) {
   const image = scene.add.image(x, y, 'crafting-stations', kind).setOrigin(0.5, 1);
   image.setScale(Math.min(height / image.height, maxWidth / image.width));
-  return image.setName(`${kind}-bench`).setData('craftingStation', kind);
+  return groundProp(scene, image, x, y).setName(`${kind}-bench`).setData('craftingStation', kind);
 }

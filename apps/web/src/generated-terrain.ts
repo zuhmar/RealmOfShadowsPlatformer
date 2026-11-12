@@ -3,6 +3,7 @@ import type { GameMap, Platform, Ladder } from '@ros/game-data';
 import { assetUrl } from './assets';
 import villageSpans from '../public/assets/ui/village-platform-spans.json';
 import woodsSpans from '../public/assets/ui/woods-platform-spans.json';
+import woodsLadder from '../public/assets/ui/woods-clean-ladder.json';
 export type GeneratedTerrainTheme = 'woods' | 'village';
 const caches = new WeakMap<Phaser.Game, Map<string, Set<string>>>();
 function remember(scene: Phaser.Scene, map: string, key: string) {
@@ -23,6 +24,12 @@ function remember(scene: Phaser.Scene, map: string, key: string) {
 }
 const spans = (theme: GeneratedTerrainTheme) => (theme === 'woods' ? woodsSpans : villageSpans);
 export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTerrainTheme) {
+  if (theme === 'woods' && !scene.textures.exists('woods-clean-ladder'))
+    scene.load.atlas(
+      'woods-clean-ladder',
+      assetUrl('/assets/ui/woods-clean-ladder.png'),
+      '/assets/ui/woods-clean-ladder.json',
+    );
   for (const kind of ['terrain', 'platform-spans']) {
     const key = kind === 'terrain' ? `${theme}-terrain-art` : `${theme}-platform-spans`;
     if (!scene.textures.exists(key))
@@ -51,7 +58,12 @@ function source(
   name: string,
   wholeSpan = false,
 ) {
-  const key = wholeSpan ? `${theme}-platform-spans` : `${theme}-terrain-art`;
+  const key =
+    theme === 'woods' && name === 'ladder'
+      ? 'woods-clean-ladder'
+      : wholeSpan
+        ? `${theme}-platform-spans`
+        : `${theme}-terrain-art`;
   const f = scene.textures.getFrame(key, name);
   return {
     image: f.source.image as HTMLImageElement,
@@ -209,27 +221,55 @@ export function generatedPlatform(
 }
 export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: GeneratedTerrainTheme) {
   const frame = source(scene, theme, 'ladder'),
-    artWidth = theme === 'woods' ? 60 : 48,
+    artWidth = 48,
     scale = artWidth / frame.w;
   const height = l.bottom - l.top,
     pad = 20,
     width = artWidth + 16,
     fullHeight = height + pad * 2;
-  const key = `ladder-generated-hd-v3:${theme}:${height}`;
+  const key = `ladder-generated-clean-v4:${theme}:${height}`;
   const { texture, ctx, density } = raster(scene, key, width, fullHeight);
   if (!texture.canvas.dataset.rendered) {
     const x = (width - artWidth) / 2;
-    const cap = 32,
+    const cap = theme === 'woods' ? woodsLadder.meta.ladder.cap : 32,
       edge = cap * scale,
       top = pad - 14,
       bottom = pad + height + 4;
     // Select a whole rung interval for repeats so the rails and rungs meet naturally.
-    const start = theme === 'woods' ? 90 : 80,
-      repeat = theme === 'woods' ? 70 : 61;
-    for (let y = top + edge; y < bottom - edge; ) {
-      const size = Math.min(repeat * scale, bottom - edge - y);
-      paint(ctx, frame, x, y, scale, 0, start, frame.w, size / scale);
-      y += size;
+    const start = theme === 'woods' ? woodsLadder.meta.ladder.start : 80,
+      repeat = theme === 'woods' ? woodsLadder.meta.ladder.repeat : 61;
+    if (theme === 'woods') {
+      const clip = woodsLadder.meta.ladder;
+      // Fill only the plain rails, then place complete rungs. A partial repeat must never cut a rung in half.
+      for (let y = top + edge; y < bottom - edge; ) {
+        const size = Math.min(clip.railHeight * scale, bottom - edge - y);
+        paint(ctx, frame, x, y, scale, 0, clip.railStart, frame.w, size / scale);
+        y += size;
+      }
+      const spacing = repeat * scale,
+        first = top + edge + spacing * 0.6,
+        last = bottom - edge - spacing * 0.6;
+      const count = Math.max(2, Math.round((last - first) / spacing) + 1);
+      for (let i = 0; i < count; i++) {
+        const center = first + ((last - first) * i) / (count - 1);
+        paint(
+          ctx,
+          frame,
+          x,
+          center - (clip.rungHeight * scale) / 2,
+          scale,
+          0,
+          clip.rungStart,
+          frame.w,
+          clip.rungHeight,
+        );
+      }
+    } else {
+      for (let y = top + edge; y < bottom - edge; ) {
+        const size = Math.min(repeat * scale, bottom - edge - y);
+        paint(ctx, frame, x, y, scale, 0, start, frame.w, size / scale);
+        y += size;
+      }
     }
     paint(ctx, frame, x, top, scale, 0, 0, frame.w, cap);
     paint(ctx, frame, x, bottom - edge, scale, 0, frame.h - cap, frame.w, cap);
@@ -250,7 +290,7 @@ export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: Generated
       theme,
       continuous: true,
       generated: true,
-      sourceAtlas: `${theme}-terrain-art`,
+      sourceAtlas: theme === 'woods' ? 'woods-clean-ladder' : `${theme}-terrain-art`,
       rasterDensity: density,
       railTop: l.top - 14,
       railBottom: l.bottom + 4,

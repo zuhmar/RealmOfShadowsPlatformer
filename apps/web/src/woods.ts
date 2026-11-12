@@ -1,3 +1,4 @@
+import { groundProp } from './prop-grounding';
 import { preloadGeneratedTerrain, generatedSoil } from './generated-terrain';
 import { terrainPlatform, terrainLadder } from './terrain';
 import { assetUrl } from './assets';
@@ -49,11 +50,17 @@ export class WoodsScenery {
       if (!platform) continue;
       const frame = scene.textures.getFrame('woods-props', prop.frame);
       this.props.push(
-        scene.add
-          .image(platform.x + prop.offset, platform.y + 1, 'woods-props', prop.frame)
-          .setOrigin(0.5, 1)
-          .setDisplaySize((prop.height * frame.width) / frame.height, prop.height)
-          .setDepth(2),
+        groundProp(
+          scene,
+          scene.add
+            .image(platform.x + prop.offset, platform.y + 1, 'woods-props', prop.frame)
+            .setOrigin(0.5, 1)
+            .setDisplaySize((prop.height * frame.width) / frame.height, prop.height)
+            .setDepth(2),
+          platform.x + prop.offset,
+          platform.y,
+          platform.id,
+        ),
       );
     }
     for (const node of map.resources ?? []) {
@@ -66,6 +73,7 @@ export class WoodsScenery {
           .setDepth(2)
           .setInteractive({ useHandCursor: true })
           .on('pointerdown', () => onGather(node.id));
+        groundProp(scene, image, node.x, node.y, node.platform);
         this.resources.push(image);
       }
       const label = scene.add

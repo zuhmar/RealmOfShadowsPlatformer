@@ -122,8 +122,17 @@ try {
           railBottom: l.getData('railBottom'),
           continuous: l.getData('continuous'),
           generated: l.getData('generated'),
+          sourceAtlas: l.getData('sourceAtlas'),
         })),
         soilJoin: s.children.getByName('terrain-soil')?.getData('surfaceJoinY'),
+        groundedProps: s.children.list
+          .filter((o) => o.getData?.('groundedProp'))
+          .map((o) => ({
+            baseline: o.y + (o.getData('groundContactY') - o.displayOriginY) * o.scaleY,
+            surface: o.getData('groundSurfaceY'),
+            inset: o.getData('groundInset'),
+            platform: o.getData('groundPlatformId'),
+          })),
         expected: s.map.platforms,
         expectedLadders: s.map.ladders,
         bodies: s.floor.getChildren().length,
@@ -157,10 +166,16 @@ try {
         expect(p.rasterWidth).toBeLessThanOrEqual(4096);
       }
     }
+    if (id === 'village' || id.startsWith('woods')) {
+      expect(state.groundedProps.length).toBeGreaterThan(0);
+      for (const prop of state.groundedProps)
+        expect(prop.baseline).toBeCloseTo(prop.surface + prop.inset, 6);
+    }
     for (const [i, l] of state.ladders.entries()) {
       const c = state.expectedLadders[i];
       expect(l.continuous).toBe(true);
       if (id === 'village' || id.startsWith('woods')) expect(l.generated).toBe(true);
+      if (id.startsWith('woods')) expect(l.sourceAtlas).toBe('woods-clean-ladder');
       expect(l.x).toBe(c.x);
       expect(l.top).toBe(c.top);
       expect(l.bottom).toBe(c.bottom);

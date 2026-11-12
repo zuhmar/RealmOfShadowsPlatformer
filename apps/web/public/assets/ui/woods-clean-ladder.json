@@ -1,0 +1,42 @@
+{
+  "frames": {
+    "ladder": {
+      "frame": {
+        "x": 269,
+        "y": 90,
+        "w": 485,
+        "h": 1395
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 485,
+        "h": 1395
+      },
+      "sourceSize": {
+        "w": 485,
+        "h": 1395
+      }
+    }
+  },
+  "meta": {
+    "image": "woods-clean-ladder.png",
+    "size": {
+      "w": 1024,
+      "h": 1536
+    },
+    "source": "exec-297d7136-864d-4e69-85cb-7df0d1bd32de.png",
+    "ladder": {
+      "cap": 60,
+      "start": 263,
+      "repeat": 184,
+      "railStart": 232,
+      "railHeight": 30,
+      "rungStart": 296,
+      "rungHeight": 119
+    },
+    "foliage": false
+  }
+}
