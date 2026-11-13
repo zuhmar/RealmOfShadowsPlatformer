@@ -1,0 +1,508 @@
+{
+  "frames": {
+    "mining-0": {
+      "frame": {
+        "x": 52,
+        "y": 23,
+        "w": 242,
+        "h": 273
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 210,
+        "y": 249,
+        "w": 242,
+        "h": 273
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "mining-1": {
+      "frame": {
+        "x": 328,
+        "y": 26,
+        "w": 245,
+        "h": 270
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 200,
+        "y": 252,
+        "w": 245,
+        "h": 270
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "mining-2": {
+      "frame": {
+        "x": 618,
+        "y": 31,
+        "w": 245,
+        "h": 266
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 208,
+        "y": 257,
+        "w": 245,
+        "h": 266
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "mining-3": {
+      "frame": {
+        "x": 905,
+        "y": 36,
+        "w": 249,
+        "h": 276
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 262,
+        "w": 249,
+        "h": 276
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "woodcutting-0": {
+      "frame": {
+        "x": 51,
+        "y": 344,
+        "w": 206,
+        "h": 283
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 200,
+        "y": 239,
+        "w": 206,
+        "h": 283
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "woodcutting-1": {
+      "frame": {
+        "x": 329,
+        "y": 351,
+        "w": 264,
+        "h": 276
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 202,
+        "y": 246,
+        "w": 264,
+        "h": 276
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "woodcutting-2": {
+      "frame": {
+        "x": 623,
+        "y": 357,
+        "w": 276,
+        "h": 270
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 252,
+        "w": 276,
+        "h": 270
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "woodcutting-3": {
+      "frame": {
+        "x": 913,
+        "y": 354,
+        "w": 243,
+        "h": 273
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 192,
+        "y": 249,
+        "w": 243,
+        "h": 273
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "fishing-0": {
+      "frame": {
+        "x": 42,
+        "y": 672,
+        "w": 217,
+        "h": 285
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 194,
+        "y": 237,
+        "w": 217,
+        "h": 285
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "fishing-1": {
+      "frame": {
+        "x": 319,
+        "y": 675,
+        "w": 281,
+        "h": 282
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 186,
+        "y": 241,
+        "w": 281,
+        "h": 282
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "fishing-2": {
+      "frame": {
+        "x": 603,
+        "y": 678,
+        "w": 292,
+        "h": 280
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 182,
+        "y": 243,
+        "w": 292,
+        "h": 280
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "fishing-3": {
+      "frame": {
+        "x": 910,
+        "y": 677,
+        "w": 254,
+        "h": 280
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 190,
+        "y": 243,
+        "w": 254,
+        "h": 280
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "herbalism-0": {
+      "frame": {
+        "x": 39,
+        "y": 1008,
+        "w": 232,
+        "h": 280
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 208,
+        "y": 252,
+        "w": 232,
+        "h": 280
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "herbalism-1": {
+      "frame": {
+        "x": 331,
+        "y": 1006,
+        "w": 253,
+        "h": 272
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 204,
+        "y": 250,
+        "w": 253,
+        "h": 272
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "herbalism-2": {
+      "frame": {
+        "x": 621,
+        "y": 1008,
+        "w": 260,
+        "h": 269
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 206,
+        "y": 253,
+        "w": 260,
+        "h": 269
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    },
+    "herbalism-3": {
+      "frame": {
+        "x": 917,
+        "y": 1003,
+        "w": 234,
+        "h": 276
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 198,
+        "y": 248,
+        "w": 234,
+        "h": 276
+      },
+      "sourceSize": {
+        "w": 640,
+        "h": 600
+      }
+    }
+  },
+  "meta": {
+    "image": "mage-wood.png",
+    "size": {
+      "w": 1199,
+      "h": 1312
+    },
+    "source": "exec-805d9ba5-26ec-4976-a3c1-ec05273a24ff.png",
+    "sourceFrame": {
+      "width": 640,
+      "height": 600,
+      "baseline": 520,
+      "scale": 0.32116788321167883
+    },
+    "skin": "mage",
+    "material": "wood",
+    "facing": "right",
+    "integratedTools": {
+      "mining": "wood-pickaxe",
+      "woodcutting": "wood-axe",
+      "fishing": "wood-rod",
+      "herbalism": "wood-sickle"
+    },
+    "equippedToolLayer": false,
+    "anchors": {
+      "mining-0": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "mining-1": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "mining-2": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "mining-3": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "woodcutting-0": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "woodcutting-1": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "woodcutting-2": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "woodcutting-3": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "fishing-0": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        },
+        "rodTip": {
+          "x": 408,
+          "y": 247.5
+        }
+      },
+      "fishing-1": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        },
+        "rodTip": {
+          "x": 465,
+          "y": 250.0
+        }
+      },
+      "fishing-2": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        },
+        "rodTip": {
+          "x": 471,
+          "y": 318.0
+        }
+      },
+      "fishing-3": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        },
+        "rodTip": {
+          "x": 441,
+          "y": 343.5
+        }
+      },
+      "herbalism-0": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "herbalism-1": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "herbalism-2": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      },
+      "herbalism-3": {
+        "foot": {
+          "x": 320.0,
+          "y": 520
+        }
+      }
+    },
+    "animations": {
+      "mining": {
+        "frames": [
+          "mining-0",
+          "mining-1",
+          "mining-2",
+          "mining-3"
+        ],
+        "frameRate": 6,
+        "repeat": -1
+      },
+      "woodcutting": {
+        "frames": [
+          "woodcutting-0",
+          "woodcutting-1",
+          "woodcutting-2",
+          "woodcutting-3"
+        ],
+        "frameRate": 6,
+        "repeat": -1
+      },
+      "fishing": {
+        "frames": [
+          "fishing-0",
+          "fishing-1",
+          "fishing-2",
+          "fishing-2",
+          "fishing-2",
+          "fishing-3",
+          "fishing-2",
+          "fishing-2"
+        ],
+        "frameRate": 4,
+        "repeat": -1
+      },
+      "herbalism": {
+        "frames": [
+          "herbalism-0",
+          "herbalism-1",
+          "herbalism-2",
+          "herbalism-3"
+        ],
+        "frameRate": 6,
+        "repeat": -1
+      }
+    }
+  }
+}

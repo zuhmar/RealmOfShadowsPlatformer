@@ -73,32 +73,22 @@ try {
             () =>
               page.evaluate(() => {
                 const v = window.gs.game.scene.getScene('realm').characters.get('hero').skinVisual;
-                return `${v.body.texture.key}/${v.body.getData('gatheringSkill')}/${v.item.frame.name}`;
+                return `${v.body.texture.key}/${v.body.getData('gatheringSkill')}/${v.body.getData('gatheringTool')}`;
               }),
             { timeout: 20000 },
           )
-          .toBe(`gather-skin-${skin}/${skill}/${tool}`);
-        const hand = await page.evaluate(async () => {
-          const s = window.gs.game.scene.getScene('realm'),
-            v = s.characters.get('hero').skinVisual;
-          const atlas = await fetch(
-            `/assets/characters/gathering/skins/${v.body.getData('gatheringSkin')}.json`,
-          ).then((r) => r.json());
-          const f = atlas.meta.sourceFrame,
-            a = atlas.meta.anchors[v.body.frame.name].hand;
+          .toBe(`gather-baked-${skin}-${material}/${skill}/${tool}`);
+        const pose = await page.evaluate(() => {
+          const v = window.gs.game.scene.getScene('realm').characters.get('hero').skinVisual;
           return {
-            x: v.item.x,
-            y: v.item.y,
-            expectedX: (a.x - f.width / 2) * f.scale,
-            expectedY: (a.y - f.baseline) * f.scale,
-            visible: v.item.visible,
+            integrated: v.body.getData('integratedGatheringTool'),
+            overlay: v.item.visible,
             frame: v.body.frame.name,
           };
         });
-        expect(hand.visible).toBe(true);
-        expect(hand.x).toBeCloseTo(hand.expectedX, 5);
-        expect(hand.y).toBeCloseTo(hand.expectedY, 5);
-        expect(hand.frame.startsWith(skill.toLowerCase() + '-')).toBe(true);
+        expect(pose.integrated).toBe(true);
+        expect(pose.overlay).toBe(false);
+        expect(pose.frame.startsWith(skill.toLowerCase() + '-')).toBe(true);
         if (material === 'wood') {
           const initial = await page.evaluate(
             () =>
@@ -159,9 +149,11 @@ try {
   });
   await expect
     .poll(() =>
-      page.evaluate(
-        () =>
-          window.gs.game.scene.getScene('realm').characters.get('hero').skinVisual.item.frame.name,
+      page.evaluate(() =>
+        window.gs.game.scene
+          .getScene('realm')
+          .characters.get('hero')
+          .skinVisual.body.getData('gatheringTool'),
       ),
     )
     .toBe('celestial-rod');
@@ -169,7 +161,7 @@ try {
   await page.screenshot({ path: 'artifacts/gathering-skins-mobile.png' });
   expect(errors).toEqual([]);
   console.log(
-    `PASS: ${checked} skin/material/activity combinations use generated gathering poses and correctly anchored equipped tools; climbing suppresses gathering; mobile fishing checked.`,
+    `PASS: ${checked} skin/material/activity combinations use generated character-and-tool frames without tool overlays; climbing suppresses gathering; mobile fishing checked.`,
   );
 } finally {
   await browser.close();

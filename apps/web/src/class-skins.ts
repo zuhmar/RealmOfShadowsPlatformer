@@ -1,14 +1,7 @@
 import { preloadGatheringSkin, drawGatheringSkin } from './gathering-skins';
-import { fishingCast } from './island-traversal';
 import { guardAtlasSampling } from './atlas-sampling';
 import Phaser from 'phaser';
-import {
-  classSkinSheet,
-  equipmentDefinition,
-  starterTool,
-  weaponKind,
-  type GameMap,
-} from '@ros/game-data';
+import { classSkinSheet, equipmentDefinition, weaponKind, type GameMap } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 import {
@@ -131,7 +124,11 @@ export class ClassSkinVisual {
       return true;
     }
     this.body.anims.timeScale = 1;
-    this.body.setData('gatheringSkill', null);
+    this.body.setData({
+      gatheringSkill: null,
+      gatheringTool: null,
+      integratedGatheringTool: false,
+    });
     this.container.bringToTop(this.item);
     const requested = skinSheet(p);
     if (!requested) {
@@ -187,29 +184,6 @@ export class ClassSkinVisual {
     } else if (!playing) this.body.play(`${key}-${motion}`, true);
     this.item.setVisible(false);
     this.line.clear();
-    if (node && load(this.scene, 'class-tools', '/assets/equipment/gathering-tools')) {
-      const tool = p.gathering?.toolId ?? starterTool(node.skill).id,
-        atlas = this.scene.cache.json.get(`${key}-atlas`) as SkinAtlas,
-        anchor = atlas.meta.anchors[String(this.body.frame.name)]?.hand;
-      if (anchor) {
-        this.item
-          .setVisible(true)
-          .setTexture('class-tools', tool)
-          .setOrigin(0.5, 0.8)
-          .setPosition((anchor.x - f.width / 2) * f.scale, (anchor.y - f.baseline) * f.scale)
-          .setScale(46 / this.item.height)
-          .setAngle(node.skill === 'Fishing' ? -30 : Math.sin(now / 130) * 35)
-          .setData({ itemId: tool, skin: p.skin });
-        if (node.skill === 'Fishing') {
-          this.line.lineStyle(1, 0xf4e3ff);
-          const bobX = fishingCast(p).x;
-          const bobY = fishingCast(p).y + Math.sin(now / 180) * 2;
-          this.line.lineBetween(this.item.x + 20, this.item.y - 25, bobX, bobY);
-          this.line.fillStyle(0xca9dff);
-          this.line.fillCircle(bobX, bobY, 3);
-        }
-      }
-    }
     if (
       !(exact && requested.armed) &&
       !node &&
