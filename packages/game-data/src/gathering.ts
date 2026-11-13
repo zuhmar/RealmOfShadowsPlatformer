@@ -51,7 +51,7 @@ export const WOODS_RESOURCE_NODES: ResourceNode[] = [
     id: 'woods-fishing',
     skill: 'Fishing',
     frame: 'fishing',
-    x: 260,
+    x: 170,
     y: 555,
     platform: 'fishing-dock',
     height: 0,

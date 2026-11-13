@@ -1,0 +1,43 @@
+{
+  "frames": {
+    "ladder": {
+      "frame": {
+        "x": 93,
+        "y": 35,
+        "w": 324,
+        "h": 833
+      }
+    },
+    "pond": {
+      "frame": {
+        "x": 493,
+        "y": 506,
+        "w": 1225,
+        "h": 357
+      }
+    }
+  },
+  "meta": {
+    "image": "murkmire.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "source": "exec-0a1c1a7e-16dc-4a42-a59a-c1b822ba57d3.png",
+    "ladder": {
+      "topCap": 101,
+      "bottomCapStart": 806,
+      "railStart": 454,
+      "railHeight": 6,
+      "rungStart": 497,
+      "rungHeight": 54,
+      "repeat": 130
+    },
+    "pond": {
+      "walkSurface": 105,
+      "waterSurface": 110,
+      "castX": 0.73,
+      "standX": 0.36
+    }
+  }
+}

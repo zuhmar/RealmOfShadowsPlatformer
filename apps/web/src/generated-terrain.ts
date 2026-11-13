@@ -1,6 +1,5 @@
-import woodsTerrain from '../public/assets/ui/woods-terrain.json';
+import { preloadTraversal, islandPond, islandLadder } from './island-traversal';
 import villageTerrain from '../public/assets/ui/village-terrain.json';
-import crystalTerrain from '../public/assets/ui/crystal-terrain.json';
 import crystalSpans from '../public/assets/ui/crystal-platform-spans.json';
 import type Phaser from 'phaser';
 import type { GameMap, Platform, Ladder } from '@ros/game-data';
@@ -34,25 +33,14 @@ function walkingSurface(theme: GeneratedTerrainTheme, name: string) {
   return (art.meta.walkSurfaces as Record<string, number>)[name] ?? 0;
 }
 export function preloadGeneratedTerrain(scene: Phaser.Scene, theme: GeneratedTerrainTheme) {
-  if (theme === 'woods' && !scene.textures.exists('woods-clean-ladder'))
-    scene.load.atlas(
-      'woods-clean-ladder',
-      assetUrl('/assets/ui/woods-clean-ladder.png'),
-      woodsLadder,
-    );
-  for (const kind of ['terrain', 'platform-spans']) {
+  if (theme !== 'village') preloadTraversal(scene, theme);
+  for (const kind of theme === 'village' ? ['terrain', 'platform-spans'] : ['platform-spans']) {
     const key = kind === 'terrain' ? `${theme}-terrain-art` : `${theme}-platform-spans`;
     if (!scene.textures.exists(key))
       scene.load.atlas(
         key,
         assetUrl(`/assets/ui/${theme}-${kind}.png`),
-        kind === 'platform-spans'
-          ? spans(theme)
-          : theme === 'woods'
-            ? woodsTerrain
-            : theme === 'village'
-              ? villageTerrain
-              : crystalTerrain,
+        kind === 'platform-spans' ? spans(theme) : villageTerrain,
       );
   }
 }
@@ -201,6 +189,7 @@ export function generatedPlatform(
         surfaceJoinY: p.y + spec.worldHeight - surface,
       });
   }
+  if (p.id === 'fishing-dock' && theme !== 'village') return islandPond(scene, p, theme);
   const dock = p.id === 'fishing-dock';
   const names = theme !== 'village' ? ['short', 'medium', 'long'] : ['medium', 'long'];
   const target = theme !== 'village' ? 70 : 36;
@@ -239,6 +228,11 @@ export function generatedPlatform(
     });
 }
 export function generatedLadder(scene: Phaser.Scene, l: Ladder, theme: GeneratedTerrainTheme) {
+  return theme === 'village'
+    ? legacyGeneratedLadder(scene, l, theme)
+    : islandLadder(scene, l, theme);
+}
+function legacyGeneratedLadder(scene: Phaser.Scene, l: Ladder, theme: GeneratedTerrainTheme) {
   const frame = source(scene, theme, 'ladder'),
     artWidth = 48,
     scale = artWidth / frame.w;

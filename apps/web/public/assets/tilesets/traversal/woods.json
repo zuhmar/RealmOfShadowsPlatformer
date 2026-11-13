@@ -1,0 +1,43 @@
+{
+  "frames": {
+    "ladder": {
+      "frame": {
+        "x": 153,
+        "y": 15,
+        "w": 356,
+        "h": 860
+      }
+    },
+    "pond": {
+      "frame": {
+        "x": 643,
+        "y": 391,
+        "w": 1076,
+        "h": 395
+      }
+    }
+  },
+  "meta": {
+    "image": "woods.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "source": "exec-d55110af-09c0-457d-a410-b016b80538ce.png",
+    "ladder": {
+      "topCap": 87,
+      "bottomCapStart": 810,
+      "railStart": 445,
+      "railHeight": 6,
+      "rungStart": 483,
+      "rungHeight": 61,
+      "repeat": 132
+    },
+    "pond": {
+      "walkSurface": 120,
+      "waterSurface": 125,
+      "castX": 0.73,
+      "standX": 0.36
+    }
+  }
+}

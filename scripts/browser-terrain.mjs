@@ -169,7 +169,7 @@ try {
         expect(p.generated).toBe(true);
         const theme = id === 'village' ? 'village' : id.startsWith('crystal') ? 'crystal' : 'woods';
         expect(p.sourceAtlas).toBe(
-          c.id === 'fishing-dock' ? `${theme}-terrain-art` : `${theme}-platform-spans`,
+          c.id === 'fishing-dock' ? `traversal-${theme}` : `${theme}-platform-spans`,
         );
         if (c.oneWay) {
           expect(p.wholeSpan).toBe(true);
@@ -197,7 +197,7 @@ try {
       expect(l.continuous).toBe(true);
       if (id === 'village' || id.startsWith('woods') || id.startsWith('crystal'))
         expect(l.generated).toBe(true);
-      if (id.startsWith('woods')) expect(l.sourceAtlas).toBe('woods-clean-ladder');
+      if (id.startsWith('woods')) expect(l.sourceAtlas).toBe('traversal-woods');
       expect(l.x).toBe(c.x);
       expect(l.top).toBe(c.top);
       expect(l.bottom).toBe(c.bottom);

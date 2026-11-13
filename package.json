@@ -43,7 +43,8 @@
     "test:browser:island-weapons": "node scripts/browser-island-weapons.mjs",
     "test:browser:murkmire": "node scripts/browser-murkmire.mjs",
     "test:browser:murkmire-flow": "node --env-file-if-exists=apps/server/.env scripts/browser-murkmire-flow.mjs",
-    "test:browser:crystal-terrain": "node scripts/browser-crystal-terrain.mjs"
+    "test:browser:crystal-terrain": "node scripts/browser-crystal-terrain.mjs",
+    "test:browser:traversal": "node scripts/browser-island-traversal.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

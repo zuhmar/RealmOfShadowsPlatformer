@@ -70,13 +70,13 @@ try {
         (p) =>
           p.generated &&
           p.sx === p.sy &&
-          p.source === (p.id === 'fishing-dock' ? 'crystal-terrain-art' : 'crystal-platform-spans'),
+          p.source === (p.id === 'fishing-dock' ? 'traversal-crystal' : 'crystal-platform-spans'),
       ),
     ).toBe(true);
     expect(
       stats.ladders.every(
         (l) =>
-          l.source === 'crystal-terrain-art' && l.top < l.expected && l.bottom > l.expectedBottom,
+          l.source === 'traversal-crystal' && l.top < l.expected && l.bottom > l.expectedBottom,
       ),
     ).toBe(true);
     expect(stats.props).toBeGreaterThan(1);

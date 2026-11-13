@@ -2,10 +2,11 @@ import platformAtlas from '../public/assets/tilesets/murkmire-platforms.json';
 import Phaser from 'phaser';
 import type { GameMap, Platform } from '@ros/game-data';
 import { assetUrl } from './assets';
-import { generatedLadder } from './generated-terrain';
+import { preloadTraversal, islandLadder, islandPond } from './island-traversal';
 import { groundProp } from './prop-grounding';
 import { backgroundArtwork } from './woods-layout';
 export function preloadMurkmire(scene: Phaser.Scene, map: GameMap) {
+  preloadTraversal(scene, 'murkmire');
   scene.load.image(`murkmire-background:${map.background}`, assetUrl(map.background!));
   for (const name of ['murkmire-scenery', 'murkmire-platforms'])
     if (!scene.textures.exists(name))
@@ -14,12 +15,6 @@ export function preloadMurkmire(scene: Phaser.Scene, map: GameMap) {
         assetUrl(`/assets/tilesets/${name}.png`),
         `/assets/tilesets/${name}.json`,
       );
-  if (!scene.textures.exists('woods-clean-ladder'))
-    scene.load.atlas(
-      'woods-clean-ladder',
-      assetUrl('/assets/ui/woods-clean-ladder.png'),
-      '/assets/ui/woods-clean-ladder.json',
-    );
   if (map.monster === 'hydra')
     scene.load.atlas(
       'hydra-venom',
@@ -28,6 +23,7 @@ export function preloadMurkmire(scene: Phaser.Scene, map: GameMap) {
     );
 }
 function platform(scene: Phaser.Scene, map: GameMap, p: Platform) {
+  if (p.id === 'fishing-dock') return islandPond(scene, p, 'murkmire');
   let atlas = 'murkmire-platforms',
     name = 'long';
   if (p.id === 'fishing-dock') {
@@ -131,7 +127,7 @@ export class MurkmireScenery {
   ) {
     this.background = scene.add.image(0, 0, `murkmire-background:${map.background}`).setDepth(-30);
     for (const p of map.platforms) platform(scene, map, p);
-    for (const l of map.ladders) generatedLadder(scene, l, 'woods');
+    for (const l of map.ladders) islandLadder(scene, l, 'murkmire');
     const props =
       map.id === 'murkmire-2'
         ? ['root-arch', 'stump', 'boat']

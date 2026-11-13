@@ -527,6 +527,11 @@ export class World {
       return false;
     if (p.gathering) return true;
     p.auto = false;
+    if (node.skill === 'Fishing') {
+      p.x = node.x;
+      p.facing = 1;
+      p.vx = 0;
+    }
     const tool = activeGatheringTool(p, node.skill);
     p.gathering = {
       nodeId,

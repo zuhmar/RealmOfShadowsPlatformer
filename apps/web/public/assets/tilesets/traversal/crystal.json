@@ -1,0 +1,43 @@
+{
+  "frames": {
+    "ladder": {
+      "frame": {
+        "x": 150,
+        "y": 62,
+        "w": 328,
+        "h": 795
+      }
+    },
+    "pond": {
+      "frame": {
+        "x": 592,
+        "y": 452,
+        "w": 1094,
+        "h": 301
+      }
+    }
+  },
+  "meta": {
+    "image": "crystal.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "source": "exec-b963af26-6462-4907-9335-665d94302aa7.png",
+    "ladder": {
+      "topCap": 87,
+      "bottomCapStart": 765,
+      "railStart": 424,
+      "railHeight": 6,
+      "rungStart": 461,
+      "rungHeight": 57,
+      "repeat": 125
+    },
+    "pond": {
+      "walkSurface": 95,
+      "waterSurface": 95,
+      "castX": 0.73,
+      "standX": 0.36
+    }
+  }
+}

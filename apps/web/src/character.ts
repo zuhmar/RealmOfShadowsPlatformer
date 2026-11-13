@@ -1,3 +1,4 @@
+import { fishingCast } from './island-traversal';
 import { guardAtlasSampling } from './atlas-sampling';
 import { ClassSkinVisual, preloadSkins } from './class-skins';
 import { assetUrl } from './assets';
@@ -367,8 +368,8 @@ export class CharacterVisual {
     this.gatheringVisual.clear();
     if (drawingGathering?.skill === 'Fishing') {
       const g = this.gatheringVisual,
-        x = (drawingGathering.x + 22 - p.x) * p.facing,
-        y = 30 + Math.sin(now / 180) * 2;
+        x = fishingCast(p).x,
+        y = fishingCast(p).y + Math.sin(now / 180) * 2;
       const atlas = this.scene.cache.json.get(
         `gathering-atlas-${appearanceOf(p.appearance)}${gatheringMaterial === 'wood' ? '' : `-${gatheringMaterial}`}`,
       ) as Atlas & { meta: { rodTips: Record<string, { x: number; y: number }> } };
