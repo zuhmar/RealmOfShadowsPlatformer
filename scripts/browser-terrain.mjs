@@ -121,6 +121,11 @@ try {
           generated: p.getData('generated'),
           rasterDensity: p.getData('rasterDensity'),
           rasterWidth: p.texture.getSourceImage().width,
+          painted:
+            !p.texture.context ||
+            p.texture.context
+              .getImageData(0, 0, p.texture.canvas.width, p.texture.canvas.height)
+              .data.some((value, index) => index % 4 === 3 && value > 0),
           atlasBounded:
             p.frame.cutX >= 0 &&
             p.frame.cutY >= 0 &&
@@ -165,6 +170,7 @@ try {
       const c = state.expected.find((c) => c.id === p.id);
       expect(p.continuous).toBe(true);
       expect(p.atlasBounded).toBe(true);
+      expect(p.painted).toBe(true);
       if (id === 'village' || id.startsWith('woods') || id.startsWith('crystal')) {
         expect(p.generated).toBe(true);
         const theme = id === 'village' ? 'village' : id.startsWith('crystal') ? 'crystal' : 'woods';

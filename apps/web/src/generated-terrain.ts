@@ -8,6 +8,8 @@ import villageSpans from '../public/assets/ui/village-platform-spans.json';
 import woodsSpans from '../public/assets/ui/woods-platform-spans.json';
 import woodsLadder from '../public/assets/ui/woods-clean-ladder.json';
 export type GeneratedTerrainTheme = 'woods' | 'village' | 'crystal';
+// Phaser recycles cleared HTML canvases; draw state belongs to the texture instance.
+const paintedTextures = new WeakSet<Phaser.Textures.CanvasTexture>();
 const caches = new WeakMap<Phaser.Game, Map<string, Set<string>>>();
 function remember(scene: Phaser.Scene, map: string, key: string) {
   let groups = caches.get(scene.game);
@@ -103,10 +105,10 @@ export function generatedSoil(scene: Phaser.Scene, map: GameMap, theme: Generate
   const f = groundFill(scene, theme),
     key = `ground-fill-v6:${theme}`;
   const { texture, ctx, density } = raster(scene, key, f.w, f.h);
-  if (!texture.canvas.dataset.rendered) {
+  if (!paintedTextures.has(texture)) {
     paint(ctx, f, 0, 0, 1);
     texture.refresh();
-    texture.canvas.dataset.rendered = 'true';
+    paintedTextures.add(texture);
   }
   const spec = spans(theme).meta.ground;
   const join =
@@ -144,7 +146,7 @@ export function generatedPlatform(
     const key = `ground-connected-v6:${theme}:${map.id}:${p.id}`;
     remember(scene, map.id, key);
     const { texture, ctx, density } = raster(scene, key, p.width + pad * 2, height + pad * 2);
-    if (!texture.canvas.dataset.rendered) {
+    if (!paintedTextures.has(texture)) {
       const length = (spec.repeatEnd - spec.repeatStart) * scale;
       for (let x = 0; x < p.width; x += length) {
         const size = Math.min(length, p.width - x);
@@ -166,7 +168,7 @@ export function generatedPlatform(
         ctx.restore();
       }
       texture.refresh();
-      texture.canvas.dataset.rendered = 'true';
+      paintedTextures.add(texture);
     }
     return scene.add
       .image(p.x, p.y, key)
@@ -242,7 +244,7 @@ function legacyGeneratedLadder(scene: Phaser.Scene, l: Ladder, theme: GeneratedT
     fullHeight = height + pad * 2;
   const key = `ladder-generated-clean-v4:${theme}:${height}`;
   const { texture, ctx, density } = raster(scene, key, width, fullHeight);
-  if (!texture.canvas.dataset.rendered) {
+  if (!paintedTextures.has(texture)) {
     const x = (width - artWidth) / 2;
     const cap =
         theme === 'crystal'
@@ -302,7 +304,7 @@ function legacyGeneratedLadder(scene: Phaser.Scene, l: Ladder, theme: GeneratedT
     paint(ctx, frame, x, top, scale, 0, 0, frame.w, cap);
     paint(ctx, frame, x, bottom - edge, scale, 0, frame.h - cap, frame.w, cap);
     texture.refresh();
-    texture.canvas.dataset.rendered = 'true';
+    paintedTextures.add(texture);
   }
   return scene.add
     .image(l.x, l.top, key)
