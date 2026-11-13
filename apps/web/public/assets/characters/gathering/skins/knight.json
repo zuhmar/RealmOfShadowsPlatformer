@@ -1,0 +1,501 @@
+{
+  "frames": {
+    "mining-0": {
+      "frame": {
+        "x": 68,
+        "y": 27,
+        "w": 169,
+        "h": 285
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 108,
+        "y": 75,
+        "w": 169,
+        "h": 285
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "mining-1": {
+      "frame": {
+        "x": 349,
+        "y": 26,
+        "w": 203,
+        "h": 284
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 104,
+        "y": 76,
+        "w": 203,
+        "h": 284
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "mining-2": {
+      "frame": {
+        "x": 662,
+        "y": 30,
+        "w": 161,
+        "h": 282
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 132,
+        "y": 78,
+        "w": 161,
+        "h": 282
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "mining-3": {
+      "frame": {
+        "x": 951,
+        "y": 40,
+        "w": 168,
+        "h": 272
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 130,
+        "y": 88,
+        "w": 168,
+        "h": 272
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "woodcutting-0": {
+      "frame": {
+        "x": 58,
+        "y": 351,
+        "w": 177,
+        "h": 286
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 92,
+        "y": 74,
+        "w": 177,
+        "h": 286
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "woodcutting-1": {
+      "frame": {
+        "x": 365,
+        "y": 353,
+        "w": 161,
+        "h": 284
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 119,
+        "y": 76,
+        "w": 161,
+        "h": 284
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "woodcutting-2": {
+      "frame": {
+        "x": 658,
+        "y": 362,
+        "w": 173,
+        "h": 275
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 122,
+        "y": 85,
+        "w": 173,
+        "h": 275
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "woodcutting-3": {
+      "frame": {
+        "x": 954,
+        "y": 358,
+        "w": 160,
+        "h": 279
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 123,
+        "y": 81,
+        "w": 160,
+        "h": 279
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "fishing-0": {
+      "frame": {
+        "x": 64,
+        "y": 682,
+        "w": 164,
+        "h": 282
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 104,
+        "y": 78,
+        "w": 164,
+        "h": 282
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "fishing-1": {
+      "frame": {
+        "x": 342,
+        "y": 680,
+        "w": 200,
+        "h": 284
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 94,
+        "y": 76,
+        "w": 200,
+        "h": 284
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "fishing-2": {
+      "frame": {
+        "x": 646,
+        "y": 682,
+        "w": 177,
+        "h": 282
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 105,
+        "y": 78,
+        "w": 177,
+        "h": 282
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "fishing-3": {
+      "frame": {
+        "x": 942,
+        "y": 684,
+        "w": 162,
+        "h": 280
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 110,
+        "y": 80,
+        "w": 162,
+        "h": 280
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "herbalism-0": {
+      "frame": {
+        "x": 76,
+        "y": 1010,
+        "w": 160,
+        "h": 277
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 122,
+        "y": 83,
+        "w": 160,
+        "h": 277
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "herbalism-1": {
+      "frame": {
+        "x": 370,
+        "y": 1032,
+        "w": 160,
+        "h": 255
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 130,
+        "y": 105,
+        "w": 160,
+        "h": 255
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "herbalism-2": {
+      "frame": {
+        "x": 665,
+        "y": 1024,
+        "w": 157,
+        "h": 263
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 130,
+        "y": 97,
+        "w": 157,
+        "h": 263
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    },
+    "herbalism-3": {
+      "frame": {
+        "x": 948,
+        "y": 1010,
+        "w": 161,
+        "h": 277
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 116,
+        "y": 83,
+        "w": 161,
+        "h": 277
+      },
+      "sourceSize": {
+        "w": 400,
+        "h": 400
+      }
+    }
+  },
+  "meta": {
+    "image": "knight.png",
+    "size": {
+      "w": 1199,
+      "h": 1312
+    },
+    "source": "exec-cef9ebc9-e676-479b-98ec-4f65a8e6e5b0.png",
+    "sourceFrame": {
+      "width": 400,
+      "height": 400,
+      "baseline": 360,
+      "scale": 0.3120567375886525
+    },
+    "anchors": {
+      "mining-0": {
+        "hand": {
+          "x": 263.3,
+          "y": 221.3
+        },
+        "toolAngle": 0
+      },
+      "mining-1": {
+        "hand": {
+          "x": 290.7,
+          "y": 195.3
+        },
+        "toolAngle": -35
+      },
+      "mining-2": {
+        "hand": {
+          "x": 275.2,
+          "y": 259.0
+        },
+        "toolAngle": 80
+      },
+      "mining-3": {
+        "hand": {
+          "x": 254.7,
+          "y": 298.7
+        },
+        "toolAngle": 125
+      },
+      "woodcutting-0": {
+        "hand": {
+          "x": 160.4,
+          "y": 197.5
+        },
+        "toolAngle": -45
+      },
+      "woodcutting-1": {
+        "hand": {
+          "x": 257.5,
+          "y": 264.8
+        },
+        "toolAngle": 70
+      },
+      "woodcutting-2": {
+        "hand": {
+          "x": 278.1,
+          "y": 274.2
+        },
+        "toolAngle": 105
+      },
+      "woodcutting-3": {
+        "hand": {
+          "x": 260.5,
+          "y": 251.3
+        },
+        "toolAngle": 0
+      },
+      "fishing-0": {
+        "hand": {
+          "x": 247.4,
+          "y": 244.2
+        },
+        "toolAngle": 0
+      },
+      "fishing-1": {
+        "hand": {
+          "x": 276.8,
+          "y": 172.4
+        },
+        "toolAngle": 30
+      },
+      "fishing-2": {
+        "hand": {
+          "x": 264.5,
+          "y": 241.3
+        },
+        "toolAngle": 35
+      },
+      "fishing-3": {
+        "hand": {
+          "x": 243.7,
+          "y": 250.6
+        },
+        "toolAngle": 25
+      },
+      "herbalism-0": {
+        "hand": {
+          "x": 246.7,
+          "y": 286.3
+        },
+        "toolAngle": 100
+      },
+      "herbalism-1": {
+        "hand": {
+          "x": 273.0,
+          "y": 296.7
+        },
+        "toolAngle": 120
+      },
+      "herbalism-2": {
+        "hand": {
+          "x": 262.5,
+          "y": 286.4
+        },
+        "toolAngle": 90
+      },
+      "herbalism-3": {
+        "hand": {
+          "x": 248.9,
+          "y": 251.1
+        },
+        "toolAngle": 60
+      }
+    },
+    "animations": {
+      "mining": {
+        "frames": [
+          "mining-0",
+          "mining-1",
+          "mining-2",
+          "mining-3"
+        ],
+        "frameRate": 6,
+        "repeat": -1
+      },
+      "woodcutting": {
+        "frames": [
+          "woodcutting-0",
+          "woodcutting-1",
+          "woodcutting-2",
+          "woodcutting-3"
+        ],
+        "frameRate": 6,
+        "repeat": -1
+      },
+      "fishing": {
+        "frames": [
+          "fishing-0",
+          "fishing-1",
+          "fishing-2",
+          "fishing-2",
+          "fishing-2",
+          "fishing-3",
+          "fishing-2",
+          "fishing-2"
+        ],
+        "frameRate": 4,
+        "repeat": -1
+      },
+      "herbalism": {
+        "frames": [
+          "herbalism-0",
+          "herbalism-1",
+          "herbalism-2",
+          "herbalism-3"
+        ],
+        "frameRate": 6,
+        "repeat": -1
+      }
+    },
+    "skin": "knight",
+    "facing": "right",
+    "equippedToolLayer": true
+  }
+}

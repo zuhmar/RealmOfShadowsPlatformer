@@ -1,3 +1,4 @@
+import { preloadGatheringSkin, drawGatheringSkin } from './gathering-skins';
 import { fishingCast } from './island-traversal';
 import { guardAtlasSampling } from './atlas-sampling';
 import Phaser from 'phaser';
@@ -73,8 +74,7 @@ export function preloadSkins(scene: Phaser.Scene, players: Player[], map?: GameM
   for (const p of players) {
     skinKey(scene, p, false, true);
     skinKey(scene, p, false);
-    if (p.gathering && map)
-      load(scene, 'class-tools', '/assets/equipment/gathering-tools', false, false);
+    if (map?.resources?.length) preloadGatheringSkin(scene, p);
   }
 }
 export class ClassSkinVisual {
@@ -106,6 +106,33 @@ export class ClassSkinVisual {
     if (action)
       this.pendingAction =
         this.previous && p.lastSkill > this.previous.lastSkill ? 'skill' : 'attack';
+    const gatheringNode =
+      p.gathering && p.grounded && !p.climbing
+        ? map.resources?.find((n) => n.id === p.gathering?.nodeId)
+        : undefined;
+    if (
+      gatheringNode &&
+      drawGatheringSkin(this.scene, this.body, this.item, this.line, p, gatheringNode, now)
+    ) {
+      this.container.setVisible(true);
+      this.key = '';
+      this.pendingAction = null;
+      this.previous = {
+        hp: p.hp,
+        lastAttack: p.lastAttack,
+        lastSkill: p.lastSkill,
+        lastHit: p.lastHit,
+        x: p.x,
+        y: p.y,
+        vx: p.vx,
+        vy: p.vy,
+        grounded: p.grounded,
+      };
+      return true;
+    }
+    this.body.anims.timeScale = 1;
+    this.body.setData('gatheringSkill', null);
+    this.container.bringToTop(this.item);
     const requested = skinSheet(p);
     if (!requested) {
       this.container.setVisible(false);
@@ -141,10 +168,8 @@ export class ClassSkinVisual {
         this.body.anims.currentAnim?.key.endsWith('-skill'));
     if (node || motion === 'climb') this.pendingAction = null;
     if (node?.skill === 'Fishing') this.body.play(`${key}-idle`, true);
-    else if (node) {
-      if (this.body.anims.currentAnim?.key !== `${key}-attack` || !this.body.anims.isPlaying)
-        this.body.play(`${key}-attack`);
-    } else if (motion === 'climb') {
+    else if (node) this.body.play(`${key}-idle`, true);
+    else if (motion === 'climb') {
       this.body.play(`${key}-climb`, true);
       if (Math.abs(p.vy) < 1) this.body.anims.pause();
       else this.body.anims.resume();

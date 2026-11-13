@@ -45,7 +45,8 @@
     "test:browser:murkmire-flow": "node --env-file-if-exists=apps/server/.env scripts/browser-murkmire-flow.mjs",
     "test:browser:crystal-terrain": "node scripts/browser-crystal-terrain.mjs",
     "test:browser:traversal": "node scripts/browser-island-traversal.mjs",
-    "test:browser:ground-cache": "node scripts/browser-ground-cache.mjs"
+    "test:browser:ground-cache": "node scripts/browser-ground-cache.mjs",
+    "test:browser:gathering-skins": "node scripts/browser-gathering-skins.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",
