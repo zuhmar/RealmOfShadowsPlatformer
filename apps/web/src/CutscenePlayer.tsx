@@ -216,7 +216,7 @@ export function CutscenePlayer({
   useEffect(() => {
     let alive = true;
     setReadyIndex(-1);
-    const paths = beat.actors
+    const paths = (beat.illustration ? [] : beat.actors)
       .filter((a) => a.kind !== 'item')
       .map((a) => descriptor(a, player).path);
     const load = (src: string) =>
@@ -227,7 +227,7 @@ export function CutscenePlayer({
         im.src = assetUrl(src);
       });
     Promise.all([
-      load(beat.background),
+      load(beat.illustration ?? beat.background),
       ...paths.map((path) =>
         filmAtlas(path)
           .then(() => load(`${path}.png`))
@@ -278,10 +278,28 @@ export function CutscenePlayer({
       onKeyUp={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <div className="cinema-stage" key={`${scene.id}:${index}`} data-cinema-beat={index}>
-        <img className="cinema-backdrop" src={assetUrl(beat.background)} alt="" draggable={false} />
+      <div
+        className={`cinema-stage ${beat.illustration ? 'cinema-illustrated' : ''}`}
+        key={`${scene.id}:${index}`}
+        data-cinema-beat={index}
+      >
+        {beat.illustration && (
+          <img
+            className="cinema-ambient"
+            src={assetUrl(beat.illustration)}
+            alt=""
+            draggable={false}
+          />
+        )}
+        <img
+          className="cinema-backdrop"
+          src={assetUrl(beat.illustration ?? beat.background)}
+          alt=""
+          draggable={false}
+          style={{ transformOrigin: `${35 + (index % 3) * 15}% ${45 + (index % 2) * 10}%` }}
+        />
         <div className="cinema-shade" />
-        {!beat.background.includes('cinematic-fall') && (
+        {!beat.illustration && !beat.background.includes('cinematic-fall') && (
           <div className="cinema-ground">
             <FilmSprite
               actor={{ kind: 'ground', x: 50, action: groundTheme(beat.background) }}
@@ -290,40 +308,44 @@ export function CutscenePlayer({
             />
           </div>
         )}
-        {beat.actors.map((a, i) => (
-          <div
-            key={`${a.kind}:${i}`}
-            className={`cinema-actor cinema-${a.move ?? 'stand'}`}
-            style={
-              {
-                left: `${a.x}%`,
-                bottom: [
-                  'mira',
-                  'mentor',
-                  'bram',
-                  'mirewarden',
-                  'frostwarden',
-                  'bench',
-                  'house',
-                ].includes(a.kind)
-                  ? '18%'
-                  : a.kind === 'item'
-                    ? '25%'
-                    : undefined,
-                '--actor-size': a.size ?? 1,
-              } as React.CSSProperties
-            }
-          >
-            <div className="cinema-facing" style={{ transform: a.flip ? 'scaleX(-1)' : undefined }}>
-              {a.kind === 'item' ? (
-                <ItemIcon id={a.item ?? null} />
-              ) : (
-                <FilmSprite actor={a} player={player} paused={stopped} />
-              )}
+        {!beat.illustration &&
+          beat.actors.map((a, i) => (
+            <div
+              key={`${a.kind}:${i}`}
+              className={`cinema-actor cinema-${a.move ?? 'stand'}`}
+              style={
+                {
+                  left: `${a.x}%`,
+                  bottom: [
+                    'mira',
+                    'mentor',
+                    'bram',
+                    'mirewarden',
+                    'frostwarden',
+                    'bench',
+                    'house',
+                  ].includes(a.kind)
+                    ? '18%'
+                    : a.kind === 'item'
+                      ? '25%'
+                      : undefined,
+                  '--actor-size': a.size ?? 1,
+                } as React.CSSProperties
+              }
+            >
+              <div
+                className="cinema-facing"
+                style={{ transform: a.flip ? 'scaleX(-1)' : undefined }}
+              >
+                {a.kind === 'item' ? (
+                  <ItemIcon id={a.item ?? null} />
+                ) : (
+                  <FilmSprite actor={a} player={player} paused={stopped} />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-        {beat.effect === 'magic' && (
+          ))}
+        {!beat.illustration && beat.effect === 'magic' && (
           <div className="cinema-magic">
             <FilmSprite
               actor={{ kind: 'fx', x: 50, action: 'fx' }}

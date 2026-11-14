@@ -11,6 +11,8 @@ export type FilmBeat = {
   speaker: string;
   text: string;
   background: string;
+  /** Generated full-scene story artwork; replaces staged sprite actors when present. */
+  illustration?: string;
   actors: FilmActor[];
   effect?: 'embers' | 'mist' | 'snow' | 'magic';
   cue?: 'memory' | 'arrival' | 'craft' | 'battle';
@@ -640,5 +642,16 @@ export const CUTSCENES: Cutscene[] = [
     }),
   ),
 ];
+// Authored film stills retain the original staging as a fallback for future chapters.
+for (const scene of CUTSCENES) {
+  if (scene.future) continue;
+  scene.beats.forEach((beat, index) => {
+    const art =
+      scene.id === 'chapter-woods'
+        ? ['woods-attack', 'woods-survivor', 'woods-training', 'chapter-woods'][index]
+        : scene.id;
+    beat.illustration = `/assets/cutscenes/${art}.png`;
+  });
+}
 export const cutsceneById = (id: unknown) =>
   typeof id === 'string' ? CUTSCENES.find((s) => s.id === id) : undefined;

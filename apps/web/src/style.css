@@ -4611,3 +4611,25 @@ footer {
   user-select: none;
   -webkit-touch-callout: none;
 }
+
+/* Keep every illustrated character in frame, including on tall phones. */
+.cinema-ambient {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  object-fit: cover;
+  filter: blur(18px) brightness(0.35);
+}
+.cinema-illustrated .cinema-backdrop {
+  object-fit: contain;
+  animation-name: cinema-illustration-camera;
+}
+@keyframes cinema-illustration-camera {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.055);
+  }
+}
