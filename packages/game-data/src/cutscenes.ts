@@ -661,9 +661,9 @@ for (const scene of CUTSCENES) {
     beat.illustration = `/assets/cutscenes/${art}.png`;
     beat.animation = {
       sheet: `/assets/cutscenes/frames/${art}.png`,
-      columns: 2,
-      rows: 2,
-      frames: 4,
+      columns: 4,
+      rows: 4,
+      frames: 16,
       fps: 4,
     };
   });

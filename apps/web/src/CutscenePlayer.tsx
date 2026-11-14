@@ -203,17 +203,18 @@ function SceneFrames({
     return () => q.removeEventListener('change', change);
   }, []);
   useEffect(() => {
-    if (paused || reduced) return;
-    const timer = setInterval(
-      () => setFrame((f) => (f + 1) % animation.frames),
+    if (paused || reduced || frame >= animation.frames - 1) return;
+    const timer = setTimeout(
+      () => setFrame((f) => Math.min(f + 1, animation.frames - 1)),
       1000 / animation.fps,
     );
-    return () => clearInterval(timer);
-  }, [animation.sheet, animation.frames, animation.fps, paused, reduced]);
+    return () => clearTimeout(timer);
+  }, [animation.sheet, animation.frames, animation.fps, frame, paused, reduced]);
   const current = reduced ? 0 : frame;
-  // Generated sheets are verified at 1536x1024; each landscape cell is 768x512.
+  // Verified source dimensions and grid divisions preserve each frame's proportions.
   const width = 1536 / animation.columns,
     height = 1024 / animation.rows;
+  // Inset each cell two pixels to keep filtered neighboring pixels out of view.
   const x = (current % animation.columns) * width,
     y = Math.floor(current / animation.columns) * height;
   return (
@@ -231,8 +232,8 @@ function SceneFrames({
         y="0"
         width={width}
         height={height}
-        viewBox={`${x} ${y} ${width} ${height}`}
-        preserveAspectRatio="none"
+        viewBox={`${x + 2} ${y + 2} ${width - 4} ${height - 4}`}
+        preserveAspectRatio="xMidYMid slice"
         overflow="hidden"
       >
         <image href={assetUrl(animation.sheet)} x="0" y="0" width="1536" height="1024" />
@@ -252,7 +253,7 @@ export function CutscenePlayer({
   const [index, setIndex] = useState(0),
     [paused, setPaused] = useState(false),
     [readyIndex, setReadyIndex] = useState(-1),
-    [animationReadyIndex, setAnimationReadyIndex] = useState(-1),
+    [loadedSheet, setLoadedSheet] = useState<string | null>(null),
     [hidden, setHidden] = useState(document.hidden),
     finished = useRef(false),
     close = useRef<HTMLButtonElement>(null);
@@ -301,7 +302,7 @@ export function CutscenePlayer({
       ),
     ]).then(([, sheetLoaded]) => {
       if (alive) {
-        setAnimationReadyIndex(sheetLoaded ? index : -1);
+        setLoadedSheet(sheetLoaded ? (beat.animation?.sheet ?? null) : null);
         setReadyIndex(index);
       }
     });
@@ -349,7 +350,7 @@ export function CutscenePlayer({
     >
       <div
         className={`cinema-stage ${beat.illustration ? 'cinema-illustrated' : ''}`}
-        key={`${scene.id}:${index}`}
+        key={`${scene.id}:${beat.animation?.sheet ?? index}`}
         data-cinema-beat={index}
       >
         {beat.illustration && (
@@ -360,7 +361,7 @@ export function CutscenePlayer({
             draggable={false}
           />
         )}
-        {beat.animation && animationReadyIndex === index ? (
+        {beat.animation && loadedSheet === beat.animation.sheet ? (
           <SceneFrames
             animation={beat.animation}
             paused={stopped || !ready}
