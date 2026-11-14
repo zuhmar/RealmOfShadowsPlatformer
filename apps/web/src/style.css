@@ -4312,3 +4312,302 @@ footer {
     gap: 3px 10px;
   }
 }
+
+.cinema {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: #080610;
+  color: #fff4df;
+  isolation: isolate;
+  touch-action: manipulation;
+}
+.cinema-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #30284d, #0c0b1b);
+}
+.cinema-backdrop {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  animation: cinema-camera 13s ease-in-out both;
+}
+.cinema-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#090611b0, transparent 25%, transparent 68%, #090611);
+}
+.cinema header {
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  left: 6%;
+  right: 6%;
+  text-shadow: 0 2px 5px #080610;
+}
+.cinema header span {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: #d9b4ff;
+}
+.cinema h2 {
+  margin: 5px 0;
+  font:
+    clamp(20px, 3vw, 34px) Georgia,
+    serif;
+}
+.cinema-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18%;
+  opacity: 0.95;
+}
+.cinema-ground svg {
+  height: 100%;
+  width: 100%;
+}
+.cinema-actor {
+  position: absolute;
+  bottom: 16%;
+  height: clamp(130px, 31vh, 250px);
+  width: clamp(120px, 19vw, 250px);
+  transform: translateX(-50%) scale(var(--actor-size));
+  transform-origin: center bottom;
+}
+.cinema-facing {
+  height: 100%;
+  width: 100%;
+}
+.cinema-facing > svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 5px 5px #1117);
+}
+.cinema-facing > svg[width='40'] {
+  width: 70%;
+  height: 70%;
+  margin: 15%;
+}
+.cinema-enter {
+  animation: cinema-enter 2.5s ease-out both;
+}
+.cinema-approach {
+  animation: cinema-approach 5s ease-out both;
+}
+.cinema-retreat {
+  animation: cinema-retreat 4s ease-out both;
+}
+.cinema-stand .cinema-facing {
+  animation: cinema-breathe 3s ease-in-out infinite;
+}
+.cinema-magic {
+  position: absolute;
+  left: 40%;
+  bottom: 11%;
+  width: 20%;
+  height: 28%;
+  pointer-events: none;
+  opacity: 0.7;
+}
+.cinema-magic svg {
+  height: 100%;
+  width: 100%;
+}
+.cinema-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cinema-particles i {
+  position: absolute;
+  top: -8%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #eaf8ff;
+  box-shadow: 0 0 7px #d9efff;
+  animation: cinema-fall linear infinite;
+}
+.cinema-embers i {
+  background: #ffb665;
+  box-shadow: 0 0 8px #ff7438;
+  animation-name: cinema-rise;
+  top: auto;
+  bottom: -8%;
+}
+.cinema-mist i {
+  width: 90px;
+  height: 24px;
+  filter: blur(12px);
+  opacity: 0.1;
+  animation-name: cinema-rise;
+  top: auto;
+  bottom: -8%;
+}
+.cinema-magic i {
+  background: #e0aeff;
+  box-shadow: 0 0 10px #b574ff;
+}
+.cinema-caption {
+  position: relative;
+  padding: 12px max(6%, env(safe-area-inset-left));
+  min-height: 98px;
+  background: #080610;
+}
+.cinema-caption strong {
+  font:
+    17px Georgia,
+    serif;
+  color: #dab6fa;
+}
+.cinema-caption p {
+  margin: 8px 0 0;
+  max-width: 1000px;
+  font-size: clamp(14px, 1.5vw, 18px);
+  line-height: 1.5;
+}
+.cinema footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 8px max(6%, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom));
+}
+.cinema footer span {
+  margin-right: auto;
+  color: #b3a5c7;
+  font-size: 12px;
+}
+.cinema button {
+  pointer-events: auto;
+  min-height: 42px;
+  font-size: 13px;
+}
+.cinema-loading {
+  position: absolute;
+  top: 45%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  text-shadow: 0 2px 4px #000;
+}
+.cinema-paused * {
+  animation-play-state: paused !important;
+}
+.cutscene-library {
+  margin: 18px 0;
+}
+.cutscene-library button {
+  margin: 4px;
+}
+@keyframes cinema-camera {
+  from {
+    transform: scale(1.04) translateX(-1%);
+  }
+  to {
+    transform: scale(1.17) translateX(2%);
+  }
+}
+@keyframes cinema-enter {
+  from {
+    margin-left: -18vw;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    margin-left: 0;
+    opacity: 1;
+  }
+}
+@keyframes cinema-approach {
+  from {
+    margin-left: -5vw;
+  }
+  to {
+    margin-left: 3vw;
+  }
+}
+@keyframes cinema-retreat {
+  from {
+    margin-left: 4vw;
+  }
+  to {
+    margin-left: -7vw;
+  }
+}
+@keyframes cinema-breathe {
+  50% {
+    translate: 0 -3px;
+  }
+}
+@keyframes cinema-fall {
+  to {
+    translate: 35px 70vh;
+    opacity: 0;
+  }
+}
+@keyframes cinema-rise {
+  to {
+    translate: 55px -65vh;
+    opacity: 0;
+  }
+}
+@media (max-width: 650px) {
+  .cinema-actor {
+    height: clamp(110px, 24vh, 190px);
+    width: clamp(95px, 28vw, 150px);
+  }
+  .cinema-caption {
+    padding: 12px 18px;
+    min-height: 125px;
+  }
+  .cinema footer {
+    padding: 6px 12px max(12px, env(safe-area-inset-bottom));
+    gap: 6px;
+  }
+  .cinema footer button {
+    padding: 8px;
+    font-size: 12px;
+  }
+  .cinema header {
+    left: 18px;
+  }
+  .cinema-magic {
+    left: 33%;
+    width: 34%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinema * {
+    animation: none !important;
+  }
+  .cinema-backdrop {
+    transform: none;
+  }
+  .cinema-particles {
+    display: none;
+  }
+}
+
+.cinema-facing > img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  margin: 15%;
+}
+.cinema-stage {
+  user-select: none;
+  -webkit-touch-callout: none;
+}

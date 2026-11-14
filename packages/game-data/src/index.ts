@@ -1,3 +1,4 @@
+export * from './cutscenes';
 export * from './battlegrounds';
 import { BATTLEGROUND_MAP, BATTLEGROUND_ID } from './battlegrounds';
 export * from './frostfall';

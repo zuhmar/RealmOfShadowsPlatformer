@@ -148,6 +148,18 @@ class RealmAudio {
     }
     this.musicVoices.clear();
   }
+  cinematic(cue: 'memory' | 'arrival' | 'craft' | 'battle') {
+    if (!this.settings.effects || this.settings.muted || document.hidden) return;
+    const notes =
+      cue === 'memory'
+        ? [130.8, 155.56, 196]
+        : cue === 'battle'
+          ? [82.4, 110, 164.8]
+          : cue === 'craft'
+            ? [330, 440, 659.25]
+            : [261.63, 329.63, 392];
+    for (const [i, n] of notes.entries()) this.tone(n, 0.45, i * 0.13);
+  }
   event(e: Event, localId: string) {
     if (!this.settings.effects || this.settings.muted || document.hidden) return;
     if (e.playerId && e.playerId !== localId) return;

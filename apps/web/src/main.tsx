@@ -1,3 +1,6 @@
+import { CutscenePlayer } from './CutscenePlayer';
+import { cutsceneById, CUTSCENES } from '@ros/game-data';
+import { nextCutscene, idleInput } from '@ros/shared';
 import { BattlegroundHud } from './BattlegroundHud';
 import { FrostfallQuests } from './FrostfallQuests';
 import { ArenaHud } from './arena-hud';
@@ -109,6 +112,7 @@ function App() {
   const [playerId, setPlayerId] = useState('');
   const [chatOpen, setChatOpen] = useState(() => window.innerWidth > 700);
   const [panel, setPanel] = useState<string | null>(null);
+  const cutsceneRequests = useRef(new Map<string, number>());
   const [chestId, setChestId] = useState<string | undefined>();
   const [placingFurniture, setPlacingFurniture] = useState<string | null>(null);
   const [furnitureTarget, setFurnitureTarget] = useState<FurnitureTarget | null>(null);
@@ -160,6 +164,33 @@ function App() {
   }, [page, snapshot?.mapId]);
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
+  const activeFilm = p?.cinematic ? cutsceneById(p.cinematic.id) : undefined;
+  useEffect(() => {
+    bridge.current.held = {};
+    game.current?.scene.getScene('realm')?.input.keyboard?.resetKeys();
+    if (roomRef.current) bridge.current.send('input', idleInput());
+  }, [p?.cinematic?.id]);
+  useEffect(() => {
+    if (
+      page !== 'game' ||
+      !p ||
+      p.cinematic ||
+      connectionStatus ||
+      host.current?.getAttribute('aria-busy') !== 'false'
+    )
+      return;
+    const film = nextCutscene(p, map, { panel, recipeSkill, storage: !!chestId });
+    if (!film) return;
+    const key = `${p.id}:${film.id}:${p.mapId}`,
+      now = Date.now();
+    if ((cutsceneRequests.current.get(key) ?? 0) > now) return;
+    cutsceneRequests.current.set(key, now + 10000);
+    bridge.current.held = {};
+    bridge.current.send('input', idleInput());
+    bridge.current.send('auto', false);
+    bridge.current.send('cutscene', { action: 'start', id: film.id });
+  }, [p, map, panel, recipeSkill, chestId, page, connectionStatus]);
+
   let selectedDecoration: ReturnType<typeof decorationSelection> | undefined;
   try {
     if (p && placingFurniture) selectedDecoration = decorationSelection(p, placingFurniture);
@@ -616,6 +647,7 @@ function App() {
   }, [notice]);
   useEffect(() => {
     bridge.current.blocked =
+      !!p?.cinematic ||
       !!cosmeticDialog ||
       !!placingFurniture ||
       !!connectionStatus ||
@@ -626,6 +658,7 @@ function App() {
       panel === 'crystal-quests' ||
       panel === 'recipes';
     if (
+      p?.cinematic ||
       cosmeticDialog ||
       placingFurniture ||
       panel === 'mira' ||
@@ -636,7 +669,7 @@ function App() {
       panel === 'recipes'
     )
       bridge.current.held = {};
-  }, [panel, connectionStatus, cosmeticDialog, placingFurniture]);
+  }, [panel, connectionStatus, cosmeticDialog, placingFurniture, p?.cinematic]);
   function isolateControlInput(e: React.SyntheticEvent) {
     if (page === 'game' && (e.target as Element).closest('button,input,textarea,select,.modal'))
       e.stopPropagation();
@@ -942,6 +975,16 @@ function App() {
       )}
       {page === 'game' && (
         <main className="game-shell">
+          {p && activeFilm && (
+            <CutscenePlayer
+              key={activeFilm.id}
+              scene={activeFilm}
+              player={p}
+              onFinish={() =>
+                bridge.current.send('cutscene', { action: 'finish', id: activeFilm.id })
+              }
+            />
+          )}
           {p?.battleground && snapshot && (
             <BattlegroundHud
               player={p}
@@ -1694,6 +1737,29 @@ function App() {
                   room?.send('quest', { questId: quest.id, action });
                 }}
               />
+            )}
+            {panel === 'quests' && !!p.seenCutscenes?.length && (
+              <section className="cutscene-library">
+                <h3>Memories</h3>
+                <p>
+                  {p.mapId === 'village'
+                    ? 'Replay a chapter from your journey.'
+                    : 'Return to Elderwood Village to replay memories.'}
+                </p>
+                {CUTSCENES.filter(
+                  (f) => p.seenCutscenes?.includes(f.id) && (!f.spoiler || !!p.originRevelation),
+                ).map((f) => (
+                  <button
+                    key={f.id}
+                    disabled={p.mapId !== 'village'}
+                    onClick={() =>
+                      bridge.current.send('cutscene', { action: 'start', id: f.id, replay: true })
+                    }
+                  >
+                    {f.title}
+                  </button>
+                ))}
+              </section>
             )}
             {(panel === 'quests' || panel === 'murkmire-quests') && (
               <MurkmireQuests

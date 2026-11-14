@@ -35,7 +35,7 @@ export class ArenaDuel {
     this.publish();
   }
   ready(p: Player, value: boolean, now: number) {
-    if (this.phase !== 'waiting' || !this.world.players.has(p.id)) return;
+    if (p.cinematic || this.phase !== 'waiting' || !this.world.players.has(p.id)) return;
     p.arena = {
       phase: this.phase,
       endsAt: 0,
@@ -215,7 +215,13 @@ export class ArenaDuel {
     });
   }
   damage(owner: Player, target: Player, amount: number, now: number, critical = false) {
-    if (this.phase !== 'fighting' || this.opponent(owner)?.id !== target.id || target.hp <= 0)
+    if (
+      owner.cinematic ||
+      target.cinematic ||
+      this.phase !== 'fighting' ||
+      this.opponent(owner)?.id !== target.id ||
+      target.hp <= 0
+    )
       return;
     const stats = playerAttributes(target);
     if (Math.random() < stats.dodgeChance) {

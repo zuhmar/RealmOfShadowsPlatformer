@@ -33,6 +33,7 @@ export function passwordMatches(password: string, stored: string) {
 }
 export const json = (p: Player) => {
   const durable = { ...p };
+  delete durable.cinematic;
   delete durable.arena;
   delete durable.battleground;
   return JSON.parse(JSON.stringify(durable)) as Prisma.InputJsonValue;

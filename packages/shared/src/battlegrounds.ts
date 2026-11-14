@@ -58,6 +58,8 @@ export class BattlegroundRun {
     if (this.phase !== 'waiting' || p.id !== this.leaderId)
       throw new Error('Only the party leader can start a waiting expedition.');
     const players = [...this.world.players.values()];
+    if (players.some((q) => q.cinematic))
+      throw new Error('Wait for the party introductions to finish.');
     if (players.some((q) => q.id !== p.id && !q.battleground?.ready))
       throw new Error('Every party member must press Ready first.');
     this.roster = players.map((q) => q.id);

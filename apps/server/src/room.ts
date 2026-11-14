@@ -1,3 +1,4 @@
+import { beginCinematic, cutsceneEligible } from '@ros/shared';
 import { BattlegroundRun } from '@ros/shared';
 import { BATTLEGROUND_ID, BATTLEGROUND_RULES } from '@ros/game-data';
 import { constrainHouseActor } from '@ros/shared';
@@ -118,6 +119,49 @@ export class MapRoom extends Room {
         this.snapshotResyncAt.set(c.sessionId, now);
         this.sendSnapshot(c, now, true);
       }
+    });
+    this.onMessage('cutscene', (c, value) => {
+      const p = this.player(c, true);
+      if (!p || !this.rate(c, 100) || !value || typeof value.id !== 'string') return;
+      if (value.action === 'finish') {
+        if (p.cinematic?.id === value.id) this.world.endCinematic(p, Date.now());
+        return;
+      }
+      if (
+        value.action !== 'start' ||
+        !cutsceneEligible(p, this.world.map, value.id, value.replay === true)
+      )
+        return;
+      this.inputs.set(p.id, idleInput());
+      p.auto = false;
+      const task = this.saves
+        .catch(() => {})
+        .then(async () => {
+          if (!cutsceneEligible(p, this.world.map, value.id, value.replay === true)) return;
+          if (value.replay !== true) {
+            const watched = await db.$transaction(async (tx) => {
+              await tx.$queryRaw`SELECT id FROM "Character" WHERE id=${p.id} FOR UPDATE`;
+              const row = await tx.character.findUniqueOrThrow({ where: { id: p.id } }),
+                stored = row.data as unknown as Player;
+              const seen = [...new Set([...(stored.seenCutscenes ?? []), value.id])];
+              await tx.character.update({
+                where: { id: p.id },
+                data: { data: json({ ...stored, seenCutscenes: seen }) },
+              });
+              return seen;
+            });
+            // The scene was eligible before the save; only its receipt changes durable data.
+            beginCinematic(p, this.world.map, value.id, Date.now());
+            p.seenCutscenes = watched;
+          } else beginCinematic(p, this.world.map, value.id, Date.now(), true);
+          this.inputs.set(p.id, idleInput());
+          this.sendSnapshot(c, Date.now(), true);
+        });
+      this.questTasks.set(p.id, task);
+      this.saves = task.catch(() => {});
+      void task
+        .catch(() => c.send('notice', 'Could not start the cutscene. Please try again.'))
+        .finally(() => this.questTasks.delete(p.id));
     });
     this.onMessage('battleground', (c, value) => {
       const p = this.player(c, true),
@@ -559,7 +603,7 @@ export class MapRoom extends Room {
       if (this.clients.includes(c)) c.send('provisionResult', { ok, message });
     };
     const p = this.player(c, !!this.world.battleground);
-    if (!p) {
+    if (!p || p.cinematic) {
       result(false, 'Please wait for the current action.');
       return;
     }
@@ -828,6 +872,7 @@ export class MapRoom extends Room {
     const p = auth.data as Player;
     constrainHouseActor(p, this.world.map);
     revealOrigin(p, this.world.map);
+    delete p.cinematic;
     p.auto = false;
     delete p.gathering;
     p.vx = 0;
@@ -1057,6 +1102,10 @@ export class MapRoom extends Room {
   player(c: Client, allowArenaCombat = false) {
     const id = this.characters.get(c.sessionId) ?? '';
     const p = this.questTasks.has(id) ? undefined : this.world.players.get(id);
+    if (p?.cinematic && !allowArenaCombat) {
+      c.send('notice', 'Finish or skip the cutscene first.');
+      return undefined;
+    }
     if (
       p &&
       !allowArenaCombat &&
@@ -1079,10 +1128,16 @@ export class MapRoom extends Room {
   }
   enqueueSave(p: Player) {
     const copy = structuredClone(p);
+    delete copy.cinematic;
     delete copy.arena;
     delete copy.battleground;
     if (p.id === this.houseOwnerId) this.houseOwner = copy;
-    const task = this.saves.catch(() => {}).then(() => save(copy));
+    const task = this.saves
+      .catch(() => {})
+      .then(() => {
+        copy.seenCutscenes = p.seenCutscenes;
+        return save(copy);
+      });
     this.saves = task;
     return task;
   }

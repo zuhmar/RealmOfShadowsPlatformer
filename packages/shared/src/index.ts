@@ -1,3 +1,5 @@
+export * from './cutscenes';
+import type { CinematicState } from './cutscenes';
 export * from './battlegrounds';
 import { BattlegroundRun, type BattlegroundStatus } from './battlegrounds';
 export * from './arena';
@@ -97,6 +99,8 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  seenCutscenes?: string[];
+  cinematic?: CinematicState;
   arena?: ArenaStatus;
   battleground?: BattlegroundStatus;
   battlegroundGroupId?: string;
@@ -601,6 +605,13 @@ export class World {
     this.arena?.step(now);
     this.battleground?.step(now);
     for (const p of this.players.values()) {
+      if (p.cinematic && now >= p.cinematic.endsAt) this.endCinematic(p, now);
+      if (p.cinematic) {
+        p.auto = false;
+        p.vx = 0;
+        p.vy = 0;
+        continue;
+      }
       let i = inputs.get(p.id) ?? idleInput();
       if (this.arena) i = this.arena.input(i);
       if (this.battleground) i = this.battleground.input(p, i);
@@ -655,7 +666,7 @@ export class World {
       }
       const platform = this.map.platforms.find((f) => f.id === w.platform)!;
       const nearest = [...this.players.values()]
-        .filter((p) => p.hp > 0 && Math.abs(p.y - w.y) < (stats.boss ? 300 : 55))
+        .filter((p) => !p.cinematic && p.hp > 0 && Math.abs(p.y - w.y) < (stats.boss ? 300 : 55))
         .sort((a, b) => Math.abs(a.x - w.x) - Math.abs(b.x - w.x))[0];
       if (nearest && Math.abs(nearest.x - w.x) < (stats.boss ? BOSS_ATTACK.aggroRange : 260)) {
         if (stats.boss) {
@@ -708,7 +719,7 @@ export class World {
     this.drops = this.drops.filter((d) => d.expires > now);
   }
   hitPlayer(p: Player, amount: number, now: number, kind: 'basic' | 'special' = 'basic') {
-    if (p.hp <= 0) return;
+    if (p.hp <= 0 || p.cinematic) return;
     if (
       this.battleground &&
       (this.battleground.phase !== 'fighting' || this.battleground.eliminated.has(p.id))
@@ -800,7 +811,13 @@ export class World {
         );
     }
   }
+  endCinematic(p: Player, now: number, resume = true) {
+    const node = p.cinematic?.resumeNodeId;
+    delete p.cinematic;
+    if (resume && node) this.startGathering(p, node, now);
+  }
   attack(p: Player, skill: boolean, now: number) {
+    if (p.cinematic) return;
     if (this.arena && this.arena.phase !== 'fighting') return;
     if (this.battleground && (this.battleground.phase !== 'fighting' || p.hp <= 0)) return;
     if (!canUseClassWeapon(p, p.weapon)) return;
@@ -1305,6 +1322,7 @@ export class World {
         if (!viewerId || p.id === viewerId) return p;
         const visible = { ...p, inventory: {}, gold: 0, xp: 0, kills: 0 };
         for (const key of [
+          'seenCutscenes',
           'battlegroundGroupId',
           'houseOwnerId',
           'housing',
