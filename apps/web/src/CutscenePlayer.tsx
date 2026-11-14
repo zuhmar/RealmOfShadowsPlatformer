@@ -1,7 +1,13 @@
 import { createPortal } from 'react-dom';
 import groundSurfaces from './cinematic-ground-surfaces.json';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { classSkinSheet, canEquipSkin, type FilmActor, type Cutscene } from '@ros/game-data';
+import {
+  classSkinSheet,
+  canEquipSkin,
+  type FilmActor,
+  type Cutscene,
+  type FilmAnimation,
+} from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 import { ItemIcon } from './ItemIcon';
@@ -176,6 +182,64 @@ const groundTheme = (bg: string) =>
         : bg.includes('elderwood') || bg.includes('cinematic')
           ? 'elderwood-village'
           : 'whispering-woods';
+/** Nested viewports clip the sheet to one cell even when the outer view is letterboxed. */
+function SceneFrames({
+  animation,
+  paused,
+  origin,
+}: {
+  animation: FilmAnimation;
+  paused: boolean;
+  origin: string;
+}) {
+  const [frame, setFrame] = useState(0);
+  const [reduced, setReduced] = useState(
+    () => matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  useEffect(() => {
+    const q = matchMedia('(prefers-reduced-motion: reduce)');
+    const change = () => setReduced(q.matches);
+    q.addEventListener('change', change);
+    return () => q.removeEventListener('change', change);
+  }, []);
+  useEffect(() => {
+    if (paused || reduced) return;
+    const timer = setInterval(
+      () => setFrame((f) => (f + 1) % animation.frames),
+      1000 / animation.fps,
+    );
+    return () => clearInterval(timer);
+  }, [animation.sheet, animation.frames, animation.fps, paused, reduced]);
+  const current = reduced ? 0 : frame;
+  // Generated sheets are verified at 1536x1024; each landscape cell is 768x512.
+  const width = 1536 / animation.columns,
+    height = 1024 / animation.rows;
+  const x = (current % animation.columns) * width,
+    y = Math.floor(current / animation.columns) * height;
+  return (
+    <svg
+      className="cinema-backdrop cinema-scene-frames"
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+      data-scene-sheet={animation.sheet}
+      data-scene-frame={current}
+      style={{ transformOrigin: origin }}
+    >
+      <svg
+        x="0"
+        y="0"
+        width={width}
+        height={height}
+        viewBox={`${x} ${y} ${width} ${height}`}
+        preserveAspectRatio="none"
+        overflow="hidden"
+      >
+        <image href={assetUrl(animation.sheet)} x="0" y="0" width="1536" height="1024" />
+      </svg>
+    </svg>
+  );
+}
 export function CutscenePlayer({
   scene,
   player,
@@ -188,6 +252,7 @@ export function CutscenePlayer({
   const [index, setIndex] = useState(0),
     [paused, setPaused] = useState(false),
     [readyIndex, setReadyIndex] = useState(-1),
+    [animationReadyIndex, setAnimationReadyIndex] = useState(-1),
     [hidden, setHidden] = useState(document.hidden),
     finished = useRef(false),
     close = useRef<HTMLButtonElement>(null);
@@ -220,21 +285,25 @@ export function CutscenePlayer({
       .filter((a) => a.kind !== 'item')
       .map((a) => descriptor(a, player).path);
     const load = (src: string) =>
-      new Promise<void>((resolve) => {
+      new Promise<boolean>((resolve) => {
         const im = new Image();
-        im.onload = () => resolve();
-        im.onerror = () => resolve();
+        im.onload = () => resolve(true);
+        im.onerror = () => resolve(false);
         im.src = assetUrl(src);
       });
     Promise.all([
       load(beat.illustration ?? beat.background),
+      beat.animation ? load(beat.animation.sheet) : Promise.resolve(false),
       ...paths.map((path) =>
         filmAtlas(path)
           .then(() => load(`${path}.png`))
           .catch(() => {}),
       ),
-    ]).then(() => {
-      if (alive) setReadyIndex(index);
+    ]).then(([, sheetLoaded]) => {
+      if (alive) {
+        setAnimationReadyIndex(sheetLoaded ? index : -1);
+        setReadyIndex(index);
+      }
     });
     return () => {
       alive = false;
@@ -291,13 +360,20 @@ export function CutscenePlayer({
             draggable={false}
           />
         )}
-        <img
-          className="cinema-backdrop"
-          src={assetUrl(beat.illustration ?? beat.background)}
-          alt=""
-          draggable={false}
-          style={{ transformOrigin: `${35 + (index % 3) * 15}% ${45 + (index % 2) * 10}%` }}
-        />
+        {beat.animation && animationReadyIndex === index ? (
+          <SceneFrames
+            animation={beat.animation}
+            paused={stopped || !ready}
+            origin={`${35 + (index % 3) * 15}% ${45 + (index % 2) * 10}%`}
+          />
+        ) : (
+          <img
+            className="cinema-backdrop"
+            src={assetUrl(beat.illustration ?? beat.background)}
+            alt=""
+            draggable={false}
+          />
+        )}
         <div className="cinema-shade" />
         {!beat.illustration && !beat.background.includes('cinematic-fall') && (
           <div className="cinema-ground">

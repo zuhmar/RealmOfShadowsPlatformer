@@ -53,16 +53,24 @@ try {
   });
   await expect(page.getByRole('dialog', { name: 'The promise that survived' })).toBeVisible();
   await expect(page.locator('.cinema-loading')).toHaveCount(0, { timeout: 20000 });
-  const picture = page.locator('.cinema-backdrop');
+  const picture = page.locator('.cinema-scene-frames');
   await expect(picture).toBeVisible();
-  expect(await picture.getAttribute('src')).toMatch(/cutscenes|optimized/);
-  const transform = () => picture.evaluate((el) => getComputedStyle(el).transform);
-  const initial = await transform();
-  await expect.poll(transform, { intervals: [50] }).not.toBe(initial);
+  // Prove the artwork itself changes with all camera motion disabled.
+  await picture.evaluate((el) => (el.style.animation = 'none'));
+  await page.locator('.cinema-particles').evaluate((el) => (el.style.display = 'none'));
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
-  const paused = await transform();
-  await page.waitForTimeout(350);
-  expect(await transform()).toBe(paused);
+  const initial = await picture.getAttribute('data-scene-frame');
+  const before = await picture.screenshot();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect
+    .poll(() => picture.getAttribute('data-scene-frame'), { intervals: [30] })
+    .not.toBe(initial);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const paused = await picture.getAttribute('data-scene-frame');
+  const after = await picture.screenshot();
+  expect(before.equals(after)).toBe(false);
+  await page.waitForTimeout(400);
+  expect(await picture.getAttribute('data-scene-frame')).toBe(paused);
   await page.screenshot({ path: 'artifacts/cutscene-opening-desktop.png' });
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -90,9 +98,13 @@ try {
       await expect(page.locator('.cinema-stage')).toHaveAttribute('data-cinema-beat', String(i));
       await expect(page.locator('.cinema-loading')).toHaveCount(0, { timeout: 20000 });
       await expect(page.locator('.cinema-stage')).toHaveClass(/cinema-illustrated/);
-      expect(
-        await page.locator('.cinema-backdrop').evaluate((el) => el.complete && el.naturalWidth > 0),
-      ).toBe(true);
+      await expect(page.locator('.cinema-scene-frames')).toBeVisible();
+      const frame = await page.locator('.cinema-scene-frames').getAttribute('data-scene-frame');
+      await expect
+        .poll(() => page.locator('.cinema-scene-frames').getAttribute('data-scene-frame'), {
+          intervals: [30],
+        })
+        .not.toBe(frame);
       await expect(page.locator('.cinema-actor, .cinema-ground')).toHaveCount(0);
       beats++;
       if (
@@ -118,13 +130,13 @@ try {
   await page.evaluate(() => window.filmqa.show('feature-training'));
   await expect(page.getByRole('dialog', { name: 'The strength you earn' })).toBeVisible();
   await expect(page.locator('.cinema-loading')).toHaveCount(0);
-  const reduced = page.locator('.cinema-backdrop');
-  const frame = await reduced.evaluate((el) => getComputedStyle(el).transform);
+  const reduced = page.locator('.cinema-scene-frames');
+  const frame = await reduced.getAttribute('data-scene-frame');
   await page.waitForTimeout(350);
-  expect(await reduced.evaluate((el) => getComputedStyle(el).transform)).toBe(frame);
+  expect(await reduced.getAttribute('data-scene-frame')).toBe(frame);
   expect(errors).toEqual([]);
   console.log(
-    `Animated films: ${scenes.length} playable scenes / ${beats} beats, generated illustrations and camera animation, Pause/Play, stepping, completion/skip, mobile bounds, reduced motion and all artwork requests passed.`,
+    `Animated films: ${scenes.length} playable scenes / ${beats} beats, generated pose frames (verified with camera motion disabled), Pause/Play, stepping, completion/skip, mobile bounds, reduced motion and all artwork requests passed.`,
   );
 } finally {
   await context.close();

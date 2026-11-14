@@ -7,12 +7,20 @@ export type FilmActor = {
   flip?: boolean;
   item?: string;
 };
+export type FilmAnimation = {
+  sheet: string;
+  columns: number;
+  rows: number;
+  frames: number;
+  fps: number;
+};
 export type FilmBeat = {
   speaker: string;
   text: string;
   background: string;
   /** Generated full-scene story artwork; replaces staged sprite actors when present. */
   illustration?: string;
+  animation?: FilmAnimation;
   actors: FilmActor[];
   effect?: 'embers' | 'mist' | 'snow' | 'magic';
   cue?: 'memory' | 'arrival' | 'craft' | 'battle';
@@ -651,6 +659,13 @@ for (const scene of CUTSCENES) {
         ? ['woods-attack', 'woods-survivor', 'woods-training', 'chapter-woods'][index]
         : scene.id;
     beat.illustration = `/assets/cutscenes/${art}.png`;
+    beat.animation = {
+      sheet: `/assets/cutscenes/frames/${art}.png`,
+      columns: 2,
+      rows: 2,
+      frames: 4,
+      fps: 4,
+    };
   });
 }
 export const cutsceneById = (id: unknown) =>
