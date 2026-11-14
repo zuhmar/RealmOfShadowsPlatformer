@@ -4,7 +4,7 @@ import type { Player } from './index';
 /** Validate everything before consuming a boss key or changing any player state. */
 export function usePortal(p: Player, source: GameMap) {
   const portal =
-    source.id === 'murkmire-arena'
+    source.id === 'murkmire-arena' || source.id === 'frostfall-battleground'
       ? source.portals[0]
       : source.portals.find((q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65);
   if (!portal) throw new Error('Walk close to a portal first.');
@@ -22,6 +22,8 @@ export function usePortal(p: Player, source: GameMap) {
     !p.bossKills?.['crystal-wyrm']
   )
     throw new Error('Defeat the Crystal Wyrm to unlock Murkmire Swamp.');
+  if (target.island === 'Frostfall Tundra' && !p.bossKills?.hydra)
+    throw new Error('Defeat Hydra to unlock Frostfall Tundra.');
   if (p.level < target.requiredLevel) throw new Error(`Reach level ${target.requiredLevel} first.`);
   if (portal.key && !(p.inventory[portal.key] >= 1))
     throw new Error(
@@ -34,6 +36,8 @@ export function usePortal(p: Player, source: GameMap) {
   const arrival = target.portals.find((q) => q.target === source.id);
   visitArea(p, source.id);
   visitArea(p, target.id);
+  if (target.id === 'frostfall-battleground') p.battlegroundGroupId = `${p.id}_${crypto.randomUUID()}`;
+  else delete p.battlegroundGroupId;
   p.mapId = target.id;
   p.x = arrival && arrival.x > target.width / 2 ? arrival.x - 100 : target.spawn.x;
   p.y = arrival?.y ?? target.spawn.y;

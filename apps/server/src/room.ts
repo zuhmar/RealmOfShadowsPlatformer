@@ -1,3 +1,5 @@
+import { BattlegroundRun } from '@ros/shared';
+import { BATTLEGROUND_ID, BATTLEGROUND_RULES } from '@ros/game-data';
 import { constrainHouseActor } from '@ros/shared';
 import { houseSize, HOUSE_LAYOUTS } from '@ros/game-data';
 import { persistHousing } from './housing.js';
@@ -38,6 +40,7 @@ import { changeQuest } from './quests.js';
 import { activeCharacters, authenticate, db, save, json } from './db.js';
 export class MapRoom extends Room {
   maxClients = 24;
+  battlegroundId?: string;
   houseOwnerId?: string;
   houseOwner?: Player;
   world!: World;
@@ -54,7 +57,12 @@ export class MapRoom extends Room {
   visitingOwners = new Map<string, Player>();
   fastTravel = new Set<string>();
   travelTokens = new Map<string, string>();
-  onCreate(options: { mapId?: string; houseOwnerId?: string }) {
+  onCreate(options: {
+    mapId?: string;
+    houseOwnerId?: string;
+    battlegroundId?: string;
+    characterId?: string;
+  }) {
     const map = MAPS[options.mapId ?? 'woods'];
     if (!map) throw new Error('Unknown map');
     if (houseSize(map.id)) {
@@ -63,6 +71,21 @@ export class MapRoom extends Room {
       this.houseOwnerId = options.houseOwnerId;
     }
     this.world = new World(map);
+    if (map.id === BATTLEGROUND_ID) {
+      if (typeof options.battlegroundId !== 'string' || !options.battlegroundId)
+        throw new Error('Battleground party required.');
+      if (!options.characterId || !options.battlegroundId.startsWith(`${options.characterId}_`))
+        throw new Error(
+          'That party is full or unavailable. Return to Frostfall and try another code.',
+        );
+      this.battlegroundId = options.battlegroundId;
+      this.maxClients = BATTLEGROUND_RULES.maxPlayers;
+      this.world.battleground = new BattlegroundRun(
+        this.world,
+        options.battlegroundId,
+        options.characterId,
+      );
+    }
     if (this.world.arena) this.maxClients = 2;
     this.clock.setInterval(() => {
       for (const ownerId of new Set(this.housingVisits.values()))
@@ -75,7 +98,11 @@ export class MapRoom extends Room {
             })
             .catch(() => {});
     }, 1000);
-    this.setMetadata({ mapId: map.id, houseOwnerId: this.houseOwnerId });
+    this.setMetadata({
+      mapId: map.id,
+      houseOwnerId: this.houseOwnerId,
+      battlegroundId: this.battlegroundId,
+    });
     if (this.houseOwnerId)
       this.clock.setInterval(() => {
         if (!this.world.players.has(this.houseOwnerId!))
@@ -90,6 +117,19 @@ export class MapRoom extends Room {
       if (now - (this.snapshotResyncAt.get(c.sessionId) ?? 0) >= 1000) {
         this.snapshotResyncAt.set(c.sessionId, now);
         this.sendSnapshot(c, now, true);
+      }
+    });
+    this.onMessage('battleground', (c, value) => {
+      const p = this.player(c, true),
+        run = this.world.battleground;
+      if (!p || !run || !this.rate(c, 10) || !value || typeof value !== 'object') return;
+      try {
+        if (value.action === 'ready' && typeof value.ready === 'boolean') run.ready(p, value.ready);
+        else if (value.action === 'start') run.start(p, Date.now());
+        else if (value.action === 'join' && typeof value.code === 'string')
+          void this.joinBattleground(c, value.code).catch((e) => c.send('notice', e.message));
+      } catch (e) {
+        c.send('notice', (e as Error).message);
       }
     });
     this.onMessage('arena', (c, value) => {
@@ -207,6 +247,7 @@ export class MapRoom extends Room {
       delete p.gathering;
       this.inputs.set(p.id, idleInput());
       this.world.arena?.depart(p, Date.now());
+      this.world.battleground?.depart(p, Date.now());
       this.world.players.delete(p.id);
       try {
         await this.enqueueSave(p);
@@ -255,6 +296,10 @@ export class MapRoom extends Room {
         delete p.gathering;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: 'bram' });
+      } else if (nearNpc(p, this.world.map, 'frostwarden')) {
+        p.auto = false;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: 'frostwarden' });
       } else if (nearNpc(p, this.world.map, 'mirewarden')) {
         p.auto = false;
         delete p.gathering;
@@ -358,7 +403,7 @@ export class MapRoom extends Room {
   async travel(
     c: Client,
     destination?: string,
-    housingTarget?: { mapId: string; ownerId?: string },
+    housingTarget?: { mapId: string; ownerId?: string; battlegroundId?: string },
   ) {
     const p = this.player(c, true);
     if (!p || !this.rate(c, 100)) return;
@@ -375,6 +420,7 @@ export class MapRoom extends Room {
         const m = MAPS[target];
         p.mapId = target;
         p.houseOwnerId = housingTarget.ownerId;
+        p.battlegroundGroupId = housingTarget.battlegroundId;
         p.x = target === 'village' ? 900 : m.spawn.x;
         p.y = target === 'village' ? 240 : m.spawn.y;
         p.platform = target === 'village' ? 'housing' : 'ground';
@@ -394,6 +440,7 @@ export class MapRoom extends Room {
     if (!houseSize(target)) delete p.houseOwnerId;
     this.inputs.set(p.id, idleInput());
     this.world.arena?.depart(p, Date.now());
+    this.world.battleground?.depart(p, Date.now());
     this.world.players.delete(p.id);
     try {
       await this.enqueueSave(p);
@@ -408,6 +455,7 @@ export class MapRoom extends Room {
             characterId: p.id,
             mapId: target,
             houseOwnerId: p.houseOwnerId,
+            battlegroundId: p.battlegroundGroupId,
             snapshotProtocol: 1,
             travelProtocol: 2,
           });
@@ -421,12 +469,15 @@ export class MapRoom extends Room {
           ? {
               target,
               houseOwnerId: p.houseOwnerId,
+              battlegroundId: p.battlegroundGroupId,
               overlapLeave: true,
               ...(reservation ? { reservation } : {}),
             }
-          : p.houseOwnerId
-            ? { target, houseOwnerId: p.houseOwnerId, overlapLeave: false }
-            : target,
+          : p.battlegroundGroupId
+            ? { target, battlegroundId: p.battlegroundGroupId, overlapLeave: false }
+            : p.houseOwnerId
+              ? { target, houseOwnerId: p.houseOwnerId, overlapLeave: false }
+              : target,
       );
     } catch {
       c.send('notice', 'Travel save failed. Please reconnect.');
@@ -507,9 +558,16 @@ export class MapRoom extends Room {
     const result = (ok: boolean, message: string) => {
       if (this.clients.includes(c)) c.send('provisionResult', { ok, message });
     };
-    const p = this.player(c);
+    const p = this.player(c, !!this.world.battleground);
     if (!p) {
       result(false, 'Please wait for the current action.');
+      return;
+    }
+    if (
+      this.world.battleground?.eliminated.has(p.id) &&
+      this.world.battleground.phase !== 'finished'
+    ) {
+      result(false, 'Knocked out players must wait for the expedition to end.');
       return;
     }
     if (!this.rate(c, 100)) {
@@ -697,6 +755,8 @@ export class MapRoom extends Room {
         const character = await tx.character.findUniqueOrThrow({ where: { id } });
         const p = character.data as unknown as Player;
         if (normalizeSkin(p)) await tx.character.update({ where: { id }, data: { data: json(p) } });
+        if (this.world.battleground && p.battlegroundGroupId !== this.battlegroundId)
+          throw new Error('Invalid battleground party.');
         if (p.mapId !== this.world.map.id) throw new Error('Invalid map. Refresh your characters.');
         if (this.houseOwnerId) {
           const row = await tx.character.findUnique({ where: { id: this.houseOwnerId } });
@@ -779,6 +839,8 @@ export class MapRoom extends Room {
     p.hp = Math.max(1, Math.min(p.hp, playerAttributes(p).maxHealth));
     p.mp = Math.max(0, Math.min(p.mp, playerAttributes(p).maxMana));
     this.world.players.set(p.id, p);
+    if (this.world.battleground) this.world.battleground.join(p);
+    else delete p.battleground;
     if (this.world.arena) this.world.arena.join(p);
     else delete p.arena;
     this.characters.set(c.sessionId, p.id);
@@ -790,6 +852,33 @@ export class MapRoom extends Room {
       this.travelTokens.set(c.sessionId, options.token);
     c.send('welcome', { id: p.id, mapId: this.world.map.id });
     this.sendSnapshot(c, Date.now(), true);
+  }
+  canJoinBattleground() {
+    return (
+      !!this.world.battleground &&
+      this.world.battleground.phase === 'waiting' &&
+      this.world.players.has(this.world.battleground.leaderId) &&
+      !this.locked &&
+      this.clients.length < this.maxClients
+    );
+  }
+  async joinBattleground(c: Client, rawCode: string) {
+    const p = this.player(c, true),
+      run = this.world.battleground,
+      code = rawCode.trim();
+    if (!p || !run || run.phase !== 'waiting')
+      throw new Error('Join a party before starting the expedition.');
+    if (!/^[a-zA-Z0-9_-]{8,80}$/.test(code) || code === this.battlegroundId)
+      throw new Error('Enter another leader’s party code.');
+    const rooms = await matchMaker.query({
+      name: 'map',
+      mapId: BATTLEGROUND_ID,
+      battlegroundId: code,
+    });
+    const target = rooms.find((r) => r.clients < r.maxClients);
+    if (!target || !(await matchMaker.remoteRoomCall(target.roomId, 'canJoinBattleground')))
+      throw new Error('Party is full, offline, or already fighting.');
+    await this.travel(c, undefined, { mapId: BATTLEGROUND_ID, battlegroundId: code });
   }
   async selectHouse(c: Client, ownerId: string) {
     const p = this.player(c);
@@ -971,6 +1060,15 @@ export class MapRoom extends Room {
     if (
       p &&
       !allowArenaCombat &&
+      p.battleground &&
+      !['waiting', 'finished'].includes(p.battleground.phase)
+    ) {
+      c.send('notice', 'Finish the expedition before changing equipment or using items.');
+      return undefined;
+    }
+    if (
+      p &&
+      !allowArenaCombat &&
       p.arena &&
       (p.arena.ready || p.arena.phase === 'countdown' || p.arena.phase === 'fighting')
     ) {
@@ -982,6 +1080,7 @@ export class MapRoom extends Room {
   enqueueSave(p: Player) {
     const copy = structuredClone(p);
     delete copy.arena;
+    delete copy.battleground;
     if (p.id === this.houseOwnerId) this.houseOwner = copy;
     const task = this.saves.catch(() => {}).then(() => save(copy));
     this.saves = task;
@@ -1013,6 +1112,7 @@ export class MapRoom extends Room {
     const p = this.world.players.get(id);
     if (p) {
       this.world.arena?.depart(p, Date.now());
+      this.world.battleground?.depart(p, Date.now());
       p.auto = false;
       delete p.gathering;
       this.world.players.delete(id);
@@ -1026,6 +1126,7 @@ export class MapRoom extends Room {
         await this.allowReconnection(c, 30);
         this.world.players.set(id, p);
         this.world.arena?.join(p);
+        this.world.battleground?.join(p);
         this.inputs.set(id, idleInput());
         this.inputTimes.set(id, Date.now());
         c.send('welcome', { id, mapId: this.world.map.id });

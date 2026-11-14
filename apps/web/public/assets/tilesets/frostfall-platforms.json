@@ -1,0 +1,55 @@
+{
+  "frames": {
+    "ground": {
+      "frame": {
+        "x": 19,
+        "y": 81,
+        "w": 1498,
+        "h": 146
+      }
+    },
+    "long": {
+      "frame": {
+        "x": 21,
+        "y": 328,
+        "w": 1494,
+        "h": 172
+      }
+    },
+    "medium": {
+      "frame": {
+        "x": 269,
+        "y": 580,
+        "w": 998,
+        "h": 174
+      }
+    },
+    "short": {
+      "frame": {
+        "x": 500,
+        "y": 831,
+        "w": 535,
+        "h": 156
+      }
+    }
+  },
+  "meta": {
+    "image": "frostfall-platforms.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-8520d360-a53d-4931-85f1-2611aa09344d.png",
+    "ground": {
+      "worldHeight": 90,
+      "repeatStart": 449,
+      "repeatEnd": 1049,
+      "fill": {
+        "x": 749,
+        "y": 141,
+        "w": 1,
+        "h": 1
+      }
+    }
+  }
+}

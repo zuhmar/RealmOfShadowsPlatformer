@@ -26,10 +26,10 @@ function player() {
   p.craftingSkills = { Cooking: { level: 20, xp: 0 }, Alchemy: { level: 20, xp: 0 } };
   return p;
 }
-test('all nine fish and three herb tiers have real recipes and inventory definitions', () => {
-  assert.equal(PROVISION_RECIPES.filter((r) => r.skill === 'Cooking').length, 9);
-  assert.equal(PROVISION_RECIPES.filter((r) => r.skill === 'Alchemy').length, 6);
-  assert.equal(new Set(PROVISION_IDS).size, 15);
+test('all twelve fish and four herb tiers have real recipes and inventory definitions', () => {
+  assert.equal(PROVISION_RECIPES.filter((r) => r.skill === 'Cooking').length, 12);
+  assert.equal(PROVISION_RECIPES.filter((r) => r.skill === 'Alchemy').length, 8);
+  assert.equal(new Set(PROVISION_IDS).size, 20);
   for (const r of PROVISION_RECIPES) {
     assert.equal(ITEMS[r.id].id, r.id);
     assert.ok(r.xp > 0);

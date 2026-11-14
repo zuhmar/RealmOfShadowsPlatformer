@@ -44,6 +44,15 @@ export const FORGE_RECIPES: ForgeRecipe[] = [
     level: 21,
     tier: 'swamp',
   })),
+  ...['pickaxe', 'axe', 'rod', 'sickle'].map((type) => ({
+    id: `frost-${type}`,
+    name: `Frost ${type === 'rod' ? 'Fishing Rod' : type[0].toUpperCase() + type.slice(1)}`,
+    kind: 'tool' as const,
+    cost: { 'frost-bar': 40, frostpine: 160 },
+    xp: 140,
+    level: 31,
+    tier: 'frost',
+  })),
   ...EQUIPMENT_TIERS.filter((t) => t.material !== 'iron').map((t, i) => ({
     id: `${t.material}-bar`,
     name: `${t.material[0].toUpperCase() + t.material.slice(1)} Bar`,

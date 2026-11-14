@@ -1,0 +1,140 @@
+{
+  "frames": {
+    "frost-ore": {
+      "frame": {
+        "x": 52,
+        "y": 15,
+        "w": 283,
+        "h": 225
+      }
+    },
+    "frostpine": {
+      "frame": {
+        "x": 433,
+        "y": 13,
+        "w": 299,
+        "h": 232
+      }
+    },
+    "frostleaf": {
+      "frame": {
+        "x": 814,
+        "y": 15,
+        "w": 289,
+        "h": 230
+      }
+    },
+    "icefin": {
+      "frame": {
+        "x": 1212,
+        "y": 38,
+        "w": 276,
+        "h": 183
+      }
+    },
+    "frost-salmon": {
+      "frame": {
+        "x": 38,
+        "y": 277,
+        "w": 304,
+        "h": 221
+      }
+    },
+    "glacier-pike": {
+      "frame": {
+        "x": 407,
+        "y": 272,
+        "w": 341,
+        "h": 194
+      }
+    },
+    "frost-pelt": {
+      "frame": {
+        "x": 791,
+        "y": 262,
+        "w": 337,
+        "h": 243
+      }
+    },
+    "troll-tusk": {
+      "frame": {
+        "x": 1193,
+        "y": 258,
+        "w": 304,
+        "h": 247
+      }
+    },
+    "wraith-essence": {
+      "frame": {
+        "x": 74,
+        "y": 524,
+        "w": 244,
+        "h": 234
+      }
+    },
+    "giant-heart": {
+      "frame": {
+        "x": 455,
+        "y": 519,
+        "w": 249,
+        "h": 241
+      }
+    },
+    "frostfall-boss-key": {
+      "frame": {
+        "x": 817,
+        "y": 514,
+        "w": 296,
+        "h": 250
+      }
+    },
+    "frost-giant-trophy": {
+      "frame": {
+        "x": 1195,
+        "y": 521,
+        "w": 296,
+        "h": 237
+      }
+    },
+    "icefin-roast": {
+      "frame": {
+        "x": 42,
+        "y": 811,
+        "w": 310,
+        "h": 192
+      }
+    },
+    "frost-salmon-stew": {
+      "frame": {
+        "x": 433,
+        "y": 775,
+        "w": 287,
+        "h": 241
+      }
+    },
+    "glacier-pike-feast": {
+      "frame": {
+        "x": 783,
+        "y": 812,
+        "w": 351,
+        "h": 185
+      }
+    },
+    "frostleaf-health-potion": {
+      "frame": {
+        "x": 1256,
+        "y": 776,
+        "w": 231,
+        "h": 243
+      }
+    }
+  },
+  "meta": {
+    "image": "frostfall-items.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-8d607f99-d1db-4c1e-9bf3-bc7c228cf6dc.png"
+  }
+}

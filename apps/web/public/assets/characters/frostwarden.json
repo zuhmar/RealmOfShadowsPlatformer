@@ -1,0 +1,20 @@
+{
+  "frames": {
+    "idle": {
+      "frame": {
+        "x": 278,
+        "y": 115,
+        "w": 613,
+        "h": 1112
+      }
+    }
+  },
+  "meta": {
+    "image": "frostwarden.png",
+    "size": {
+      "w": 1199,
+      "h": 1312
+    },
+    "source": "exec-73747cc5-5cac-40e0-962b-4cfc4dd3f12c.png"
+  }
+}

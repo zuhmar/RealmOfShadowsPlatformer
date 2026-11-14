@@ -31,7 +31,12 @@ export function passwordMatches(password: string, stored: string) {
   const [salt, key] = stored.split(':');
   return timingSafeEqual(scryptSync(password, salt, 64), Buffer.from(key, 'hex'));
 }
-export const json = (p: Player) => JSON.parse(JSON.stringify(p)) as Prisma.InputJsonValue;
+export const json = (p: Player) => {
+  const durable = { ...p };
+  delete durable.arena;
+  delete durable.battleground;
+  return JSON.parse(JSON.stringify(durable)) as Prisma.InputJsonValue;
+};
 // Combat and inventory live in the character snapshot. QuestProgress is the durable
 // acceptance/progress/claim ledger; room serialization keeps these writes ordered.
 export async function save(p: Player) {

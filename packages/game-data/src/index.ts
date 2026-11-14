@@ -1,3 +1,7 @@
+export * from './battlegrounds';
+import { BATTLEGROUND_MAP, BATTLEGROUND_ID } from './battlegrounds';
+export * from './frostfall';
+import { FROSTFALL_MAPS, FROSTFALL_ITEMS, FROSTFALL_QUESTS } from './frostfall';
 export * from './arena';
 import { ARENA_MAP, ARENA_ID } from './arena';
 export * from './murkmire';
@@ -229,7 +233,7 @@ export const ISLANDS = [
     maxLevel: 40,
     monsters: ['Frost Wolf', 'Ice Troll', 'Frozen Wraith'],
     boss: 'Frost Giant',
-    available: false,
+    available: true,
   },
   {
     id: 'ember',
@@ -308,9 +312,28 @@ for (const [stage, name, monster, background] of [
     ],
   };
 }
-Object.assign(MAPS, CRYSTAL_MAPS, MURKMIRE_MAPS);
+Object.assign(MAPS, CRYSTAL_MAPS, MURKMIRE_MAPS, FROSTFALL_MAPS);
 MAPS[ARENA_ID] = ARENA_MAP;
+MAPS[BATTLEGROUND_ID] = BATTLEGROUND_MAP;
+MAPS.frostfall.portals.push({
+  x: 520,
+  y: 820,
+  target: BATTLEGROUND_ID,
+  label: 'Frostbound Battlegrounds',
+});
 MAPS.murkmire.portals.push({ x: 440, y: 820, target: ARENA_ID, label: 'Mirebound Arena · PvP' });
+MAPS['murkmire-3'].portals.push({
+  x: 2900 - 150,
+  y: 820,
+  target: 'frostfall',
+  label: 'Frostfall Tundra',
+});
+MAPS['murkmire-boss'].portals.push({
+  x: 2050,
+  y: 820,
+  target: 'frostfall',
+  label: 'Frostfall Tundra',
+});
 MAPS['crystal-3'].portals.push({ x: 2500, y: 800, target: 'murkmire', label: 'Murkmire Swamp' });
 MAPS['crystal-boss'].portals.push({ x: 1850, y: 800, target: 'murkmire', label: 'Murkmire Swamp' });
 MAPS['woods-3'].portals.push({
@@ -329,6 +352,7 @@ export const MIRA_WEAPON_KIT_LEDGER = 'mira-wolves-weapon-kit-v1';
 export const QUESTS = {
   ...CRYSTAL_QUESTS,
   ...MURKMIRE_QUESTS,
+  ...FROSTFALL_QUESTS,
   ...WOODS_QUESTS,
   'mira-wolves': {
     id: 'mira-wolves',
@@ -378,6 +402,7 @@ export const ITEMS = {
   },
   ...CRYSTAL_ITEMS,
   ...MURKMIRE_ITEMS,
+  ...FROSTFALL_ITEMS,
   ...EQUIPMENT_ITEMS,
   ...TIER_MINING_ITEMS,
   ...WOODS_ITEMS,

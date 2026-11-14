@@ -1,0 +1,43 @@
+{
+  "frames": {
+    "ladder": {
+      "frame": {
+        "x": 87,
+        "y": 105,
+        "w": 248,
+        "h": 855
+      }
+    },
+    "pond": {
+      "frame": {
+        "x": 396,
+        "y": 327,
+        "w": 1094,
+        "h": 523
+      }
+    }
+  },
+  "meta": {
+    "image": "frostfall.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "source": "exec-f482517e-9aec-4459-a8ef-9961c41b8382.png",
+    "ladder": {
+      "topCap": 169,
+      "bottomCapStart": 669,
+      "railStart": 347,
+      "railHeight": 6,
+      "rungStart": 399,
+      "rungHeight": 39,
+      "repeat": 91
+    },
+    "pond": {
+      "walkSurface": 90,
+      "waterSurface": 125,
+      "castX": 0.72,
+      "standX": 0.26
+    }
+  }
+}

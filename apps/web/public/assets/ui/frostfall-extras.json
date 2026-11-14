@@ -1,0 +1,44 @@
+{
+  "frames": {
+    "frostleaf-mana-potion": {
+      "frame": {
+        "x": 111,
+        "y": 12,
+        "w": 466,
+        "h": 587
+      }
+    },
+    "frost-bar": {
+      "frame": {
+        "x": 655,
+        "y": 122,
+        "w": 577,
+        "h": 448
+      }
+    },
+    "frost-sigil": {
+      "frame": {
+        "x": 60,
+        "y": 655,
+        "w": 486,
+        "h": 550
+      }
+    },
+    "frost-chest": {
+      "frame": {
+        "x": 634,
+        "y": 696,
+        "w": 609,
+        "h": 510
+      }
+    }
+  },
+  "meta": {
+    "image": "frostfall-extras.png",
+    "size": {
+      "w": 1261,
+      "h": 1247
+    },
+    "source": "exec-6ea69892-58d8-40e9-bd65-8d4035824486.png"
+  }
+}

@@ -1,3 +1,5 @@
+import { BattlegroundHud } from './BattlegroundHud';
+import { FrostfallQuests } from './FrostfallQuests';
 import { ArenaHud } from './arena-hud';
 import { MurkmireQuests } from './MurkmireQuests';
 import { decorationSelection } from '@ros/shared';
@@ -330,6 +332,7 @@ function App() {
     epoch?: number,
     reservation?: Parameters<Client['consumeSeatReservation']>[0],
     houseOwnerId = c.data.houseOwnerId,
+    battlegroundId = c.data.battlegroundGroupId,
   ) {
     setHousingInvitations([]);
     const client = new Client(SERVER.replace(/^http/, 'ws'));
@@ -338,6 +341,7 @@ function App() {
       characterId: c.id,
       mapId,
       houseOwnerId: mapId.startsWith('house-') ? houseOwnerId : undefined,
+      battlegroundId: mapId === 'frostfall-battleground' ? battlegroundId : undefined,
       snapshotProtocol: 1,
       travelProtocol: 2,
     };
@@ -406,6 +410,7 @@ function App() {
       if (npc.id === 'carpentry-station') setPanel('housing');
       if (npc.id === 'mira') setPanel('mira');
       if (npc.id === 'bram') setPanel('bram');
+      if (npc.id === 'frostwarden') setPanel('frostfall-quests');
       if (npc.id === 'mirewarden') setPanel('murkmire-quests');
       if (npc.id === 'mentor') setPanel('crystal-quests');
       if (npc.id === 'cooking-station' || npc.id === 'alchemy-station') {
@@ -436,6 +441,7 @@ function App() {
           | {
               target: string;
               houseOwnerId?: string;
+              battlegroundId?: string;
               overlapLeave: boolean;
               reservation?: Parameters<Client['consumeSeatReservation']>[0];
             },
@@ -463,6 +469,7 @@ function App() {
             undefined,
             typeof message === 'string' ? undefined : message.reservation,
             typeof message === 'string' ? undefined : message.houseOwnerId,
+            typeof message === 'string' ? undefined : message.battlegroundId,
           );
         });
       },
@@ -614,6 +621,7 @@ function App() {
       !!connectionStatus ||
       panel === 'mira' ||
       panel === 'bram' ||
+      panel === 'frostfall-quests' ||
       panel === 'murkmire-quests' ||
       panel === 'crystal-quests' ||
       panel === 'recipes';
@@ -622,6 +630,7 @@ function App() {
       placingFurniture ||
       panel === 'mira' ||
       panel === 'bram' ||
+      panel === 'frostfall-quests' ||
       panel === 'murkmire-quests' ||
       panel === 'crystal-quests' ||
       panel === 'recipes'
@@ -933,6 +942,14 @@ function App() {
       )}
       {page === 'game' && (
         <main className="game-shell">
+          {p?.battleground && snapshot && (
+            <BattlegroundHud
+              player={p}
+              players={snapshot.players}
+              time={snapshot.time}
+              send={(t, v) => bridge.current.send(t, v)}
+            />
+          )}
           {p?.arena && snapshot && (
             <ArenaHud
               player={p}
@@ -1525,6 +1542,7 @@ function App() {
                     quests: 'Adventure journal.',
                     mira: 'Mira · Village guide',
                     bram: 'Bram’s Forge',
+                    'frostfall-quests': 'Frost Warden · Frostfall Tundra',
                     'murkmire-quests': 'Mire Warden · Murkmire Swamp',
                     'crystal-quests': 'Cavern Mentor · Crystal Caverns',
                     map: 'Beyond the Elderwood.',
@@ -1682,6 +1700,19 @@ function App() {
                 player={p}
                 dialog={panel === 'murkmire-quests'}
                 near={nearNpc(p, map, 'mirewarden')}
+                pending={questPending}
+                send={(type, payload) => {
+                  if (questPending) return;
+                  setQuestPending(true);
+                  bridge.current.send(type, payload);
+                }}
+              />
+            )}
+            {(panel === 'quests' || panel === 'frostfall-quests') && (
+              <FrostfallQuests
+                player={p}
+                dialog={panel === 'frostfall-quests'}
+                near={nearNpc(p, map, 'frostwarden')}
                 pending={questPending}
                 send={(type, payload) => {
                   if (questPending) return;

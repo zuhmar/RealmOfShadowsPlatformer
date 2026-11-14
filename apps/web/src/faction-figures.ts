@@ -10,6 +10,12 @@ const sheet = (kind: Allegiance) => (kind === 'shadow' ? 'shadow-being' : 'golde
 const definition = (kind: Allegiance) => (kind === 'shadow' ? shadow : gold);
 const hasOutfit = (id: string | undefined) => !!id && Object.hasOwn(outfits.frames, id);
 export function preloadFactionFigures(scene: Phaser.Scene, map: GameMap) {
+  if (map.npcs.some((n) => n.id === 'frostwarden'))
+    scene.load.atlas(
+      'npc-frostwarden',
+      assetUrl('/assets/characters/frostwarden.png'),
+      '/assets/characters/frostwarden.json',
+    );
   if (
     map.npcs.some((n) => n.allegiance !== 'shadow' && hasOutfit(n.id)) &&
     !scene.textures.exists('npc-outfits')
@@ -23,6 +29,7 @@ export function preloadFactionFigures(scene: Phaser.Scene, map: GameMap) {
     map.npcs
       .filter(
         (n) =>
+          n.id !== 'frostwarden' &&
           !['cooking-station', 'alchemy-station', 'carpentry-station'].includes(n.id ?? '') &&
           (n.allegiance === 'shadow' || !hasOutfit(n.id)),
       )
@@ -45,6 +52,10 @@ export function factionFigure(
   height = 80,
   npcId?: string,
 ) {
+  if (npcId === 'frostwarden') {
+    const s = scene.add.sprite(x, y, 'npc-frostwarden', 'idle').setOrigin(0.5, 1);
+    return s.setScale(90 / s.height).setName('frostwarden');
+  }
   if (kind === 'celestial' && hasOutfit(npcId)) {
     guardAtlasSampling(scene.textures.get('npc-outfits'));
     const sprite = scene.add.sprite(x, y, 'npc-outfits', npcId!).setOrigin(0.5, 1);

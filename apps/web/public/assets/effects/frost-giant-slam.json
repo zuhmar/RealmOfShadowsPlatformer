@@ -1,0 +1,172 @@
+{
+  "frames": {
+    "fx-0": {
+      "frame": {
+        "x": 155,
+        "y": 300,
+        "w": 138,
+        "h": 33
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 155,
+        "y": 375,
+        "w": 138,
+        "h": 33
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    },
+    "fx-1": {
+      "frame": {
+        "x": 527,
+        "y": 270,
+        "w": 279,
+        "h": 76
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 83,
+        "y": 332,
+        "w": 279,
+        "h": 76
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    },
+    "fx-2": {
+      "frame": {
+        "x": 937,
+        "y": 214,
+        "w": 337,
+        "h": 139
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 50,
+        "y": 269,
+        "w": 337,
+        "h": 139
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    },
+    "fx-3": {
+      "frame": {
+        "x": 1362,
+        "y": 129,
+        "w": 371,
+        "h": 227
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 32,
+        "y": 181,
+        "w": 371,
+        "h": 227
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    },
+    "fx-4": {
+      "frame": {
+        "x": 14,
+        "y": 542,
+        "w": 422,
+        "h": 234
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 14,
+        "y": 174,
+        "w": 422,
+        "h": 234
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    },
+    "fx-5": {
+      "frame": {
+        "x": 467,
+        "y": 570,
+        "w": 395,
+        "h": 205
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 23,
+        "y": 203,
+        "w": 395,
+        "h": 205
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    },
+    "fx-6": {
+      "frame": {
+        "x": 916,
+        "y": 616,
+        "w": 387,
+        "h": 159
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 29,
+        "y": 249,
+        "w": 387,
+        "h": 159
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    },
+    "fx-7": {
+      "frame": {
+        "x": 1370,
+        "y": 661,
+        "w": 360,
+        "h": 113
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 40,
+        "y": 295,
+        "w": 360,
+        "h": 113
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 444
+      }
+    }
+  },
+  "meta": {
+    "image": "frost-giant-slam.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "source": "exec-59b72237-5e68-4e5d-a169-25bfff5e250a.png"
+  }
+}

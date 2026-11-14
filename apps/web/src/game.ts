@@ -1,3 +1,4 @@
+import { FrostfallScenery, preloadFrostfall } from './frostfall';
 import { MurkmireScenery, preloadMurkmire, mireWarden } from './murkmire';
 import { FurniturePlacement, type FurnitureSelection } from './furniture-placement';
 import { constrainHouseActor } from '@ros/shared';
@@ -69,6 +70,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     woods?: WoodsScenery;
     crystal?: CrystalScenery;
     murkmire?: MurkmireScenery;
+    frostfall?: FrostfallScenery;
     village?: VillageScenery;
     housing?: HousingScenery;
     interior?: HouseInterior;
@@ -100,9 +102,13 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       preloadLoot(this, loadingMap);
       preloadBossEntrance(this, loadingMap);
       preloadWoodsMonster(this, loadingMap.monster);
+      if (loadingMap.id === 'frostfall-battleground')
+        for (const kind of ['frost-wolf', 'ice-troll', 'frozen-wraith', 'frost-giant'] as const)
+          preloadWoodsMonster(this, kind);
       if (houseSize(loadingMap.id)) preloadHouseInterior(this);
       else if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
       else if (loadingMap.island === 'Murkmire Swamp') preloadMurkmire(this, loadingMap);
+      else if (loadingMap.island === 'Frostfall Tundra') preloadFrostfall(this, loadingMap);
       else if (loadingMap.island === 'Crystal Caverns') preloadCrystal(this, loadingMap);
       else {
         preloadVillage(this);
@@ -119,6 +125,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       if (map.island === 'Whispering Woods')
         return `woods-background:${map.background ?? '/assets/backgrounds/whispering-woods.png'}`;
       if (map.island === 'Murkmire Swamp') return `murkmire-background:${map.background}`;
+      if (map.island === 'Frostfall Tundra') return `frostfall-background:${map.background}`;
       if (map.island === 'Crystal Caverns') return `crystal-background:${map.background}`;
       if (houseSize(map.id)) return 'house-interior';
       return 'village-background';
@@ -168,6 +175,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       if (this.textures.exists(WOLF_TEXTURE)) registerWolfAnimations(this);
       registerWeaponEffects(this);
       registerWoodsMonster(this, MAPS[bridge.snapshot?.mapId ?? 'village'].monster);
+      if (bridge.snapshot?.mapId === 'frostfall-battleground')
+        for (const kind of ['frost-wolf', 'ice-troll', 'frozen-wraith', 'frost-giant'] as const)
+          registerWoodsMonster(this, kind);
       registerCharacters(this);
       registerPortals(this, MAPS[bridge.snapshot?.mapId ?? 'village']);
       const id = bridge.snapshot?.mapId ?? 'village';
@@ -250,6 +260,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       else if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
       else if (m.island === 'Murkmire Swamp')
         this.murkmire = new MurkmireScenery(this, m, (id) => bridge.send('gather', id));
+      else if (m.island === 'Frostfall Tundra')
+        this.frostfall = new FrostfallScenery(this, m, (id) => bridge.send('gather', id));
       else if (m.island === 'Crystal Caverns')
         this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
       else {
@@ -272,16 +284,20 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             this.add.image(
               p.x,
               p.y - 205,
-              p.key === 'murkmire-boss-key'
-                ? 'loot-murkmire-items'
-                : p.key === 'crystal-boss-key'
-                  ? 'loot-crystal-drops'
-                  : 'forest-bear-key',
-              p.key === 'murkmire-boss-key'
-                ? 'murkmire-boss-key'
-                : p.key === 'crystal-boss-key'
-                  ? 'crystal-boss-key'
-                  : undefined,
+              p.key === 'frostfall-boss-key'
+                ? 'loot-frostfall-items'
+                : p.key === 'murkmire-boss-key'
+                  ? 'loot-murkmire-items'
+                  : p.key === 'crystal-boss-key'
+                    ? 'loot-crystal-drops'
+                    : 'forest-bear-key',
+              p.key === 'frostfall-boss-key'
+                ? 'frostfall-boss-key'
+                : p.key === 'murkmire-boss-key'
+                  ? 'murkmire-boss-key'
+                  : p.key === 'crystal-boss-key'
+                    ? 'crystal-boss-key'
+                    : undefined,
             ),
             42,
             28,
@@ -293,7 +309,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             p.x,
             p.y - 164,
             p.key
-              ? `${p.label}\n${p.key === 'murkmire-boss-key' ? 'Hydra' : p.key === 'crystal-boss-key' ? 'Crystal Wyrm' : 'Forest Bear'} Key ×1`
+              ? `${p.label}\n${p.key === 'frostfall-boss-key' ? 'Frost Giant' : p.key === 'murkmire-boss-key' ? 'Hydra' : p.key === 'crystal-boss-key' ? 'Crystal Wyrm' : 'Forest Bear'} Key ×1`
               : p.label,
             {
               fontSize: '14px',
@@ -358,6 +374,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             .zone(npc.x, npc.y - 40, 80, 100)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => bridge.send('interact', { npcId: 'bram' }));
+        if (npc.id === 'frostwarden')
+          this.add
+            .zone(npc.x, npc.y - 40, 100, 120)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => bridge.send('interact', { npcId: 'frostwarden' }));
         if (npc.id === 'mirewarden')
           this.add
             .zone(npc.x, npc.y - 40, 100, 120)
@@ -536,7 +557,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           .get(w.id)!
           .setVisible(w.hp > 0)
           .setText(
-            `${WOODS_MONSTERS[w.monster ?? 'wolf'].name} · ${w.hp}/${WOODS_MONSTERS[w.monster ?? 'wolf'].hp}`,
+            `${WOODS_MONSTERS[w.monster ?? 'wolf'].name} · ${w.hp}/${w.maxHp ?? WOODS_MONSTERS[w.monster ?? 'wolf'].hp}`,
           )
           .setPosition(
             visual.container.x,
@@ -641,6 +662,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.woods?.refresh();
       this.crystal?.refresh();
       this.murkmire?.refresh();
+      this.frostfall?.refresh();
       this.village?.refresh();
       this.interior?.refresh();
       if (!this.keys) return;

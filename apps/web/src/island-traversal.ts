@@ -1,3 +1,4 @@
+import frostfall from '../public/assets/tilesets/traversal/frostfall.json';
 import type Phaser from 'phaser';
 import { MAPS, type Ladder, type Platform } from '@ros/game-data';
 import type { Player } from '@ros/shared';
@@ -5,7 +6,7 @@ import woods from '../public/assets/tilesets/traversal/woods.json';
 import crystal from '../public/assets/tilesets/traversal/crystal.json';
 import murkmire from '../public/assets/tilesets/traversal/murkmire.json';
 import { assetUrl } from './assets';
-const atlases = { woods, crystal, murkmire };
+const atlases = { woods, crystal, murkmire, frostfall };
 export type TraversalTheme = keyof typeof atlases;
 export function preloadTraversal(scene: Phaser.Scene, theme: TraversalTheme) {
   const key = `traversal-${theme}`;

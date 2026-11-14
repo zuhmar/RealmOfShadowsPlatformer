@@ -1,3 +1,5 @@
+import frostItems from '../public/assets/ui/frostfall-items.json';
+import frostExtras from '../public/assets/ui/frostfall-extras.json';
 import murkmireProvisions from '../public/assets/ui/murkmire-provisions.json';
 import murkmireItems from '../public/assets/ui/murkmire-items.json';
 import frontFurniture from '../public/assets/ui/front-furniture.json';
@@ -21,6 +23,13 @@ import lootAtlas from '../public/assets/ui/woods-loot.json';
 import resourcesAtlas from '../public/assets/ui/woods-resources.json';
 export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
   preloadHousing(scene);
+  if (map.island === 'Frostfall Tundra' || houseSize(map.id))
+    for (const name of ['items', 'extras'])
+      scene.load.atlas(
+        `loot-frostfall-${name}`,
+        assetUrl(`/assets/ui/frostfall-${name}.png`),
+        `/assets/ui/frostfall-${name}.json`,
+      );
   if (map.island === 'Murkmire Swamp' || houseSize(map.id))
     scene.load.atlas(
       'murkmire-provisions',
@@ -109,7 +118,13 @@ export function lootIcon(
     kind = weaponKind(item);
   let key = 'loot-basics',
     frame: string | undefined = 'fang';
-  if (Object.hasOwn(murkmireProvisions.frames, item)) {
+  if (Object.hasOwn(frostItems.frames, item)) {
+    key = 'loot-frostfall-items';
+    frame = item;
+  } else if (Object.hasOwn(frostExtras.frames, item)) {
+    key = 'loot-frostfall-extras';
+    frame = item;
+  } else if (Object.hasOwn(murkmireProvisions.frames, item)) {
     key = 'murkmire-provisions';
     frame = item;
   } else if (Object.hasOwn(murkmireItems.frames, item)) {

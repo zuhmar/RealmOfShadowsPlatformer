@@ -259,7 +259,7 @@ const game = new Server({
     verifyClient: (info, cb) => cb(!info.origin || info.origin === origin),
   }),
 });
-game.define('map', MapRoom).filterBy(['mapId', 'houseOwnerId']);
+game.define('map', MapRoom).filterBy(['mapId', 'houseOwnerId', 'battlegroundId']);
 await db.$connect();
 await game.listen(Number(process.env.PORT ?? 2567));
 console.log(

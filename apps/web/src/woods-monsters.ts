@@ -108,13 +108,13 @@ export class WoodsMonsterVisual {
     const slam = groundSlamFrame(wolf, serverTime);
     const specialKey =
       this.monster === 'crystal-wyrm' ? 'crystal-wyrm-special' : 'forest-bear-slam';
-    if (slam !== null && this.monster === 'hydra') {
-      const body = this.scene.cache.json.get('hydra-clips') as Clips;
+    if (slam !== null && (this.monster === 'hydra' || this.monster === 'frost-giant')) {
+      const body = this.scene.cache.json.get(`${this.monster}-clips`) as Clips;
       const frame = slam < 4 ? `idle-${slam}` : `attack-${slam - 4}`;
       const origin = body.origins[slam < 4 ? slam : slam + 4];
       this.sprite.anims.stop();
       this.sprite
-        .setTexture('hydra', frame)
+        .setTexture(this.monster, frame)
         .setOrigin(origin.x, origin.y)
         .setScale(this.baseScale)
         .setFlipX(wolf.slamFacing === -1);
@@ -141,11 +141,16 @@ export class WoodsMonsterVisual {
       if (this.sprite.texture.key !== this.monster) {
         this.sprite.setTexture(this.monster, 'idle-0').setScale(this.baseScale);
       }
-      if (this.monster === 'hydra' && !this.sprite.anims.isPlaying && !animation)
-        this.sprite.play(`hydra-${wolf.hp > 0 ? 'idle' : 'death'}`, true);
+      if (
+        (this.monster === 'hydra' || this.monster === 'frost-giant') &&
+        !this.sprite.anims.isPlaying &&
+        !animation
+      )
+        this.sprite.play(`${this.monster}-${wolf.hp > 0 ? 'idle' : 'death'}`, true);
       if (animation) this.sprite.play(`${this.monster}-${animation}`, true);
     }
-    if (wolf.special && wolf.hp > 0) this.sprite.setTint(0xffad75);
+    if (wolf.special && wolf.hp > 0)
+      this.sprite.setTint(this.monster === 'frost-giant' ? 0xbceeff : 0xffad75);
     else if (!this.sprite.anims.currentAnim?.key.endsWith('-hurt')) this.sprite.clearTint();
     if (wolf.hp > 0) {
       const flip = wolfFacing(wolf, this.previous?.x ?? wolf.x, players);

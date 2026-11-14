@@ -1,3 +1,5 @@
+import frostItems from '../public/assets/ui/frostfall-items.json';
+import frostExtras from '../public/assets/ui/frostfall-extras.json';
 import murkmireItems from '../public/assets/ui/murkmire-items.json';
 import frontFurniture from '../public/assets/ui/front-furniture.json';
 import housing from '../public/assets/ui/housing.json';
@@ -19,6 +21,24 @@ import { itemDefinition, weaponKind } from '@ros/game-data';
 import atlas from '../public/assets/equipment/elderwood-weapons.json';
 
 export function ItemIcon({ id }: { id: string | null }) {
+  if (id && Object.hasOwn(frostItems.frames, id))
+    return (
+      <RecipeSprite
+        atlas={frostItems}
+        sheet="frostfall-items"
+        id={id}
+        label={itemDefinition(id)?.name ?? id}
+      />
+    );
+  if (id && Object.hasOwn(frostExtras.frames, id))
+    return (
+      <RecipeSprite
+        atlas={frostExtras}
+        sheet="frostfall-extras"
+        id={id}
+        label={itemDefinition(id)?.name ?? id}
+      />
+    );
   if (id && Object.hasOwn(murkmireItems.frames, id))
     return (
       <RecipeSprite

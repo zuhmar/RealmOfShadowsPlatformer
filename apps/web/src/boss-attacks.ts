@@ -1,3 +1,4 @@
+import frostSlam from '../public/assets/effects/frost-giant-slam.json';
 import venomAtlas from '../public/assets/effects/hydra-venom.json';
 import { skillEffect } from './combat-effects';
 import Phaser from 'phaser';
@@ -48,6 +49,25 @@ export class BossWarnings {
       const r = zone.radius,
         h = BOSS_ATTACK.height,
         remaining = Math.max(0, zone.impactAt - now);
+      if (monster.monster === 'frost-giant') {
+        mark.area.setVisible(false);
+        mark.venom ??= this.scene.add
+          .sprite(zone.x, zone.y, 'frost-giant-slam', 'fx-0')
+          .setDepth(12)
+          .setName('boss-frost-warning');
+        mark.venom
+          .setFrame(
+            `fx-${Math.min(3, Math.floor(((now - zone.startedAt) / BOSS_ATTACK.windup) * 4))}`,
+          )
+          .setOrigin(0.5, 0.92)
+          .setPosition(zone.x, zone.y)
+          .setScale((r * 2) / frostSlam.frames['fx-0'].sourceSize.w);
+        mark.label
+          .setScale(1 / this.scene.cameras.main.zoom)
+          .setPosition(zone.x, zone.y - h - 25)
+          .setText(`GLACIAL SLAM ${Math.ceil(remaining / 100) / 10}s — MOVE!`);
+        continue;
+      }
       if (monster.monster === 'hydra') {
         mark.area.setVisible(false);
         mark.venom ??= this.scene.add
@@ -98,6 +118,29 @@ export class BossWarnings {
   }
 }
 export function bossImpact(scene: Phaser.Scene, event: Event) {
+  if (event.monster === 'frost-giant') {
+    if (!scene.anims.exists('frost-giant-impact'))
+      scene.anims.create({
+        key: 'frost-giant-impact',
+        frames: Array.from({ length: 8 }, (_, i) => ({
+          key: 'frost-giant-slam',
+          frame: `fx-${i}`,
+        })),
+        frameRate: 14,
+        repeat: 0,
+      });
+    const sprite = scene.add
+      .sprite(event.x, event.y, 'frost-giant-slam', 'fx-0')
+      .setOrigin(0.5, 0.92)
+      .setDepth(18)
+      .setName('boss-frost-impact');
+    sprite
+      .setScale(((event.radius ?? BOSS_ATTACK.radius) * 2) / frostSlam.frames['fx-0'].sourceSize.w)
+      .play('frost-giant-impact')
+      .once('animationcomplete', () => sprite.destroy());
+    return;
+  }
+
   if (event.monster === 'hydra') {
     if (!scene.anims.exists('hydra-venom-impact'))
       scene.anims.create({

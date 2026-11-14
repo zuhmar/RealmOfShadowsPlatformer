@@ -32,6 +32,8 @@ export function teleportKey(target: string) {
 export function teleportBlock(p: Player, id: string): string | null {
   const target = Object.hasOwn(MAPS, id) ? MAPS[id] : undefined;
   if (!target) return 'This area is coming in a future island update.';
+  if (id === 'frostfall-battleground' || p.mapId === 'frostfall-battleground')
+    return 'Use the battleground entrance or Leave button.';
   if (id === 'murkmire-arena' || p.mapId === 'murkmire-arena')
     return 'Use the arena entrance or Leave Arena button.';
   if (
@@ -46,6 +48,8 @@ export function teleportBlock(p: Player, id: string): string | null {
     !p.bossKills?.['crystal-wyrm']
   )
     return 'Defeat Crystal Wyrm to unlock Murkmire Swamp.';
+  if (target.island === 'Frostfall Tundra' && !p.bossKills?.hydra)
+    return 'Defeat Hydra to unlock Frostfall Tundra.';
   if (p.mapId === id) return 'You are here.';
   if (p.level < target.requiredLevel) return `Requires level ${target.requiredLevel}.`;
   if (!p.visitedAreas?.includes(id)) return 'Visit this area through its portal first.';

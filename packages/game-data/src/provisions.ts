@@ -1,6 +1,11 @@
 export type ProvisionSkill = 'Cooking' | 'Alchemy';
 export type ProvisionEffect = 'damage' | 'regen' | 'crit' | 'health' | 'mana';
 export const PROVISION_IDS = [
+  'icefin-roast',
+  'frost-salmon-stew',
+  'glacier-pike-feast',
+  'frostleaf-health-potion',
+  'frostleaf-mana-potion',
   'mudfish-roast',
   'bog-catfish-stew',
   'venomfin-feast',
@@ -33,6 +38,71 @@ export type ProvisionRecipe = {
 };
 export const POTION_COOLDOWN = 10000;
 export const PROVISION_RECIPES: readonly ProvisionRecipe[] = [
+  {
+    id: 'icefin-roast',
+    name: 'Icefin Roast',
+    skill: 'Cooking',
+    level: 31,
+    characterLevel: 31,
+    cost: { icefin: 40 },
+    xp: 220,
+    effect: 'damage',
+    amount: 0.4,
+    duration: 1500000,
+    description: '+40% attack damage for 25 minutes.',
+  },
+  {
+    id: 'frost-salmon-stew',
+    name: 'Frost Salmon Stew',
+    skill: 'Cooking',
+    level: 35,
+    characterLevel: 31,
+    cost: { 'frost-salmon': 45 },
+    xp: 260,
+    effect: 'regen',
+    amount: 8,
+    duration: 1500000,
+    description: '+8 out-of-combat health regeneration per second for 25 minutes.',
+  },
+  {
+    id: 'glacier-pike-feast',
+    name: 'Glacier Pike Feast',
+    skill: 'Cooking',
+    level: 40,
+    characterLevel: 31,
+    cost: { 'glacier-pike': 50 },
+    xp: 300,
+    effect: 'crit',
+    amount: 0.25,
+    duration: 1800000,
+    description:
+      '+25 percentage points of critical chance for 30 minutes, subject to the normal cap.',
+  },
+  {
+    id: 'frostleaf-health-potion',
+    name: 'Frostleaf Health Potion',
+    skill: 'Alchemy',
+    level: 31,
+    characterLevel: 31,
+    cost: { frostleaf: 40 },
+    xp: 220,
+    effect: 'health',
+    amount: 300,
+    description: 'Restores 300 health. Shares the normal potion cooldown.',
+  },
+  {
+    id: 'frostleaf-mana-potion',
+    name: 'Frostleaf Mana Potion',
+    skill: 'Alchemy',
+    level: 35,
+    characterLevel: 31,
+    cost: { frostleaf: 50 },
+    xp: 260,
+    effect: 'mana',
+    amount: 150,
+    description: 'Restores 150 mana. Shares the normal potion cooldown.',
+  },
+
   {
     id: 'mudfish-roast',
     name: 'Mudfish Roast',

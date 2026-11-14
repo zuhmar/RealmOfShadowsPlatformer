@@ -1,3 +1,5 @@
+export * from './battlegrounds';
+import { BattlegroundRun, type BattlegroundStatus } from './battlegrounds';
 export * from './arena';
 import { ArenaDuel, type ArenaStatus } from './arena';
 export * from './housing';
@@ -96,6 +98,8 @@ export type Actor = {
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
   arena?: ArenaStatus;
+  battleground?: BattlegroundStatus;
+  battlegroundGroupId?: string;
   houseOwnerId?: string;
   housing?: import('./housing').Housing;
   housingView?: import('./housing').HousingView;
@@ -172,6 +176,8 @@ export function activeGatheringTool(
   );
 }
 export type Wolf = {
+  maxHp?: number;
+  damageScale?: number;
   monster?: WoodsMonster;
   nextSpecialAt?: number;
   lastSlamAt?: number;
@@ -490,6 +496,7 @@ export class World {
     critical?: boolean;
   }[] = [];
   arena?: ArenaDuel;
+  battleground?: BattlegroundRun;
   players = new Map<string, Player>();
   wolves: Wolf[];
   drops: Drop[] = [];
@@ -592,9 +599,11 @@ export class World {
   step(dt: number, now: number, inputs: Map<string, Input>) {
     this.events = [];
     this.arena?.step(now);
+    this.battleground?.step(now);
     for (const p of this.players.values()) {
       let i = inputs.get(p.id) ?? idleInput();
       if (this.arena) i = this.arena.input(i);
+      if (this.battleground) i = this.battleground.input(p, i);
       if (Object.values(i).some(Boolean)) p.auto = false;
       if (p.auto) i = autoInput(p, this.wolves, this.map, now, this.drops);
       moveActor(p, i, this.map, dt, now);
@@ -611,7 +620,7 @@ export class World {
         p.platform = 'ground';
       }
       expireFood(p, now);
-      if (now - p.lastHit > 6000)
+      if (p.hp > 0 && now - p.lastHit > 6000)
         p.hp = Math.min(playerAttributes(p).maxHealth, p.hp + dt * playerAttributes(p).healthRegen);
       p.mp = Math.min(playerAttributes(p).maxMana, p.mp + dt * playerAttributes(p).manaRegen);
       if (p.auto && p.hp < (playerAttributes(p).maxHealth * p.settings.healBelow) / 100) {
@@ -646,7 +655,7 @@ export class World {
       }
       const platform = this.map.platforms.find((f) => f.id === w.platform)!;
       const nearest = [...this.players.values()]
-        .filter((p) => Math.abs(p.y - w.y) < (stats.boss ? 300 : 55))
+        .filter((p) => p.hp > 0 && Math.abs(p.y - w.y) < (stats.boss ? 300 : 55))
         .sort((a, b) => Math.abs(a.x - w.x) - Math.abs(b.x - w.x))[0];
       if (nearest && Math.abs(nearest.x - w.x) < (stats.boss ? BOSS_ATTACK.aggroRange : 260)) {
         if (stats.boss) {
@@ -677,7 +686,11 @@ export class World {
           w.x += Math.sign(dx) * WOODS_MONSTERS[w.monster ?? 'wolf'].speed * dt;
         else if (Math.abs(nearest.y - w.y) < 100 && now - w.lastAttack > stats.cooldown) {
           w.lastAttack = now;
-          this.hitPlayer(nearest, WOODS_MONSTERS[w.monster ?? 'wolf'].damage, now);
+          this.hitPlayer(
+            nearest,
+            WOODS_MONSTERS[w.monster ?? 'wolf'].damage * (w.damageScale ?? 1),
+            now,
+          );
         }
       } else {
         w.state = Math.abs(w.x - w.homeX) > 100 ? 'returning' : 'wandering';
@@ -695,6 +708,12 @@ export class World {
     this.drops = this.drops.filter((d) => d.expires > now);
   }
   hitPlayer(p: Player, amount: number, now: number, kind: 'basic' | 'special' = 'basic') {
+    if (p.hp <= 0) return;
+    if (
+      this.battleground &&
+      (this.battleground.phase !== 'fighting' || this.battleground.eliminated.has(p.id))
+    )
+      return;
     const stats = playerAttributes(p);
     if (kind === 'basic') {
       if (stats.dodgeChance > 0 && Math.random() < stats.dodgeChance) {
@@ -715,6 +734,10 @@ export class World {
     delete p.gathering;
     this.events.push({ type: 'hit', x: p.x, y: p.y - 55, text: `−${amount}`, playerId: p.id });
     if (p.hp > 0) return;
+    if (this.battleground) {
+      this.battleground.knockout(p, now);
+      return;
+    }
     const deathX = p.x,
       deathY = p.y;
     this.flurry = this.flurry.filter((strike) => strike.owner !== p.id);
@@ -753,11 +776,13 @@ export class World {
       radius: zone.radius,
       monster: w.monster,
       text:
-        w.monster === 'hydra'
-          ? 'VENOM ERUPTION!'
-          : w.monster === 'crystal-wyrm'
-            ? 'CRYSTAL ERUPTION!'
-            : 'GROUND SLAM!',
+        w.monster === 'frost-giant'
+          ? 'GLACIAL SLAM!'
+          : w.monster === 'hydra'
+            ? 'VENOM ERUPTION!'
+            : w.monster === 'crystal-wyrm'
+              ? 'CRYSTAL ERUPTION!'
+              : 'GROUND SLAM!',
     });
     for (const p of this.players.values()) {
       if (
@@ -767,7 +792,9 @@ export class World {
       )
         this.hitPlayer(
           p,
-          WOODS_MONSTERS[w.monster ?? 'wolf'].damage * BOSS_ATTACK.specialDamageMultiplier,
+          WOODS_MONSTERS[w.monster ?? 'wolf'].damage *
+            BOSS_ATTACK.specialDamageMultiplier *
+            (w.damageScale ?? 1),
           now,
           'special',
         );
@@ -775,6 +802,7 @@ export class World {
   }
   attack(p: Player, skill: boolean, now: number) {
     if (this.arena && this.arena.phase !== 'fighting') return;
+    if (this.battleground && (this.battleground.phase !== 'fighting' || p.hp <= 0)) return;
     if (!canUseClassWeapon(p, p.weapon)) return;
     const profile = weaponProfile(p.weapon);
     const evolution = classSkillEvolution(p);
@@ -923,6 +951,10 @@ export class World {
       critical: training.critical,
     });
     if (!w.hp) {
+      if (this.battleground) {
+        this.battleground.killed(w);
+        return;
+      }
       w.state = 'dead';
       delete w.special;
       delete w.nextSpecialAt;
@@ -965,6 +997,35 @@ export class World {
           loot: [{ item: 'murkmire-boss-key', quantity: 1 }],
           playerId: p.id,
         });
+      }
+      if (w.monster === 'frozen-wraith' && Math.random() < 0.2) {
+        p.inventory['frostfall-boss-key'] = (p.inventory['frostfall-boss-key'] ?? 0) + 1;
+        this.events.push({
+          type: 'loot',
+          x: w.x,
+          y: w.y - 105,
+          text: 'Frost Giant Key',
+          loot: [{ item: 'frostfall-boss-key', quantity: 1 }],
+          playerId: p.id,
+        });
+      }
+      if (w.monster === 'frost-giant') {
+        p.bossKills ??= {};
+        p.bossKills['frost-giant'] = (p.bossKills['frost-giant'] ?? 0) + 1;
+        if (!p.firstClearRewards?.includes('frost-giant')) {
+          (p.firstClearRewards ??= []).push('frost-giant');
+          p.inventory['frost-giant-trophy'] = (p.inventory['frost-giant-trophy'] ?? 0) + 1;
+          p.gold += 3000;
+          this.events.push({
+            type: 'loot',
+            x: p.x,
+            y: p.y - 130,
+            text: 'Frost Giant defeated',
+            lootGold: 3000,
+            loot: [{ item: 'frost-giant-trophy', quantity: 1 }],
+            playerId: p.id,
+          });
+        }
       }
       if (w.monster === 'hydra') {
         p.bossKills ??= {};
@@ -1027,6 +1088,10 @@ export class World {
       });
       const monster = w.monster ?? 'wolf';
       const materials = {
+        'frost-wolf': 'frost-pelt',
+        'ice-troll': 'troll-tusk',
+        'frozen-wraith': 'wraith-essence',
+        'frost-giant': 'giant-heart',
         'bog-slime': 'slime-glob',
         'swamp-lurker': 'lurker-bark',
         'venom-toad': 'toad-gland',
@@ -1070,6 +1135,10 @@ export class World {
                   'swamp-lurker': 24,
                   'venom-toad': 27,
                   hydra: 30,
+                  'frost-wolf': 31,
+                  'ice-troll': 34,
+                  'frozen-wraith': 37,
+                  'frost-giant': 40,
                   'cave-bat': 11,
                   'crystal-golem': 14,
                   'shard-scorpion': 17,
@@ -1236,6 +1305,7 @@ export class World {
         if (!viewerId || p.id === viewerId) return p;
         const visible = { ...p, inventory: {}, gold: 0, xp: 0, kills: 0 };
         for (const key of [
+          'battlegroundGroupId',
           'houseOwnerId',
           'housing',
           'housingView',

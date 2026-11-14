@@ -18,6 +18,11 @@ export function preloadPortalTheme(scene: Phaser.Scene, theme: PortalTheme) {
   );
 }
 export function preloadPortals(scene: Phaser.Scene, map: GameMap) {
+  if (map.portals.some((p) => p.target === 'frostfall-battleground'))
+    scene.load.image(
+      'battleground-entrance',
+      assetUrl('/assets/props/frostfall-battleground-entrance.png'),
+    );
   if (
     map.portals.some((p) => p.target === 'murkmire-arena') &&
     !scene.textures.exists('arena-entrance')
@@ -43,6 +48,18 @@ export function addPortal(
   portal: GameMap['portals'][number],
   onEnter?: () => void,
 ) {
+  if (portal.target === 'frostfall-battleground') {
+    const image = scene.add
+      .image(portal.x, portal.y, 'battleground-entrance')
+      .setDepth(2)
+      .setName('battleground-entrance');
+    image
+      .setScale(185 / image.height)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => onEnter?.());
+    groundProp(scene, image, portal.x, portal.y, 'ground');
+    return image;
+  }
   if (portal.target === 'murkmire-arena') {
     const image = scene.add
       .image(portal.x, portal.y, 'arena-entrance')
