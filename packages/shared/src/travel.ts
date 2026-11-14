@@ -3,7 +3,10 @@ import { MAPS, itemDefinition, type GameMap } from '@ros/game-data';
 import type { Player } from './index';
 /** Validate everything before consuming a boss key or changing any player state. */
 export function usePortal(p: Player, source: GameMap) {
-  const portal = source.portals.find((q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65);
+  const portal =
+    source.id === 'murkmire-arena'
+      ? source.portals[0]
+      : source.portals.find((q) => Math.abs(q.x - p.x) < 110 && Math.abs(q.y - p.y) < 65);
   if (!portal) throw new Error('Walk close to a portal first.');
   const target = MAPS[portal.target];
   if (!target) throw new Error('That area is not open yet.');

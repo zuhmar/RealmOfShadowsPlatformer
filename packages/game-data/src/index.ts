@@ -1,3 +1,5 @@
+export * from './arena';
+import { ARENA_MAP, ARENA_ID } from './arena';
 export * from './murkmire';
 import { MURKMIRE_MAPS, MURKMIRE_ITEMS, MURKMIRE_QUESTS } from './murkmire';
 export * from './housing';
@@ -307,6 +309,8 @@ for (const [stage, name, monster, background] of [
   };
 }
 Object.assign(MAPS, CRYSTAL_MAPS, MURKMIRE_MAPS);
+MAPS[ARENA_ID] = ARENA_MAP;
+MAPS.murkmire.portals.push({ x: 440, y: 820, target: ARENA_ID, label: 'Mirebound Arena · PvP' });
 MAPS['crystal-3'].portals.push({ x: 2500, y: 800, target: 'murkmire', label: 'Murkmire Swamp' });
 MAPS['crystal-boss'].portals.push({ x: 1850, y: 800, target: 'murkmire', label: 'Murkmire Swamp' });
 MAPS['woods-3'].portals.push({

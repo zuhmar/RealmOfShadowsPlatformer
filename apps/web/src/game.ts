@@ -266,7 +266,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       addBossEntrance(this, m, () => bridge.send('travel', null));
       for (const p of houseSize(m.id) ? [] : m.portals) {
-        if (!p.key || !m.bossEntrance) addPortal(this, m.id, p);
+        if (!p.key || !m.bossEntrance) addPortal(this, m.id, p, () => bridge.send('travel', null));
         if (p.key)
           fitArtwork(
             this.add.image(

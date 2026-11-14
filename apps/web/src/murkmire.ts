@@ -129,13 +129,15 @@ export class MurkmireScenery {
     for (const p of map.platforms) platform(scene, map, p);
     for (const l of map.ladders) islandLadder(scene, l, 'murkmire');
     const props =
-      map.id === 'murkmire-2'
-        ? ['root-arch', 'stump', 'boat']
-        : map.id === 'murkmire-3'
-          ? ['pillar', 'mushrooms', 'basin']
-          : map.id === 'murkmire-boss'
-            ? ['pillar', 'basin', 'pillar']
-            : ['cattails', 'stump', 'mushrooms'];
+      map.id === 'murkmire-arena'
+        ? []
+        : map.id === 'murkmire-2'
+          ? ['root-arch', 'stump', 'boat']
+          : map.id === 'murkmire-3'
+            ? ['pillar', 'mushrooms', 'basin']
+            : map.id === 'murkmire-boss'
+              ? ['pillar', 'basin', 'pillar']
+              : ['cattails', 'stump', 'mushrooms'];
     const ground = map.platforms[0];
     props.forEach((name, i) => {
       const x = 650 + (i * (map.width - 1000)) / 3;

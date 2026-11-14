@@ -1,3 +1,4 @@
+import { ArenaHud } from './arena-hud';
 import { MurkmireQuests } from './MurkmireQuests';
 import { decorationSelection } from '@ros/shared';
 import type { FurnitureTarget } from './furniture-placement';
@@ -932,6 +933,14 @@ function App() {
       )}
       {page === 'game' && (
         <main className="game-shell">
+          {p?.arena && snapshot && (
+            <ArenaHud
+              player={p}
+              players={snapshot.players}
+              time={snapshot.time}
+              send={(t, v) => bridge.current.send(t, v)}
+            />
+          )}
           {connectionStatus && (
             <div className="connection-recovery" role="status">
               <div>

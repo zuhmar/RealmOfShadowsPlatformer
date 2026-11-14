@@ -32,6 +32,8 @@ export function teleportKey(target: string) {
 export function teleportBlock(p: Player, id: string): string | null {
   const target = Object.hasOwn(MAPS, id) ? MAPS[id] : undefined;
   if (!target) return 'This area is coming in a future island update.';
+  if (id === 'murkmire-arena' || p.mapId === 'murkmire-arena')
+    return 'Use the arena entrance or Leave Arena button.';
   if (
     target.island === 'Crystal Caverns' &&
     !p.unlockedIslands?.includes('crystal') &&

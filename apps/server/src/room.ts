@@ -63,6 +63,7 @@ export class MapRoom extends Room {
       this.houseOwnerId = options.houseOwnerId;
     }
     this.world = new World(map);
+    if (this.world.arena) this.maxClients = 2;
     this.clock.setInterval(() => {
       for (const ownerId of new Set(this.housingVisits.values()))
         if (!this.world.players.has(ownerId))
@@ -91,10 +92,15 @@ export class MapRoom extends Room {
         this.sendSnapshot(c, now, true);
       }
     });
+    this.onMessage('arena', (c, value) => {
+      const p = this.player(c, true);
+      if (!p || !this.world.arena || !this.rate(c, 10) || typeof value !== 'boolean') return;
+      this.world.arena.ready(p, value, Date.now());
+    });
     this.onMessage('housing', (c, value) => this.housing(c, value));
     this.onMessage('input', (c, payload) => {
       if (!this.rate(c, 100)) return;
-      const p = this.player(c);
+      const p = this.player(c, true);
       if (!p) return;
       const clean = idleInput();
       if (payload && typeof payload === 'object')
@@ -185,7 +191,7 @@ export class MapRoom extends Room {
       const last = this.rates.get(key)?.at ?? 0;
       if (Date.now() - last < 1500) return;
       this.rates.set(key, { at: Date.now(), count: 0 });
-      const p = this.player(c);
+      const p = this.player(c, true);
       if (p) {
         const text = msg
           .replace(/[<>\x00-\x1f]/g, '')
@@ -195,11 +201,12 @@ export class MapRoom extends Room {
       }
     });
     this.onMessage('logout', async (c) => {
-      const p = this.player(c);
+      const p = this.player(c, true);
       if (!p) return;
       p.auto = false;
       delete p.gathering;
       this.inputs.set(p.id, idleInput());
+      this.world.arena?.depart(p, Date.now());
       this.world.players.delete(p.id);
       try {
         await this.enqueueSave(p);
@@ -353,7 +360,7 @@ export class MapRoom extends Room {
     destination?: string,
     housingTarget?: { mapId: string; ownerId?: string },
   ) {
-    const p = this.player(c);
+    const p = this.player(c, true);
     if (!p || !this.rate(c, 100)) return;
     if (!housingTarget && houseSize(this.world.map.id) && destination === undefined) {
       await this.exitHouse(c);
@@ -386,6 +393,7 @@ export class MapRoom extends Room {
     }
     if (!houseSize(target)) delete p.houseOwnerId;
     this.inputs.set(p.id, idleInput());
+    this.world.arena?.depart(p, Date.now());
     this.world.players.delete(p.id);
     try {
       await this.enqueueSave(p);
@@ -771,6 +779,8 @@ export class MapRoom extends Room {
     p.hp = Math.max(1, Math.min(p.hp, playerAttributes(p).maxHealth));
     p.mp = Math.max(0, Math.min(p.mp, playerAttributes(p).maxMana));
     this.world.players.set(p.id, p);
+    if (this.world.arena) this.world.arena.join(p);
+    else delete p.arena;
     this.characters.set(c.sessionId, p.id);
     if (options.snapshotProtocol === 1)
       this.snapshotStreams.set(c.sessionId, new SnapshotEncoder());
@@ -955,12 +965,23 @@ export class MapRoom extends Room {
       c.send(message.type, message.data);
     }
   }
-  player(c: Client) {
+  player(c: Client, allowArenaCombat = false) {
     const id = this.characters.get(c.sessionId) ?? '';
-    return this.questTasks.has(id) ? undefined : this.world.players.get(id);
+    const p = this.questTasks.has(id) ? undefined : this.world.players.get(id);
+    if (
+      p &&
+      !allowArenaCombat &&
+      p.arena &&
+      (p.arena.ready || p.arena.phase === 'countdown' || p.arena.phase === 'fighting')
+    ) {
+      c.send('notice', 'Cancel Ready or finish the duel before changing equipment or using items.');
+      return undefined;
+    }
+    return p;
   }
   enqueueSave(p: Player) {
     const copy = structuredClone(p);
+    delete copy.arena;
     if (p.id === this.houseOwnerId) this.houseOwner = copy;
     const task = this.saves.catch(() => {}).then(() => save(copy));
     this.saves = task;
@@ -991,6 +1012,7 @@ export class MapRoom extends Room {
     if (!id) return;
     const p = this.world.players.get(id);
     if (p) {
+      this.world.arena?.depart(p, Date.now());
       p.auto = false;
       delete p.gathering;
       this.world.players.delete(id);
@@ -1003,6 +1025,7 @@ export class MapRoom extends Room {
         await this.enqueueSave(p);
         await this.allowReconnection(c, 30);
         this.world.players.set(id, p);
+        this.world.arena?.join(p);
         this.inputs.set(id, idleInput());
         this.inputTimes.set(id, Date.now());
         c.send('welcome', { id, mapId: this.world.map.id });

@@ -1,3 +1,5 @@
+export * from './arena';
+import { ArenaDuel, type ArenaStatus } from './arena';
 export * from './housing';
 export * from './recipes';
 import { collectRecipe, rollRecipeDrop } from './recipes';
@@ -93,6 +95,7 @@ export type Actor = {
 };
 export type QuestState = { progress: number; claimed: boolean; trialKitClaimed?: boolean };
 export type Player = Actor & {
+  arena?: ArenaStatus;
   houseOwnerId?: string;
   housing?: import('./housing').Housing;
   housingView?: import('./housing').HousingView;
@@ -486,12 +489,14 @@ export class World {
     training?: OffensiveSkill | null;
     critical?: boolean;
   }[] = [];
+  arena?: ArenaDuel;
   players = new Map<string, Player>();
   wolves: Wolf[];
   drops: Drop[] = [];
   events: Event[] = [];
   serial = 0;
   constructor(public map: GameMap) {
+    if (map.id === 'murkmire-arena') this.arena = new ArenaDuel(this);
     this.wolves = map.spawns.map((s, i) => ({
       id: `wolf-${i}`,
       monster: map.monster,
@@ -586,8 +591,10 @@ export class World {
   }
   step(dt: number, now: number, inputs: Map<string, Input>) {
     this.events = [];
+    this.arena?.step(now);
     for (const p of this.players.values()) {
       let i = inputs.get(p.id) ?? idleInput();
+      if (this.arena) i = this.arena.input(i);
       if (Object.values(i).some(Boolean)) p.auto = false;
       if (p.auto) i = autoInput(p, this.wolves, this.map, now, this.drops);
       moveActor(p, i, this.map, dt, now);
@@ -767,6 +774,7 @@ export class World {
     }
   }
   attack(p: Player, skill: boolean, now: number) {
+    if (this.arena && this.arena.phase !== 'fighting') return;
     if (!canUseClassWeapon(p, p.weapon)) return;
     const profile = weaponProfile(p.weapon);
     const evolution = classSkillEvolution(p);
@@ -799,6 +807,10 @@ export class World {
         (empowered ? evolution.damageMultiplier : 1) *
         (critical ? stats.critDamage : 1),
     );
+    if (this.arena && !profile.projectile) {
+      this.arena.melee(p, hit, empowered, critical, now);
+      return;
+    }
     if (profile.projectile) {
       this.projectiles.push({
         id: `shot-${++this.serial}`,
@@ -1096,6 +1108,10 @@ export class World {
     }
   }
   stepProjectiles(dt: number, now: number) {
+    if (this.arena) {
+      this.arena.projectiles(dt, now);
+      return;
+    }
     this.projectiles = this.projectiles.filter((shot) => {
       const owner = this.players.get(shot.owner);
       if (!owner) return false;
