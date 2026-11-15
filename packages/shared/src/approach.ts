@@ -1,8 +1,10 @@
 import { idleInput, platformRoute, type Player, type Input } from './index';
 import type { GameMap } from '@ros/game-data';
 export type ApproachRequest = {
-  kind: 'npc' | 'resource' | 'portal' | 'house-enter' | 'house-exit' | 'chest' | 'monster';
+  kind: 'npc' | 'resource' | 'portal' | 'house-enter' | 'house-exit' | 'chest' | 'monster' | 'move';
   id?: string;
+  x?: number;
+  y?: number;
 };
 export type ApproachPoint = { x: number; y: number; platform: string; range: number; name: string };
 export function approachArrived(p: Player, target: ApproachPoint) {
@@ -43,4 +45,29 @@ export function approachInput(p: Player, map: GameMap, target: ApproachPoint): I
     input.right = p.x < target.x - target.range;
   }
   return input;
+}
+
+/** Resolve a world click to a walkable surface; the server supplies the final height. */
+export function movementPoint(map: GameMap, x: number, y: number): ApproachPoint {
+  if (
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    x < 0 ||
+    x > map.width ||
+    y < 0 ||
+    y > map.height
+  )
+    throw Error('Choose a destination inside the map.');
+  const platform = map.platforms
+    .filter((f) => x >= f.x && x <= f.x + f.width)
+    .sort((a, b) => Math.abs(a.y - y) - Math.abs(b.y - y))[0];
+  if (!platform) throw Error('Choose a platform to walk to.');
+  const inset = Math.min(16, platform.width / 2);
+  return {
+    x: Math.max(platform.x + inset, Math.min(platform.x + platform.width - inset, x)),
+    y: platform.y,
+    platform: platform.id,
+    range: 8,
+    name: 'your destination',
+  };
 }

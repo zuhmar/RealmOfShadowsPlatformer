@@ -1,5 +1,6 @@
 import {
   approachInput,
+  movementPoint,
   autoInput,
   approachArrived,
   platformRoute,
@@ -475,6 +476,7 @@ export class MapRoom extends Room {
   }
   approachPoint(p: Player, request: ApproachRequest): ApproachPoint {
     const map = this.world.map;
+    if (request.kind === 'move') return movementPoint(map, request.x!, request.y!);
     let point:
       | { x: number; y: number; name: string; platform?: string; range?: number }
       | undefined;
@@ -533,9 +535,16 @@ export class MapRoom extends Room {
     }
     const request = value as ApproachRequest;
     if (
-      !['npc', 'resource', 'portal', 'house-enter', 'house-exit', 'chest', 'monster'].includes(
-        request.kind,
-      ) ||
+      ![
+        'npc',
+        'resource',
+        'portal',
+        'house-enter',
+        'house-exit',
+        'chest',
+        'monster',
+        'move',
+      ].includes(request.kind) ||
       (request.id !== undefined && typeof request.id !== 'string')
     )
       return;
@@ -552,14 +561,15 @@ export class MapRoom extends Room {
       this.inputs.set(p.id, idleInput());
       const now = Date.now();
       this.approaches.set(p.id, {
-        request: { kind: request.kind, id: request.id },
+        request: { kind: request.kind, id: request.id, x: request.x, y: request.y },
         mapId: p.mapId,
         started: now,
         moved: now,
         x: p.x,
         y: p.y,
       });
-      if (!approachArrived(p, target)) c.send('notice', `Walking to ${target.name}…`);
+      if (request.kind !== 'move' && !approachArrived(p, target))
+        c.send('notice', `Walking to ${target.name}…`);
     } catch (e) {
       c.send('notice', (e as Error).message);
     }
@@ -615,6 +625,7 @@ export class MapRoom extends Room {
         this.approaches.delete(id);
         this.inputs.set(id, idleInput());
         const request = plan.request;
+        if (request.kind === 'move') continue;
         if (request.kind === 'npc') {
           delete p.gathering;
           c.send('npc', { id: request.id });

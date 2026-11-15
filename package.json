@@ -49,7 +49,8 @@
     "test:browser:gathering-skins": "node scripts/browser-gathering-skins.mjs",
     "test:browser:journal": "node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-journal.mjs",
     "test:browser:monster-click": "node --env-file-if-exists=apps/server/.env scripts/browser-monster-click.mjs",
-    "test:browser:skills": "node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-skills.mjs"
+    "test:browser:skills": "node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-skills.mjs",
+    "test:browser:click-move": "node --env-file-if-exists=apps/server/.env scripts/browser-click-move.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

@@ -45,3 +45,44 @@ test('unconnected destinations are rejected instead of walking through walls or 
   );
   assert.equal(p.x, MAPS.woods.spawn.x);
 });
+
+test('world clicks resolve to a platform and navigate there without attacking or interacting', async () => {
+  const { movementPoint } = await import('@ros/shared');
+  for (const map of Object.values(MAPS)) {
+    for (const platform of map.platforms) {
+      const target = movementPoint(map, platform.x + platform.width / 2, platform.y - 12);
+      assert.equal(target.platform, platform.id, `${map.id}: selected platform`);
+      const p = createPlayer('walker', 'Walker', map.id);
+      let tick = 0;
+      for (; tick < 3600 && !approachArrived(p, target); tick++) {
+        const input = approachInput(p, map, target);
+        assert.equal(input.attack, false);
+        assert.equal(input.interact, false);
+        moveActor(p, input, map, 1 / 30, 100000 + (tick * 1000) / 30);
+      }
+      assert.ok(approachArrived(p, target), `${map.id}: cannot walk to ${platform.id}`);
+    }
+  }
+});
+
+test('world destinations reject invalid coordinates and stay inside platform edges', async () => {
+  const { movementPoint } = await import('@ros/shared');
+  for (const [x, y] of [
+    [NaN, 100],
+    [100, Infinity],
+    [-1, 100],
+    [MAPS.woods.width + 1, 100],
+    [100, -1],
+    [100, MAPS.woods.height + 1],
+  ]) {
+    assert.throws(() => movementPoint(MAPS.woods, x, y), /inside the map/);
+  }
+  const edge = movementPoint(MAPS.woods, 0, 760);
+  assert.equal(edge.x, 16);
+  assert.equal(edge.y, 760);
+  const map = {
+    ...MAPS.woods,
+    platforms: [{ id: 'ledge', x: 100, y: 100, width: 100, oneWay: true }],
+  };
+  assert.throws(() => movementPoint(map, 500, 100), /Choose a platform/);
+});

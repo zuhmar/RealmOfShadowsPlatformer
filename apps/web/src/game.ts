@@ -213,6 +213,15 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           }
         }
       }
+      this.input.on(
+        'pointerdown',
+        (pointer: Phaser.Input.Pointer, objects: Phaser.GameObjects.GameObject[]) => {
+          if (pointer.button !== 0 || objects.length || bridge.blocked || bridge.furniturePlacement)
+            return;
+          const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+          bridge.send('approach', { kind: 'move', x: point.x, y: point.y });
+        },
+      );
       this.nextPrepareAt = this.time.now + 3000;
       if (this.textures.exists(WOLF_TEXTURE)) registerWolfAnimations(this);
       registerWeaponEffects(this);
