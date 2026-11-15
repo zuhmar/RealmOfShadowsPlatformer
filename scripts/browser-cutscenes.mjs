@@ -149,7 +149,7 @@ try {
   });
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.locator('.cinema-scene-frames')).toHaveAttribute('data-scene-frame', '15', {
-    timeout: 6000,
+    timeout: 2500,
   });
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   const history = await page.evaluate(() => {
@@ -176,7 +176,7 @@ try {
   expect(await reduced.getAttribute('data-scene-frame')).toBe(frame);
   expect(errors).toEqual([]);
   console.log(
-    `Animated films: ${scenes.length} playable scenes / ${beats} beats, 16-pose one-way sequences (verified with camera motion disabled), final-pose stop and no restart across dialogue, Pause/Play, stepping, completion/skip, mobile bounds, reduced motion and all artwork requests passed.`,
+    `Animated films: ${scenes.length} playable scenes / ${beats} beats, 12 FPS, 16-pose one-way sequences (verified with camera motion disabled), final-pose stop and no restart across dialogue, Pause/Play, stepping, completion/skip, mobile bounds, reduced motion and all artwork requests passed.`,
   );
 } finally {
   await context.close();

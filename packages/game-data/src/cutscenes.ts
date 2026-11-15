@@ -664,7 +664,7 @@ for (const scene of CUTSCENES) {
       columns: 4,
       rows: 4,
       frames: 16,
-      fps: 4,
+      fps: 12,
     };
   });
 }
