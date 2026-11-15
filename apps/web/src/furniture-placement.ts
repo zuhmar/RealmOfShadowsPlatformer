@@ -1,4 +1,4 @@
-import { itemDisplay } from './display-stands';
+import { itemDisplay, ensureDisplayAssets } from './display-stands';
 import Phaser from 'phaser';
 import { HOUSE_LAYOUTS, houseSize, type GameMap } from '@ros/game-data';
 import { furniturePlacement, decorationSelection, type Player } from '@ros/shared';
@@ -42,6 +42,16 @@ export class FurniturePlacement {
       this.ghost?.destroy();
       this.ghost = undefined;
       this.outline.clear();
+      return;
+    }
+    if (recipe.display && !ensureDisplayAssets(this.scene, this.map, [recipe.id])) {
+      this.active = false;
+      this.ghost?.setVisible(false);
+      this.outline.clear();
+      if (this.signature !== 'loading') {
+        this.signature = 'loading';
+        selection.onTarget({ x: 0, floor: 0, valid: false, reason: 'Loading display artwork…' });
+      }
       return;
     }
     this.active = true;

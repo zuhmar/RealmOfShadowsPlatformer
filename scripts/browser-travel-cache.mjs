@@ -62,7 +62,7 @@ try {
   await page.evaluate(() => {
     const t = window.travelTest;
     t.canvas = t.game.canvas;
-    t.body = t.game.textures.get('citizen-male-sage');
+    t.body = t.game.textures.get('skin-golden-test');
   });
   const path = [
     'woods',
@@ -123,7 +123,7 @@ try {
         s = t.game.scene.getScene('realm');
       return {
         sameCanvas: t.canvas === t.game.canvas,
-        sameBody: t.body === t.game.textures.get('citizen-male-sage'),
+        sameBody: t.body === t.game.textures.get('skin-golden-test'),
         background: (s.woods ?? s.crystal ?? s.village).background.texture.key,
         expectedBackground: s.map.background ?? '/assets/backgrounds/whispering-woods.png',
         scenes: t.game.scene.scenes.length,

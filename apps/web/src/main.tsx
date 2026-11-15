@@ -1,5 +1,4 @@
-import { PlaytestGuide, AdventureHint } from './PlaytestGuide';
-import { CutscenePlayer } from './CutscenePlayer';
+import { AdventureHint, PlaytestGuide } from './PlaytestGuide';
 import { cutsceneById, CUTSCENES, CUTSCENES_ENABLED } from '@ros/game-data';
 import { nextCutscene, idleInput } from '@ros/shared';
 import { BattlegroundHud } from './BattlegroundHud';
@@ -9,17 +8,12 @@ import { MurkmireQuests } from './MurkmireQuests';
 import { decorationSelection } from '@ros/shared';
 import type { FurnitureTarget } from './furniture-placement';
 import { houseSize } from '@ros/game-data';
-import { StoragePanel } from './StoragePanel';
 import { HousePopup } from './HousePopup';
-import { BagPanel } from './BagPanel';
-import { HousingPanel } from './HousingPanel';
 import { recipeFromScroll } from '@ros/game-data';
-import { RecipesPanel } from './RecipesPanel';
 import { provisionRecipe, type ProvisionSkill } from '@ros/game-data';
 import { foodEffect } from '@ros/shared';
 import { ClassSprite } from './ClassSprite';
 import { canEquipSkin } from '@ros/game-data';
-import { ClassCarousel } from './ClassCarousel';
 import { assetUrl } from './assets';
 import { HudUpdates } from './hud-updates';
 import { SnapshotDecoder, type SnapshotKeyframe, type SnapshotDelta } from '@ros/shared';
@@ -28,7 +22,6 @@ import { realmAudio } from './audio';
 import { CrystalQuests } from './CrystalQuests';
 import { ClassPanel } from './ClassPanel';
 import { OfflineActivities, activitySummary } from './OfflineActivities';
-import { WorldMapPanel } from './WorldMapPanel';
 import { SkillsPanel } from './SkillsPanel';
 import { WoodsQuests } from './WoodsQuests';
 import { ForgePanel } from './ForgePanel';
@@ -39,7 +32,7 @@ import { ActionIcon } from './ActionIcon';
 import { MenuIcon } from './MenuIcon';
 import { FullscreenButton } from './FullscreenButton';
 import { ItemIcon } from './ItemIcon';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Client, type Room } from 'colyseus.js';
 import {
@@ -82,6 +75,25 @@ import './style.css';
 import './polish.css';
 import { Avatar } from './Avatar';
 import { QuestPanel } from './QuestPanel';
+const CutscenePlayer = lazy(() =>
+  import('./CutscenePlayer').then((module) => ({ default: module.CutscenePlayer })),
+);
+const BagPanel = lazy(() => import('./BagPanel').then((module) => ({ default: module.BagPanel })));
+const StoragePanel = lazy(() =>
+  import('./StoragePanel').then((module) => ({ default: module.StoragePanel })),
+);
+const HousingPanel = lazy(() =>
+  import('./HousingPanel').then((module) => ({ default: module.HousingPanel })),
+);
+const RecipesPanel = lazy(() =>
+  import('./RecipesPanel').then((module) => ({ default: module.RecipesPanel })),
+);
+const WorldMapPanel = lazy(() =>
+  import('./WorldMapPanel').then((module) => ({ default: module.WorldMapPanel })),
+);
+const ClassCarousel = lazy(() =>
+  import('./ClassCarousel').then((module) => ({ default: module.ClassCarousel })),
+);
 const SERVER = import.meta.env.VITE_SERVER_URL ?? `${location.protocol}//${location.hostname}:2567`;
 type Character = {
   id: string;
@@ -986,14 +998,22 @@ function App() {
       {page === 'game' && (
         <main className="game-shell">
           {p && activeFilm && (
-            <CutscenePlayer
-              key={activeFilm.id}
-              scene={activeFilm}
-              player={p}
-              onFinish={() =>
-                bridge.current.send('cutscene', { action: 'finish', id: activeFilm.id })
+            <Suspense
+              fallback={
+                <div className="toast" role="status">
+                  Opening…
+                </div>
               }
-            />
+            >
+              <CutscenePlayer
+                key={activeFilm.id}
+                scene={activeFilm}
+                player={p}
+                onFinish={() =>
+                  bridge.current.send('cutscene', { action: 'finish', id: activeFilm.id })
+                }
+              />
+            </Suspense>
           )}
           {p?.battleground && snapshot && (
             <BattlegroundHud
@@ -1497,28 +1517,44 @@ function App() {
           >
             <ControlIcon name="close" />
           </button>
-          <WorldMapPanel
-            onPreview={(id) => bridge.current.prepareMap?.(id)}
-            player={p}
-            onTeleport={(id) => {
-              room?.send('teleport', id);
-              setPanel(null);
-            }}
-            onBuy={() => room?.send('buyTeleportCrystal')}
-          />
+          <Suspense
+            fallback={
+              <div className="toast" role="status">
+                Opening…
+              </div>
+            }
+          >
+            <WorldMapPanel
+              onPreview={(id) => bridge.current.prepareMap?.(id)}
+              player={p}
+              onTeleport={(id) => {
+                room?.send('teleport', id);
+                setPanel(null);
+              }}
+              onBuy={() => room?.send('buyTeleportCrystal')}
+            />
+          </Suspense>
         </div>
       )}
       {cosmeticDialog && p && page === 'game' && (
-        <ClassCarousel
-          player={p}
-          mode={cosmeticDialog}
-          near={
-            (map.id === 'crystal' && nearNpc(p, map, 'mentor')) ||
-            (!!p.classId && map.id === 'village' && nearNpc(p, map, 'mira'))
+        <Suspense
+          fallback={
+            <div className="toast" role="status">
+              Opening…
+            </div>
           }
-          onClose={() => setCosmeticDialog(null)}
-          send={bridge.current.send}
-        />
+        >
+          <ClassCarousel
+            player={p}
+            mode={cosmeticDialog}
+            near={
+              (map.id === 'crystal' && nearNpc(p, map, 'mentor')) ||
+              (!!p.classId && map.id === 'village' && nearNpc(p, map, 'mira'))
+            }
+            onClose={() => setCosmeticDialog(null)}
+            send={bridge.current.send}
+          />
+        </Suspense>
       )}
       {placingFurniture && p && (
         <section className="furniture-placement-toolbar" aria-label="Furniture placement">
@@ -1557,32 +1593,56 @@ function App() {
         </section>
       )}
       {panel === 'inventory' && p && (
-        <BagPanel
-          player={p}
-          time={snapshot?.time ?? Date.now()}
-          pending={recipePending}
-          onUse={(id) => recipeAction('use', id)}
-          send={bridge.current.send}
-          onClose={() => setPanel(null)}
-        />
+        <Suspense
+          fallback={
+            <div className="toast" role="status">
+              Opening…
+            </div>
+          }
+        >
+          <BagPanel
+            player={p}
+            time={snapshot?.time ?? Date.now()}
+            pending={recipePending}
+            onUse={(id) => recipeAction('use', id)}
+            send={bridge.current.send}
+            onClose={() => setPanel(null)}
+          />
+        </Suspense>
       )}
       {panel === 'storage' && p && (
-        <StoragePanel
-          player={p}
-          chestId={chestId}
-          send={bridge.current.send}
-          onClose={() => setPanel(null)}
-        />
+        <Suspense
+          fallback={
+            <div className="toast" role="status">
+              Opening…
+            </div>
+          }
+        >
+          <StoragePanel
+            player={p}
+            chestId={chestId}
+            send={bridge.current.send}
+            onClose={() => setPanel(null)}
+          />
+        </Suspense>
       )}
       {panel === 'decorate' && p && houseSize(p.mapId) && p.houseOwnerId === p.id && (
         <HousePopup title="Decorate house" onClose={() => setPanel(null)}>
-          <HousingPanel
-            mode="decorate"
-            player={p}
-            players={snapshot?.players ?? []}
-            onPlace={selectFurniture}
-            send={bridge.current.send}
-          />
+          <Suspense
+            fallback={
+              <div className="toast" role="status">
+                Opening…
+              </div>
+            }
+          >
+            <HousingPanel
+              mode="decorate"
+              player={p}
+              players={snapshot?.players ?? []}
+              onPlace={selectFurniture}
+              send={bridge.current.send}
+            />
+          </Suspense>
         </HousePopup>
       )}
       {panel && !['map', 'inventory', 'storage', 'decorate'].includes(panel) && p && (
@@ -1615,14 +1675,22 @@ function App() {
               }
             </h2>
             {panel === 'housing' && (
-              <HousingPanel
-                player={p}
-                onDecorate={() => setPanel('decorate')}
-                players={snapshot?.players ?? []}
-                invitedHomes={housingInvitations}
-                onPlace={selectFurniture}
-                send={bridge.current.send}
-              />
+              <Suspense
+                fallback={
+                  <div className="toast" role="status">
+                    Opening…
+                  </div>
+                }
+              >
+                <HousingPanel
+                  player={p}
+                  onDecorate={() => setPanel('decorate')}
+                  players={snapshot?.players ?? []}
+                  invitedHomes={housingInvitations}
+                  onPlace={selectFurniture}
+                  send={bridge.current.send}
+                />
+              </Suspense>
             )}
             {panel === 'skills' && (
               <>
@@ -1638,13 +1706,21 @@ function App() {
               </>
             )}
             {panel === 'recipes' && (
-              <RecipesPanel
-                key={recipeSkill}
-                player={p}
-                initialSkill={recipeSkill}
-                pending={recipePending}
-                onAction={recipeAction}
-              />
+              <Suspense
+                fallback={
+                  <div className="toast" role="status">
+                    Opening…
+                  </div>
+                }
+              >
+                <RecipesPanel
+                  key={recipeSkill}
+                  player={p}
+                  initialSkill={recipeSkill}
+                  pending={recipePending}
+                  onAction={recipeAction}
+                />
+              </Suspense>
             )}
             {panel === 'character' && (
               <>

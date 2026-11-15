@@ -1,5 +1,6 @@
+import { displayStandTheme } from '@ros/game-data';
 import { preloadGeneratedTerrain } from './generated-terrain';
-import { itemDisplay, preloadDisplayStands } from './display-stands';
+import { itemDisplay, preloadDisplayStands, ensureDisplayAssets } from './display-stands';
 import { decorationSize } from '@ros/shared';
 import { terrainPlatform } from './terrain';
 import Phaser from 'phaser';
@@ -7,10 +8,13 @@ import { HOUSE_LAYOUTS, houseSize, type GameMap } from '@ros/game-data';
 import type { Player } from '@ros/shared';
 import { assetUrl } from './assets';
 import { preloadHousing } from './housing';
-export function preloadHouseInterior(scene: Phaser.Scene) {
+export function preloadHouseInterior(scene: Phaser.Scene, items: readonly string[] = []) {
   preloadGeneratedTerrain(scene, 'village');
   preloadHousing(scene);
-  preloadDisplayStands(scene);
+  preloadDisplayStands(
+    scene,
+    items.some((item) => ['celestial', 'shadow'].includes(displayStandTheme(item))),
+  );
   if (!scene.textures.exists('house-outdoors'))
     scene.load.image('house-outdoors', assetUrl('/assets/backgrounds/elderwood-village.png'));
   if (!scene.textures.exists('house-window'))
@@ -208,6 +212,8 @@ export class HouseInterior {
     const furniture = p?.housingView?.furniture ?? p?.housing?.furniture ?? [],
       key = JSON.stringify(furniture);
     if (key === this.signature) return;
+    const displayItems = furniture.filter((f) => f.display).map((f) => f.item);
+    if (!ensureDisplayAssets(this.scene, this.map, displayItems)) return;
     this.signature = key;
     this.items.forEach((i) => i.destroy());
     this.items = [];

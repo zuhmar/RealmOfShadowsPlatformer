@@ -234,6 +234,7 @@ export {
   SnapshotEncoder,
   SnapshotDecoder,
   type SnapshotDelta,
+  type SnapshotFieldCache,
   type SnapshotKeyframe,
 } from './snapshot-stream';
 export { equipSkin, normalizeSkin } from './skins';
@@ -1318,10 +1319,12 @@ export class World {
       });
     }
   }
-  snapshot(now: number, viewerId?: string): Snapshot {
+  snapshot(now: number, viewerId?: string, publicPlayers?: Map<string, Player>): Snapshot {
     return {
       players: [...this.players.values()].map((p) => {
         if (!viewerId || p.id === viewerId) return p;
+        const cached = publicPlayers?.get(p.id);
+        if (cached) return cached;
         const visible = { ...p, inventory: {}, gold: 0, xp: 0, kills: 0 };
         for (const key of [
           'seenCutscenes',
@@ -1359,6 +1362,7 @@ export class World {
           'teleportStarterGranted',
         ] as const)
           delete visible[key];
+        publicPlayers?.set(p.id, visible);
         return visible;
       }),
       wolves: this.wolves,

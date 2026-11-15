@@ -10,6 +10,7 @@ export type SnapshotDelta = {
   time: number;
   changes: Partial<Record<Collection, { upsert: Change[]; remove: string[] }>>;
 };
+export type SnapshotFieldCache = WeakMap<object, Record<string, unknown>>;
 export type SnapshotKeyframe = Snapshot & { sequence?: number };
 
 /** Field-level changes keep inventories and equipment off the movement hot path. */
@@ -21,6 +22,7 @@ export class SnapshotEncoder {
   encode(
     snapshot: Snapshot,
     force = false,
+    fieldCache?: SnapshotFieldCache,
   ): { type: 'snapshot'; data: SnapshotKeyframe } | { type: 'snapshotDelta'; data: SnapshotDelta } {
     const full =
       force ||
@@ -35,15 +37,19 @@ export class SnapshotEncoder {
       const upsert: Change[] = [];
       for (const entity of (snapshot[name] ?? []) as unknown as Entity[]) {
         const old = before.get(entity.id);
-        const fields: Record<string, unknown> = {};
-        const set: Record<string, unknown> = {};
-        for (const [key, value] of Object.entries(entity)) {
-          if (value === undefined) continue;
-          const encoded =
-            value !== null && typeof value === 'object' ? JSON.stringify(value) : value;
-          fields[key] = encoded;
-          if (!old || old[key] !== encoded) set[key] = value;
+        let fields = fieldCache?.get(entity);
+        if (!fields) {
+          fields = {};
+          for (const [key, value] of Object.entries(entity)) {
+            if (value === undefined) continue;
+            fields[key] =
+              value !== null && typeof value === 'object' ? JSON.stringify(value) : value;
+          }
+          fieldCache?.set(entity, fields);
         }
+        const set: Record<string, unknown> = {};
+        for (const [key, encoded] of Object.entries(fields))
+          if (!old || old[key] !== encoded) set[key] = entity[key];
         const unset = old ? Object.keys(old).filter((key) => !(key in fields)) : [];
         if (Object.keys(set).length || unset.length)
           upsert.push({ id: entity.id, set, ...(unset.length ? { unset } : {}) });

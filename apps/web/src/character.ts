@@ -65,6 +65,7 @@ export function preloadCharacters(scene: Phaser.Scene, players: Player[] = [], m
         false,
       );
   }
+  if (players.length && players.every((p) => p.skin)) return;
   scene.load.json('citizen-clips', '/assets/characters/citizen-animations.json');
   for (const a of APPEARANCES)
     scene.load.atlas(
@@ -85,6 +86,7 @@ export function registerCharacters(scene: Phaser.Scene) {
       repeat: -1,
     });
   const clips = scene.cache.json.get('citizen-clips') as Clips;
+  if (!clips) return;
   for (const a of APPEARANCES) {
     const atlas = scene.cache.json.get(`citizen-atlas-${a}`) as Atlas;
     const original = scene.textures
@@ -265,10 +267,16 @@ export class CharacterVisual {
     private scene: Phaser.Scene,
     public player: Player,
   ) {
-    ensureOutfit(scene, player.appearance, player.outfit, 'body');
-    this.key = characterKey(player.appearance, player.outfit);
+    if (!player.skin) ensureOutfit(scene, player.appearance, player.outfit, 'body');
+    this.key = player.skin ? '__DEFAULT' : characterKey(player.appearance, player.outfit);
     this.container = scene.add.container(player.x, player.y).setDepth(10);
-    this.sprite = new Phaser.GameObjects.Sprite(scene, 0, 0, this.key, 'idle-0')
+    this.sprite = new Phaser.GameObjects.Sprite(
+      scene,
+      0,
+      0,
+      this.key,
+      player.skin ? undefined : 'idle-0',
+    )
       .setOrigin(0.5, 224 / 256)
       .setScale(0.36);
     this.gatheringVisual = new Phaser.GameObjects.Graphics(scene);
@@ -290,6 +298,12 @@ export class CharacterVisual {
       return;
     }
     this.skinVisual?.container.setVisible(false);
+    if (p.skin) {
+      this.sprite.setVisible(false);
+      this.container.setPosition(p.x, p.y);
+      this.player = { ...p };
+      return;
+    }
     this.sprite.setVisible(true);
     const motion = characterMotion(p, map);
     const gathering =
@@ -401,10 +415,7 @@ export class CharacterVisual {
     this.player = { ...p };
   }
   die(x = this.container.x, y = this.container.y) {
-    if (this.player.skin) {
-      const corpse = this.skinVisual?.die(x, y, this.player);
-      if (corpse) return corpse;
-    }
+    if (this.player.skin) return this.skinVisual?.die(x, y, this.player);
     const kind = weaponKind(this.player.weapon);
     const tierWeapon = !!equipmentDefinition(this.player.weapon)?.weaponKind;
     if (!tierWeapon)

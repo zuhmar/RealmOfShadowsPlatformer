@@ -57,6 +57,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
   let destroyed = false;
   const backgroundCache: string[] = [];
   const prepared = new Set<string>();
+  const monsterIslands: string[] = [];
   class RealmScene extends Phaser.Scene {
     map!: GameMap;
     actors = new Map<string, Phaser.GameObjects.Container>();
@@ -101,13 +102,17 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
 
       preloadPortals(this, loadingMap);
       preloadWeaponEffects(this);
-      preloadLoot(this, loadingMap);
+      const viewer = bridge.snapshot?.players.find((p) => p.id === bridge.id);
+      const displayItems = (viewer?.housingView?.furniture ?? viewer?.housing?.furniture ?? [])
+        .filter((f) => f.display)
+        .map((f) => f.item);
+      preloadLoot(this, loadingMap, displayItems);
       preloadBossEntrance(this, loadingMap);
       preloadWoodsMonster(this, loadingMap.monster);
       if (loadingMap.id === 'frostfall-battleground')
         for (const kind of ['frost-wolf', 'ice-troll', 'frozen-wraith', 'frost-giant'] as const)
           preloadWoodsMonster(this, kind);
-      if (houseSize(loadingMap.id)) preloadHouseInterior(this);
+      if (houseSize(loadingMap.id)) preloadHouseInterior(this, displayItems);
       else if (loadingMap.island === 'Whispering Woods') preloadWoods(this, loadingMap);
       else if (loadingMap.island === 'Murkmire Swamp') preloadMurkmire(this, loadingMap);
       else if (loadingMap.island === 'Frostfall Tundra') preloadFrostfall(this, loadingMap);
@@ -152,6 +157,8 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       if (
         !target ||
         !p ||
+        p.arena ||
+        p.battleground ||
         target.id === this.map.id ||
         p.level < target.requiredLevel ||
         connection?.saveData ||
@@ -173,6 +180,40 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       this.load.start();
     }
     create() {
+      const incoming = MAPS[bridge.snapshot?.mapId ?? 'village'];
+      if (incoming.monster || incoming.id === 'frostfall-battleground') {
+        const prior = monsterIslands.indexOf(incoming.island);
+        if (prior >= 0) monsterIslands.splice(prior, 1);
+        monsterIslands.push(incoming.island);
+      }
+      while (monsterIslands.length > 2) {
+        const island = monsterIslands.shift()!;
+        const monsters = new Set(
+          Object.values(MAPS)
+            .filter((map) => map.island === island)
+            .map((map) => map.monster)
+            .filter(Boolean),
+        );
+        for (const monster of monsters) {
+          const keys =
+            monster === 'wolf'
+              ? [WOLF_TEXTURE]
+              : [
+                  monster!,
+                  ...(monster === 'forest-bear'
+                    ? ['forest-bear-slam']
+                    : monster === 'crystal-wyrm'
+                      ? ['crystal-wyrm-special']
+                      : []),
+                ];
+          for (const key of keys) {
+            if (!this.textures.exists(key)) continue;
+            for (const animation of this.anims.getAnimsFromTexture(key))
+              this.anims.remove(animation);
+            if (this.textures.exists(key)) this.textures.remove(key);
+          }
+        }
+      }
       this.nextPrepareAt = this.time.now + 3000;
       if (this.textures.exists(WOLF_TEXTURE)) registerWolfAnimations(this);
       registerWeaponEffects(this);
@@ -513,6 +554,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             this.cameras.main.setZoom(this.scale.width < 700 ? 0.85 : 1.05);
           }
         }
+        const view = this.cameras.main.worldView;
+        const onScreen =
+          key === bridge.id ||
+          (p.x > view.left - 180 &&
+            p.x < view.right + 180 &&
+            p.y > view.top - 200 &&
+            p.y < view.bottom + 200);
+        visual.container.setVisible(onScreen);
+        this.labels.get(key)!.setVisible(onScreen);
+        if (!onScreen) continue;
         visual.sync(p, this.map, this.time.now);
         const c = visual.container;
         this.labels.get(key)!.setPosition(c.x, c.y - 90);

@@ -1,20 +1,37 @@
 import Phaser from 'phaser';
-import { displayStandTheme } from '@ros/game-data';
-import { lootIcon } from './loot-effects';
+import { type GameMap, displayStandTheme } from '@ros/game-data';
+import { lootIcon, preloadLoot, houseLootKeys } from './loot-effects';
 import { assetUrl } from './assets';
-export function preloadDisplayStands(scene: Phaser.Scene) {
+export function preloadDisplayStands(scene: Phaser.Scene, animated = true) {
   if (!scene.textures.exists('island-display-stands'))
     scene.load.atlas(
       'island-display-stands',
       assetUrl('/assets/ui/island-display-stands.png'),
       '/assets/ui/island-display-stands.json',
     );
-  if (!scene.textures.exists('animated-display-stands'))
+  if (animated && !scene.textures.exists('animated-display-stands'))
     scene.load.atlas(
       'animated-display-stands',
       assetUrl('/assets/ui/animated-display-stands.png'),
       '/assets/ui/animated-display-stands.json',
     );
+}
+const displayLoads = new WeakMap<Phaser.Scene, number>();
+export function ensureDisplayAssets(scene: Phaser.Scene, map: GameMap, items: readonly string[]) {
+  const animated = items.some((item) => ['celestial', 'shadow'].includes(displayStandTheme(item)));
+  const required = [
+    ...houseLootKeys(items),
+    'island-display-stands',
+    ...(animated ? ['animated-display-stands'] : []),
+  ];
+  if (required.every((key) => scene.textures.exists(key))) return true;
+  if (!scene.load.isLoading() && scene.time.now >= (displayLoads.get(scene) ?? 0)) {
+    displayLoads.set(scene, scene.time.now + 3000);
+    preloadLoot(scene, map, items);
+    preloadDisplayStands(scene, animated);
+    scene.load.start();
+  }
+  return false;
 }
 /** Uniform scaling preserves each front-facing sprite and anchors its feet to the floor. */
 export function displayStand(scene: Phaser.Scene, item: string) {

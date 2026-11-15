@@ -48,7 +48,7 @@ export async function save(p: Player) {
     });
     for (const [id, state] of Object.entries(p.quests ?? {})) {
       const quest = QUESTS[id as keyof typeof QUESTS];
-      if (!quest) continue;
+      if (!quest || state.claimed || state.progress <= 0) continue;
       await tx.questProgress.updateMany({
         where: {
           characterId: p.id,

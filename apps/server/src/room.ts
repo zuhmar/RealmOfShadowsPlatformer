@@ -36,6 +36,7 @@ import {
   equipSkin,
   normalizeSkin,
   SnapshotEncoder,
+  type SnapshotFieldCache,
   type Input,
   type Player,
 } from '@ros/shared';
@@ -1124,10 +1125,16 @@ export class MapRoom extends Room {
       .catch((e) => c.send('notice', e instanceof Error ? e.message : 'Could not save housing.'))
       .finally(() => this.questTasks.delete(p.id));
   }
-  sendSnapshot(c: Client, now: number, force = false) {
+  sendSnapshot(
+    c: Client,
+    now: number,
+    force = false,
+    publicPlayers?: Map<string, Player>,
+    fieldCache?: SnapshotFieldCache,
+  ) {
     const id = this.characters.get(c.sessionId);
     if (!id || !this.world.players.has(id)) return;
-    const snapshot = this.world.snapshot(now, id);
+    const snapshot = this.world.snapshot(now, id, publicPlayers);
     const viewer = this.world.players.get(id)!;
     const owner = this.houseOwnerId
       ? (this.world.players.get(this.houseOwnerId) ?? this.houseOwner)
@@ -1155,7 +1162,7 @@ export class MapRoom extends Room {
     const stream = this.snapshotStreams.get(c.sessionId);
     if (!stream) c.send('snapshot', snapshot);
     else {
-      const message = stream.encode(snapshot, force);
+      const message = stream.encode(snapshot, force, fieldCache);
       c.send(message.type, message.data);
     }
   }
@@ -1210,11 +1217,16 @@ export class MapRoom extends Room {
       i.skill = false;
       i.interact = false;
     }
-    if (++this.ticks % 2 === 0)
+    if (++this.ticks % 2 === 0) {
+      // Share immutable public views and field fingerprints only within this broadcast.
+      const publicPlayers = new Map<string, Player>();
+      const fieldCache: SnapshotFieldCache = new WeakMap();
       for (const client of this.clients) {
         const id = this.characters.get(client.sessionId);
-        if (id && this.world.players.has(id)) this.sendSnapshot(client, now);
+        if (id && this.world.players.has(id))
+          this.sendSnapshot(client, now, false, publicPlayers, fieldCache);
       }
+    }
     if (this.world.events.length) this.broadcast('events', this.world.events);
     if (this.ticks % 150 === 0)
       for (const p of this.world.players.values())

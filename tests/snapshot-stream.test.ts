@@ -71,3 +71,26 @@ test('movement deltas omit large unchanged inventories and private progression',
   assert.ok(JSON.stringify(delta).length < JSON.stringify(full).length * 0.1);
   assert.ok(!JSON.stringify(delta).includes('inventory'));
 });
+
+test('broadcast-local view and field caches preserve viewer privacy and nested updates', () => {
+  const world = new World(MAPS.woods);
+  const players = Array.from({ length: 4 }, (_, i) => createPlayer(`p${i}`, `P${i}`, 'woods'));
+  players.forEach((p, i) => {
+    p.inventory.fang = i + 1;
+    world.players.set(p.id, p);
+  });
+  const ordinary = players.map(() => new SnapshotEncoder());
+  const cached = players.map(() => new SnapshotEncoder());
+  for (let tick = 0; tick < 5; tick++) {
+    const publicPlayers = new Map();
+    const fields = new WeakMap();
+    players[0].inventory.fang++;
+    players[1].x += 10;
+    for (const [i, player] of players.entries()) {
+      const now = 10000 + tick * 100;
+      const expected = ordinary[i].encode(world.snapshot(now, player.id));
+      const actual = cached[i].encode(world.snapshot(now, player.id, publicPlayers), false, fields);
+      assert.deepEqual(wire(actual), wire(expected));
+    }
+  }
+});

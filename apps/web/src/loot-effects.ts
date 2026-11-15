@@ -21,22 +21,48 @@ import {
 import { GEAR_RARITY_COLORS, type Drop, type Event, type GearRarity } from '@ros/shared';
 import lootAtlas from '../public/assets/ui/woods-loot.json';
 import resourcesAtlas from '../public/assets/ui/woods-resources.json';
-export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
+export function houseLootGroups(items: readonly string[]) {
+  return {
+    frost: items.some(
+      (item) => Object.hasOwn(frostItems.frames, item) || Object.hasOwn(frostExtras.frames, item),
+    ),
+    swamp: items.some(
+      (item) =>
+        Object.hasOwn(murkmireProvisions.frames, item) || Object.hasOwn(murkmireItems.frames, item),
+    ),
+    crystal: items.some(
+      (item) =>
+        Object.hasOwn(crystalResources.frames, item) || Object.hasOwn(crystalDrops.frames, item),
+    ),
+    tiers: new Set(items.map((item) => equipmentDefinition(item)?.tier).filter(Boolean)),
+  };
+}
+export function houseLootKeys(items: readonly string[]) {
+  const groups = houseLootGroups(items);
+  return [
+    ...(groups.frost ? ['loot-frostfall-items', 'loot-frostfall-extras'] : []),
+    ...(groups.swamp ? ['murkmire-provisions', 'loot-murkmire-items'] : []),
+    ...(groups.crystal ? ['loot-crystal-resources', 'loot-crystal-drops'] : []),
+    ...[...groups.tiers].filter((tier) => tier !== 'woods').map((tier) => `loot-equipment-${tier}`),
+  ];
+}
+export function preloadLoot(scene: Phaser.Scene, map: GameMap, houseItems: readonly string[] = []) {
+  const groups = houseLootGroups(houseItems);
   preloadHousing(scene);
-  if (map.island === 'Frostfall Tundra' || houseSize(map.id))
+  if (map.island === 'Frostfall Tundra' || (houseSize(map.id) && groups.frost))
     for (const name of ['items', 'extras'])
       scene.load.atlas(
         `loot-frostfall-${name}`,
         assetUrl(`/assets/ui/frostfall-${name}.png`),
         `/assets/ui/frostfall-${name}.json`,
       );
-  if (map.island === 'Murkmire Swamp' || houseSize(map.id))
+  if (map.island === 'Murkmire Swamp' || (houseSize(map.id) && groups.swamp))
     scene.load.atlas(
       'murkmire-provisions',
       assetUrl('/assets/ui/murkmire-provisions.png'),
       '/assets/ui/murkmire-provisions.json',
     );
-  if (map.island === 'Murkmire Swamp' || houseSize(map.id))
+  if (map.island === 'Murkmire Swamp' || (houseSize(map.id) && groups.swamp))
     scene.load.atlas(
       'loot-murkmire-items',
       assetUrl('/assets/ui/murkmire-items.png'),
@@ -66,7 +92,7 @@ export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
     assetUrl('/assets/ui/loot-basics.png'),
     '/assets/ui/loot-basics.json',
   );
-  if (map.island === 'Crystal Caverns' || houseSize(map.id)) {
+  if (map.island === 'Crystal Caverns' || (houseSize(map.id) && groups.crystal)) {
     scene.load.atlas(
       'loot-crystal-resources',
       assetUrl('/assets/ui/crystal-resources.png'),
@@ -81,7 +107,11 @@ export function preloadLoot(scene: Phaser.Scene, map: GameMap) {
   scene.load.image('loot-crystal', assetUrl('/assets/ui/teleport-crystal.png'));
   scene.load.image('forest-bear-key', assetUrl('/assets/ui/forest-bear-key.png'));
   const tier = EQUIPMENT_TIERS.find((t) => t.island === map.island || t.islandName === map.island);
-  for (const selectedTier of houseSize(map.id) ? EQUIPMENT_TIERS : tier ? [tier] : []) {
+  for (const selectedTier of houseSize(map.id)
+    ? EQUIPMENT_TIERS.filter((t) => groups.tiers.has(t.id))
+    : tier
+      ? [tier]
+      : []) {
     if (selectedTier.id === 'woods') continue;
     scene.load.atlas(
       `loot-equipment-${selectedTier.id}`,

@@ -1,0 +1,192 @@
+{
+  "scope": "Local Chromium mobile emulation; battleground fixture health is held high to prevent wipe during measurement. Decoded RGBA estimates exclude driver overhead. Not physical-phone or production capacity measurements.",
+  "crowdedHunt": {
+    "before": {
+      "actors": 24,
+      "monsters": 10,
+      "frames": 150,
+      "averageFrameMs": 33.55,
+      "frameP95Ms": 50,
+      "estimatedDecodedTextureMiB": 259.8,
+      "textures": 87,
+      "jsHeapMiB": 79.5,
+      "viewport": "390x844 at device scale 2",
+      "cpuThrottle": 2,
+      "measurementSeconds": 5,
+      "initialSourceImageBytes": 45460383,
+      "initialDeliveryImageBytes": 16974642,
+      "imageReductionPercent": 62.7,
+      "initialArmedOrGatheringSheets": 0,
+      "scope": "Chromium mobile emulation with 24 actors and 10 monsters, after warmup. Frame/heap/decoded-texture estimates are local measurements, not physical-phone or production-capacity results."
+    },
+    "after": {
+      "actors": 24,
+      "monsters": 10,
+      "frames": 147,
+      "averageFrameMs": 34.24,
+      "frameP95Ms": 50,
+      "estimatedDecodedTextureMiB": 223.8,
+      "textures": 82,
+      "jsHeapMiB": 56.6,
+      "viewport": "390x844 at device scale 2",
+      "cpuThrottle": 2,
+      "measurementSeconds": 5,
+      "initialSourceImageBytes": 41888370,
+      "initialDeliveryImageBytes": 15874334,
+      "imageReductionPercent": 62.1,
+      "initialArmedOrGatheringSheets": 0,
+      "scope": "Chromium mobile emulation with 24 actors and 10 monsters, after warmup. Frame/heap/decoded-texture estimates are local measurements, not physical-phone or production-capacity results."
+    }
+  },
+  "travel": [
+    {
+      "mapId": "woods-boss",
+      "decodedMiB": 201.9,
+      "textures": 44,
+      "scenes": 1
+    },
+    {
+      "mapId": "crystal-boss",
+      "decodedMiB": 268.2,
+      "textures": 60,
+      "scenes": 1
+    },
+    {
+      "mapId": "murkmire-boss",
+      "decodedMiB": 295.9,
+      "textures": 68,
+      "scenes": 1
+    },
+    {
+      "mapId": "frostfall-boss",
+      "decodedMiB": 337.9,
+      "textures": 75,
+      "scenes": 1
+    },
+    {
+      "mapId": "woods",
+      "decodedMiB": 360.8,
+      "textures": 90,
+      "scenes": 1
+    },
+    {
+      "mapId": "woods-boss",
+      "decodedMiB": 366.8,
+      "textures": 77,
+      "scenes": 1
+    },
+    {
+      "mapId": "crystal-boss",
+      "decodedMiB": 369.8,
+      "textures": 79,
+      "scenes": 1
+    },
+    {
+      "mapId": "murkmire-boss",
+      "decodedMiB": 343.9,
+      "textures": 77,
+      "scenes": 1
+    },
+    {
+      "mapId": "frostfall-boss",
+      "decodedMiB": 337.9,
+      "textures": 75,
+      "scenes": 1
+    },
+    {
+      "mapId": "woods",
+      "decodedMiB": 360.8,
+      "textures": 90,
+      "scenes": 1
+    }
+  ],
+  "houses": [
+    {
+      "name": "empty",
+      "decodedMiB": 180.6,
+      "textures": 43,
+      "images": 32
+    },
+    {
+      "name": "frost-display",
+      "decodedMiB": 192.6,
+      "textures": 45,
+      "images": 34
+    }
+  ],
+  "battlegrounds": [
+    {
+      "phase": "wave-nine",
+      "cpuThrottle": 2,
+      "frames": 82,
+      "averageFrameMs": 36.79,
+      "p95Ms": 50.1,
+      "monsters": 14,
+      "decodedMiB": 216
+    },
+    {
+      "phase": "boss-special",
+      "cpuThrottle": 2,
+      "frames": 87,
+      "averageFrameMs": 34.67,
+      "p95Ms": 50,
+      "monsters": 1,
+      "decodedMiB": 216
+    }
+  ],
+  "serverCpu": [
+    {
+      "players": 4,
+      "broadcastCache": false,
+      "simulatedSeconds": 30,
+      "simulationMs": 96,
+      "encodingMs": 250.3,
+      "broadcastP95Ms": 1.22,
+      "jsonBytesPerSecond": 43323
+    },
+    {
+      "players": 4,
+      "broadcastCache": true,
+      "simulatedSeconds": 30,
+      "simulationMs": 72.9,
+      "encodingMs": 158.5,
+      "broadcastP95Ms": 0.71,
+      "jsonBytesPerSecond": 43323
+    },
+    {
+      "players": 24,
+      "broadcastCache": false,
+      "simulatedSeconds": 30,
+      "simulationMs": 448.3,
+      "encodingMs": 6072.2,
+      "broadcastP95Ms": 20.01,
+      "jsonBytesPerSecond": 933446
+    },
+    {
+      "players": 24,
+      "broadcastCache": true,
+      "simulatedSeconds": 30,
+      "simulationMs": 396.8,
+      "encodingMs": 2904,
+      "broadcastP95Ms": 8.49,
+      "jsonBytesPerSecond": 933478
+    }
+  ],
+  "liveRoom": {
+    "players": 24,
+    "measuredSeconds": 10,
+    "minUpdatesPerSecond": 15,
+    "maxUpdatesPerSecond": 15,
+    "aggregateJsonKiBPerSecond": 1041.2,
+    "scope": "Local 24-player WebSocket room with AUTO combat and normal five-second saves; not an internet bandwidth or production capacity guarantee.",
+    "completedQuestSaveMedianMs": 3.23,
+    "completedQuestSaveP95Ms": 18.32
+  },
+  "startup": {
+    "initialJavaScriptFiles": ["/assets/index-BapEJPWj.js"],
+    "rawJavaScriptBytes": 568312,
+    "estimatedGzipJavaScriptBytes": 175616,
+    "gameAndHeavyPanelsDeferred": true,
+    "scope": "Production build landing/account dialog; gzip is a file-size estimate, not measured network transfer."
+  }
+}
