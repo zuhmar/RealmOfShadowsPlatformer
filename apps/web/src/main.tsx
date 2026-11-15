@@ -17,9 +17,7 @@ import { HudUpdates } from './hud-updates';
 import { SnapshotDecoder, type SnapshotKeyframe, type SnapshotDelta } from '@ros/shared';
 import { AudioSettings } from './AudioSettings';
 import { realmAudio } from './audio';
-import { ClassPanel } from './ClassPanel';
 import { OfflineActivities, activitySummary } from './OfflineActivities';
-import { SkillsPanel } from './SkillsPanel';
 import { ForgePanel } from './ForgePanel';
 import { GatheringTools } from './GatheringTools';
 import { ToolIcon } from './ToolIcon';
@@ -70,6 +68,9 @@ import type { Bridge } from './game';
 import './style.css';
 import './polish.css';
 import { Avatar } from './Avatar';
+const SkillsPanel = lazy(() =>
+  import('./SkillsPanel').then((module) => ({ default: module.SkillsPanel })),
+);
 const JournalView = lazy(() =>
   import('./JournalView').then((module) => ({ default: module.JournalView })),
 );
@@ -667,6 +668,7 @@ function App() {
       !!cosmeticDialog ||
       !!placingFurniture ||
       !!connectionStatus ||
+      panel === 'skills' ||
       panel === 'quests' ||
       panel === 'mira' ||
       panel === 'bram' ||
@@ -680,6 +682,7 @@ function App() {
       p?.cinematic ||
       cosmeticDialog ||
       placingFurniture ||
+      panel === 'skills' ||
       panel === 'quests' ||
       panel === 'mira' ||
       panel === 'bram' ||
@@ -1699,6 +1702,23 @@ function App() {
             />
           </Suspense>
         )}
+      {panel === 'skills' && p && (
+        <Suspense
+          fallback={
+            <div className="toast" role="status">
+              Opening skills…
+            </div>
+          }
+        >
+          <SkillsPanel
+            player={p}
+            onClose={() => setPanel(null)}
+            onBrowse={() => setCosmeticDialog('class')}
+            onRecipes={() => setPanel('recipes')}
+            send={bridge.current.send}
+          />
+        </Suspense>
+      )}
       {panel &&
         ![
           'map',
@@ -1710,6 +1730,7 @@ function App() {
           'crystal-quests',
           'murkmire-quests',
           'frostfall-quests',
+          'skills',
         ].includes(panel) &&
         p && (
           <div className={`modal-backdrop ${panel === 'housing' ? 'housing-open-backdrop' : ''}`}>
@@ -1757,19 +1778,6 @@ function App() {
                     send={bridge.current.send}
                   />
                 </Suspense>
-              )}
-              {panel === 'skills' && (
-                <>
-                  <ClassPanel
-                    player={p}
-                    send={bridge.current.send}
-                    onBrowse={() => setCosmeticDialog('class')}
-                  />
-                  <button className="primary" onClick={() => setPanel('recipes')}>
-                    Cooking & Alchemy recipes
-                  </button>
-                  <SkillsPanel player={p} />
-                </>
               )}
               {panel === 'recipes' && (
                 <Suspense
