@@ -94,16 +94,20 @@ try {
   for (const touch of [false, true]) {
     if (touch) await page.setViewportSize({ width: 390, height: 844 });
     await map('village');
-    await click('interact-mira', ['interact', { npcId: 'mira' }], touch);
-    await click('interact-cooking-station', ['interact', { npcId: 'cooking-station' }], touch);
-    await click('travel-portal', ['portal', 'woods'], touch);
+    await click('interact-mira', ['approach', { kind: 'npc', id: 'mira' }], touch);
+    await click(
+      'interact-cooking-station',
+      ['approach', { kind: 'npc', id: 'cooking-station' }],
+      touch,
+    );
+    await click('travel-portal', ['approach', { kind: 'portal', id: 'woods' }], touch);
     await map('woods');
-    await click('Mining', ['gather', 'woods-iron'], touch);
+    await click('Mining', ['approach', { kind: 'resource', id: 'woods-iron' }], touch);
     await map('woods-3');
-    await click('boss-entrance-prop', ['portal', 'woods-boss'], touch);
+    await click('boss-entrance-prop', ['approach', { kind: 'portal', id: 'woods-boss' }], touch);
     await map('house-small');
-    await click('house-exit', ['housing', { action: 'exit' }], touch);
-    await click('chest', ['chest', 'chest'], touch);
+    await click('house-exit', ['approach', { kind: 'house-exit' }], touch);
+    await click('chest', ['approach', { kind: 'chest', id: 'chest' }], touch);
   }
   expect(errors).toEqual([]);
   console.log(

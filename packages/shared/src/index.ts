@@ -1,3 +1,4 @@
+export * from './approach';
 export * from './recovery';
 export * from './cutscenes';
 import type { CinematicState } from './cutscenes';

@@ -1,3 +1,11 @@
+import {
+  approachInput,
+  approachArrived,
+  platformRoute,
+  storageChest,
+  type ApproachRequest,
+  type ApproachPoint,
+} from '@ros/shared';
 import { recoveryBlock, unstuckBlock } from '@ros/shared';
 import { CUTSCENES_ENABLED } from '@ros/game-data';
 import { beginCinematic, cutsceneEligible } from '@ros/shared';
@@ -53,6 +61,17 @@ export class MapRoom extends Room {
   rates = new Map<string, { at: number; count: number }>();
   saves: Promise<unknown> = Promise.resolve();
   ticks = 0;
+  approaches = new Map<
+    string,
+    {
+      request: ApproachRequest;
+      mapId: string;
+      started: number;
+      moved: number;
+      x: number;
+      y: number;
+    }
+  >();
   questTasks = new Map<string, Promise<void>>();
   inputTimes = new Map<string, number>();
   snapshotStreams = new Map<string, SnapshotEncoder>();
@@ -189,6 +208,7 @@ export class MapRoom extends Room {
       if (!p || !this.world.arena || !this.rate(c, 10) || typeof value !== 'boolean') return;
       this.world.arena.ready(p, value, Date.now());
     });
+    this.onMessage('approach', (c, value) => this.approach(c, value));
     this.onMessage('housing', (c, value) => this.housing(c, value));
     this.onMessage('input', (c, payload) => {
       if (!this.rate(c, 100)) return;
@@ -197,12 +217,14 @@ export class MapRoom extends Room {
       const clean = idleInput();
       if (payload && typeof payload === 'object')
         for (const k of Object.keys(clean) as (keyof Input)[]) clean[k] = payload[k] === true;
+      if (Object.values(clean).some(Boolean)) this.approaches.delete(p.id);
       this.inputs.set(p.id, clean);
       this.inputTimes.set(p.id, Date.now());
     });
     this.onMessage('auto', (c, v) => {
       const p = this.player(c);
       if (p && this.rate(c, 100)) {
+        this.approaches.delete(p.id);
         delete p.gathering;
         p.auto = v === true;
         p.targetId = null;
@@ -340,7 +362,7 @@ export class MapRoom extends Room {
     });
     this.onMessage('travel', (c) => this.travel(c));
     this.onMessage('portal', (c, target) => {
-      if (typeof target === 'string') void this.travel(c, undefined, undefined, target);
+      if (typeof target === 'string') this.approach(c, { kind: 'portal', id: target });
     });
     this.onMessage('teleport', (c, target) => {
       if (typeof target === 'string') void this.travel(c, target);
@@ -349,23 +371,9 @@ export class MapRoom extends Room {
     this.onMessage('interact', (c, payload) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
-      // A click addresses that exact NPC/bench; E keeps the nearest-interaction behavior.
+      // Explicit targets walk first; E retains nearby interaction priority.
       if (payload && typeof payload === 'object' && 'npcId' in payload) {
-        const npc = this.world.map.npcs.find(
-          (npc) => typeof payload.npcId === 'string' && npc.id === payload.npcId,
-        );
-        if (!npc?.id) {
-          c.send('notice', 'That interaction is not available here.');
-          return;
-        }
-        if (!nearNpc(p, this.world.map, npc.id)) {
-          c.send('notice', `Walk closer to ${npc.name} to interact.`);
-          return;
-        }
-        p.auto = false;
-        delete p.gathering;
-        this.inputs.set(p.id, idleInput());
-        c.send('npc', { id: npc.id });
+        if (typeof payload.npcId === 'string') this.approach(c, { kind: 'npc', id: payload.npcId });
         return;
       }
       if (
@@ -458,6 +466,141 @@ export class MapRoom extends Room {
         c.send('notice', 'Stand next to the resource on its platform to gather.');
     });
     this.onMessage('quest', (c, payload) => this.quest(c, payload));
+  }
+  approachPoint(p: Player, request: ApproachRequest): ApproachPoint {
+    const map = this.world.map;
+    let point:
+      | { x: number; y: number; name: string; platform?: string; range?: number }
+      | undefined;
+    if (request.kind === 'npc') {
+      const npc = map.npcs.find((n) => n.id === request.id);
+      if (npc) point = { x: npc.x, y: npc.y, name: npc.name };
+    } else if (request.kind === 'resource') {
+      const node = map.resources?.find((n) => n.id === request.id);
+      if (node)
+        point = { x: node.x, y: node.y, platform: node.platform, name: node.skill, range: 24 };
+    } else if (request.kind === 'portal') {
+      const portal = map.portals.find((q) => q.target === request.id);
+      if (portal) point = { x: portal.x, y: portal.y, name: portal.label };
+    } else if (request.kind === 'house-enter' && map.id === 'village') {
+      point = { x: 900, y: 240, platform: 'housing', name: 'the house' };
+    } else if (request.kind === 'house-exit' && houseSize(map.id)) {
+      point = { x: 110, y: map.spawn.y, name: 'the exit door' };
+    } else if (request.kind === 'chest' && houseSize(map.id) && p.houseOwnerId === p.id) {
+      const chest = p.housing?.furniture.find(
+        (f) => f.id === request.id && f.item === 'oak-chest' && !f.display,
+      );
+      if (chest && p.housing?.stage === 3) {
+        const layout = HOUSE_LAYOUTS[houseSize(map.id)!];
+        point = {
+          x: layout.width / 2 + chest.x,
+          y: layout.floors[chest.floor ?? 0],
+          name: 'the storage chest',
+        };
+      }
+    }
+    if (!point) throw Error('That interaction is not available here.');
+    const platform =
+      point.platform ??
+      map.platforms.find(
+        (f) => Math.abs(f.y - point!.y) < 2 && point!.x >= f.x && point!.x <= f.x + f.width,
+      )?.id;
+    if (!platform) throw Error('That object has no reachable platform.');
+    return { ...point, platform, range: point.range ?? 48 };
+  }
+  approach(c: Client, value: unknown) {
+    const p = this.player(c, true);
+    if (!p || !this.rate(c, 100) || !value || typeof value !== 'object') return;
+    if (p.cinematic || p.hp <= 0) {
+      c.send('notice', 'Wait until you can move again.');
+      return;
+    }
+    const request = value as ApproachRequest;
+    if (
+      !['npc', 'resource', 'portal', 'house-enter', 'house-exit', 'chest'].includes(request.kind) ||
+      (request.id !== undefined && typeof request.id !== 'string')
+    )
+      return;
+    try {
+      const target = this.approachPoint(p, request);
+      if (
+        p.platform !== target.platform &&
+        !platformRoute(this.world.map, p.platform, target.platform).length
+      )
+        throw Error(`There is no connected route to ${target.name}.`);
+      p.auto = false;
+      p.targetId = null;
+      delete p.gathering;
+      this.inputs.set(p.id, idleInput());
+      const now = Date.now();
+      this.approaches.set(p.id, {
+        request: { kind: request.kind, id: request.id },
+        mapId: p.mapId,
+        started: now,
+        moved: now,
+        x: p.x,
+        y: p.y,
+      });
+      if (!approachArrived(p, target)) c.send('notice', `Walking to ${target.name}…`);
+    } catch (e) {
+      c.send('notice', (e as Error).message);
+    }
+  }
+  stepApproaches(now: number) {
+    for (const [id, plan] of this.approaches) {
+      const p = this.world.players.get(id);
+      const c = this.clients.find((c) => this.characters.get(c.sessionId) === id);
+      if (!p || !c || p.mapId !== plan.mapId || p.cinematic || p.hp <= 0) {
+        this.approaches.delete(id);
+        continue;
+      }
+      if (p.arena?.phase === 'countdown' || p.battleground?.phase === 'countdown') {
+        plan.moved = now;
+        this.inputs.set(id, idleInput());
+        continue;
+      }
+      if (this.questTasks.has(id)) {
+        this.inputs.set(id, idleInput());
+        continue;
+      }
+      try {
+        const target = this.approachPoint(p, plan.request);
+        if (Math.abs(p.x - plan.x) + Math.abs(p.y - plan.y) > 2) {
+          plan.x = p.x;
+          plan.y = p.y;
+          plan.moved = now;
+        }
+        if (now - plan.started > 120000 || now - plan.moved > 8000)
+          throw Error(`Could not reach ${target.name}. Try moving closer.`);
+        if (!approachArrived(p, target)) {
+          p.auto = false;
+          this.inputs.set(id, approachInput(p, this.world.map, target));
+          continue;
+        }
+        this.approaches.delete(id);
+        this.inputs.set(id, idleInput());
+        const request = plan.request;
+        if (request.kind === 'npc') {
+          delete p.gathering;
+          c.send('npc', { id: request.id });
+        } else if (request.kind === 'resource') {
+          if (!this.world.startGathering(p, request.id!, now))
+            throw Error('Meet this node’s gathering level requirement before gathering.');
+        } else if (request.kind === 'portal') void this.travel(c, undefined, undefined, request.id);
+        else if (request.kind === 'house-enter')
+          void this.enterHouse(c).catch((e) => c.send('notice', e.message));
+        else if (request.kind === 'house-exit')
+          void this.exitHouse(c).catch((e) => c.send('notice', e.message));
+        else {
+          storageChest(p, request.id!);
+          c.send('chest', { id: request.id });
+        }
+      } catch (e) {
+        this.approaches.delete(id);
+        this.inputs.set(id, idleInput());
+        c.send('notice', (e as Error).message);
+      }
+    }
   }
   classAction(c: Client, payload: unknown) {
     const p = this.player(c);
@@ -1082,14 +1225,8 @@ export class MapRoom extends Room {
       );
       return;
     }
-    if (v.action === 'enter') {
-      void this.enterHouse(c).catch(() =>
-        c.send('notice', 'Could not enter the house. Try again.'),
-      );
-      return;
-    }
-    if (v.action === 'exit') {
-      void this.exitHouse(c);
+    if (v.action === 'enter' || v.action === 'exit') {
+      this.approach(c, { kind: v.action === 'enter' ? 'house-enter' : 'house-exit' });
       return;
     }
     if (this.houseOwnerId && this.houseOwnerId !== p.id) {
@@ -1236,7 +1373,11 @@ export class MapRoom extends Room {
   tick(dt: number) {
     const now = Date.now();
     for (const [id, at] of this.inputTimes) if (now - at > 300) this.inputs.set(id, idleInput());
+    this.stepApproaches(now);
     this.world.step(dt, now, this.inputs);
+    for (const event of this.world.events)
+      if (event.type === 'respawn' && event.playerId && this.approaches.delete(event.playerId))
+        this.inputs.set(event.playerId, idleInput());
     for (const i of this.inputs.values()) {
       i.jump = false;
       i.skill = false;
@@ -1260,6 +1401,7 @@ export class MapRoom extends Room {
   }
   async onLeave(c: Client, consented: boolean) {
     const id = this.characters.get(c.sessionId);
+    if (id) this.approaches.delete(id);
     if (!id) return;
     const p = this.world.players.get(id);
     if (p) {
@@ -1298,6 +1440,7 @@ export class MapRoom extends Room {
   releaseClient(c: Client) {
     const id = this.characters.get(c.sessionId);
     if (!id) return;
+    this.approaches.delete(id);
     this.housingVisits.delete(id);
     this.characters.delete(c.sessionId);
     this.snapshotStreams.delete(c.sessionId);

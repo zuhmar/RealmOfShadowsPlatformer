@@ -114,8 +114,9 @@ export function PlaytestGuide({
       <p>
         Move: A/D or ←/→ · Climb: W/S or ↑/↓ · Jump: Space · Attack: J · Special: K · Interact: E.
         Click or tap NPCs, gathering nodes, portals, crafting benches, house doors and chests to
-        interact when nearby. E still works. On phones, use the on-screen buttons. Manual movement
-        cancels AUTO.
+        walk to them automatically and interact on arrival. Moving or attacking manually cancels the
+        trip. E still interacts with nearby objects. On phones, use the on-screen buttons. Manual
+        movement cancels AUTO.
       </p>
       {topics.map(([title, text]) => (
         <details key={title}>

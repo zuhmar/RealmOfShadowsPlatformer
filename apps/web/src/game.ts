@@ -48,7 +48,6 @@ export type Bridge = {
   furniturePlacement?: FurnitureSelection;
   send: (type: string, data: unknown) => void;
   onReady?: () => void;
-  onChest?: (id: string) => void;
   prepareMap?: (id: string) => void;
   onLoadProgress?: (percent: number) => void;
 };
@@ -290,7 +289,16 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       const m = this.map;
       const woods = m.island === 'Whispering Woods';
       const interact = (type: string, value: unknown) => {
-        if (!bridge.blocked && !bridge.furniturePlacement) bridge.send(type, value);
+        if (bridge.blocked || bridge.furniturePlacement) return;
+        const payload = value as { npcId?: string; action?: string } | null;
+        if (type === 'interact') bridge.send('approach', { kind: 'npc', id: payload?.npcId });
+        else if (type === 'gather') bridge.send('approach', { kind: 'resource', id: value });
+        else if (type === 'portal') bridge.send('approach', { kind: 'portal', id: value });
+        else if (type === 'housing')
+          bridge.send('approach', {
+            kind: payload?.action === 'enter' ? 'house-enter' : 'house-exit',
+          });
+        else bridge.send(type, value);
       };
       if (houseSize(m.id))
         this.interior = new HouseInterior(
@@ -300,7 +308,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             if (!bridge.furniturePlacement) interact('housing', { action: 'exit' });
           },
           (id) => {
-            if (!bridge.furniturePlacement) bridge.onChest?.(id);
+            interact('approach', { kind: 'chest', id });
           },
         );
       else if (woods) this.woods = new WoodsScenery(this, m, (id) => interact('gather', id));

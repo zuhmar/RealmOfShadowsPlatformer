@@ -158,10 +158,6 @@ function App() {
     held: {},
     send: (t, d) => roomRef.current?.send(t, d),
   });
-  bridge.current.onChest = (id) => {
-    setChestId(id);
-    setPanel('storage');
-  };
   const snapshotRef = useRef<Snapshot | null>(null);
   useEffect(() => {
     const resume = () => hudUpdates.current?.flush();
@@ -455,6 +451,10 @@ function App() {
       setHousingInvitations(homes),
     );
     next.onMessage('notice', (m: string) => setNotice(m));
+    next.onMessage('chest', (value: { id: string }) => {
+      setChestId(value.id);
+      setPanel('storage');
+    });
     next.onMessage('npc', (npc: { id: string }) => {
       if (npc.id === 'carpentry-station') setPanel('housing');
       if (npc.id === 'mira') setPanel('mira');

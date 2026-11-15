@@ -47,7 +47,9 @@ test('targeted NPC clicks preserve proximity and clicked portals use free portal
     await join();
     room!.send('interact', { npcId: 'bram' });
     await until(() => state.notices.length > 0);
-    assert.match(state.notices.at(-1)!, /closer.*Bram/i);
+    assert.match(state.notices.at(-1)!, /Walking to.*Bram/i);
+    room!.send('input', { left: true });
+    room!.send('input', {});
     assert.deepEqual(state.npcs, []);
     room!.send('interact', { npcId: 'missing' });
     await until(() => state.notices.length > 1);
