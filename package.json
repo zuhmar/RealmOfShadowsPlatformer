@@ -47,7 +47,8 @@
     "test:browser:traversal": "node scripts/browser-island-traversal.mjs",
     "test:browser:ground-cache": "node scripts/browser-ground-cache.mjs",
     "test:browser:gathering-skins": "node scripts/browser-gathering-skins.mjs",
-    "test:browser:journal": "node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-journal.mjs"
+    "test:browser:journal": "node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-journal.mjs",
+    "test:browser:monster-click": "node --env-file-if-exists=apps/server/.env scripts/browser-monster-click.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

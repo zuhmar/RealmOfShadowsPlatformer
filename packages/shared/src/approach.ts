@@ -1,7 +1,7 @@
 import { idleInput, platformRoute, type Player, type Input } from './index';
 import type { GameMap } from '@ros/game-data';
 export type ApproachRequest = {
-  kind: 'npc' | 'resource' | 'portal' | 'house-enter' | 'house-exit' | 'chest';
+  kind: 'npc' | 'resource' | 'portal' | 'house-enter' | 'house-exit' | 'chest' | 'monster';
   id?: string;
 };
 export type ApproachPoint = { x: number; y: number; platform: string; range: number; name: string };

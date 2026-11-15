@@ -1,5 +1,6 @@
 import {
   approachInput,
+  autoInput,
   approachArrived,
   platformRoute,
   storageChest,
@@ -33,6 +34,8 @@ import {
   itemDefinition,
   GATHERING_TOOLS,
   BRAM_QUEST,
+  WOODS_MONSTERS,
+  weaponProfile,
 } from '@ros/game-data';
 import {
   World,
@@ -217,7 +220,10 @@ export class MapRoom extends Room {
       const clean = idleInput();
       if (payload && typeof payload === 'object')
         for (const k of Object.keys(clean) as (keyof Input)[]) clean[k] = payload[k] === true;
-      if (Object.values(clean).some(Boolean)) this.approaches.delete(p.id);
+      if (Object.values(clean).some(Boolean)) {
+        if (this.approaches.get(p.id)?.request.kind === 'monster') p.targetId = null;
+        this.approaches.delete(p.id);
+      }
       this.inputs.set(p.id, clean);
       this.inputTimes.set(p.id, Date.now());
     });
@@ -472,7 +478,17 @@ export class MapRoom extends Room {
     let point:
       | { x: number; y: number; name: string; platform?: string; range?: number }
       | undefined;
-    if (request.kind === 'npc') {
+    if (request.kind === 'monster') {
+      const monster = this.world.wolves.find((w) => w.id === request.id && w.hp > 0);
+      if (monster)
+        point = {
+          x: monster.x,
+          y: monster.y,
+          platform: monster.platform,
+          name: WOODS_MONSTERS[monster.monster ?? 'wolf'].name,
+          range: Math.max(1, weaponProfile(p.weapon).range - 14),
+        };
+    } else if (request.kind === 'npc') {
       const npc = map.npcs.find((n) => n.id === request.id);
       if (npc) point = { x: npc.x, y: npc.y, name: npc.name };
     } else if (request.kind === 'resource') {
@@ -517,7 +533,9 @@ export class MapRoom extends Room {
     }
     const request = value as ApproachRequest;
     if (
-      !['npc', 'resource', 'portal', 'house-enter', 'house-exit', 'chest'].includes(request.kind) ||
+      !['npc', 'resource', 'portal', 'house-enter', 'house-exit', 'chest', 'monster'].includes(
+        request.kind,
+      ) ||
       (request.id !== undefined && typeof request.id !== 'string')
     )
       return;
@@ -529,7 +547,7 @@ export class MapRoom extends Room {
       )
         throw Error(`There is no connected route to ${target.name}.`);
       p.auto = false;
-      p.targetId = null;
+      p.targetId = request.kind === 'monster' ? request.id! : null;
       delete p.gathering;
       this.inputs.set(p.id, idleInput());
       const now = Date.now();
@@ -552,6 +570,7 @@ export class MapRoom extends Room {
       const c = this.clients.find((c) => this.characters.get(c.sessionId) === id);
       if (!p || !c || p.mapId !== plan.mapId || p.cinematic || p.hp <= 0) {
         this.approaches.delete(id);
+        if (p && plan.request.kind === 'monster') p.targetId = null;
         continue;
       }
       if (p.arena?.phase === 'countdown' || p.battleground?.phase === 'countdown') {
@@ -564,6 +583,22 @@ export class MapRoom extends Room {
         continue;
       }
       try {
+        if (plan.request.kind === 'monster') {
+          const monster = this.world.wolves.find((w) => w.id === plan.request.id && w.hp > 0);
+          if (!monster) {
+            this.approaches.delete(id);
+            p.targetId = null;
+            this.inputs.set(id, idleInput());
+            continue;
+          }
+          // Keep following this live target, using the same routes and weapon reach as AUTO.
+          // Do not loot, retarget, or spend mana on behalf of a click.
+          const input = autoInput(p, [monster], this.world.map, now, []);
+          input.skill = false;
+          p.auto = false;
+          this.inputs.set(id, input);
+          continue;
+        }
         const target = this.approachPoint(p, plan.request);
         if (Math.abs(p.x - plan.x) + Math.abs(p.y - plan.y) > 2) {
           plan.x = p.x;

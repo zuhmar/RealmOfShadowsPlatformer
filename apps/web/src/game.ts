@@ -579,6 +579,14 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             w.monster && w.monster !== 'wolf'
               ? new WoodsMonsterVisual(this, w)
               : new WolfVisual(this, w);
+          // Use a stable touch target rather than an animation's changing opaque pixels.
+          visual.sprite
+            .setName(`attack-monster:${w.id}`)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+              if (pointer.button !== 0 || bridge.blocked || bridge.furniturePlacement) return;
+              bridge.send('approach', { kind: 'monster', id: w.id });
+            });
           this.wolves.set(w.id, visual);
           this.labels.set(
             w.id,
@@ -593,11 +601,13 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
               .setOrigin(0.5),
           );
         }
+        if (visual.sprite.input) visual.sprite.input.enabled = w.hp > 0;
         if (visual instanceof WoodsMonsterVisual) visual.sync(w, s.players, this.time.now, s.time);
         else visual.sync(w, s.players, this.time.now);
         this.labels
           .get(w.id)!
           .setVisible(w.hp > 0)
+          .setColor(local?.targetId === w.id ? '#ffcf70' : '#f5e3b8')
           .setText(
             `${WOODS_MONSTERS[w.monster ?? 'wolf'].name} · ${w.hp}/${w.maxHp ?? WOODS_MONSTERS[w.monster ?? 'wolf'].hp}`,
           )

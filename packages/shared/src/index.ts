@@ -892,7 +892,11 @@ export class World {
               (WOODS_MONSTERS[w.monster ?? 'wolf'].boss ? BOSS_ATTACK.bodyRadius : 0) &&
           (w.x - p.x) * p.facing >= -12,
       )
-      .sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x));
+      .sort(
+        (a, b) =>
+          Number(b.id === p.targetId) - Number(a.id === p.targetId) ||
+          Math.abs(a.x - p.x) - Math.abs(b.x - p.x),
+      );
     if (empowered && weaponKind(p.weapon) === 'dagger') {
       const target = targets[0];
       if (target) {
