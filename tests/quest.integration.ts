@@ -36,7 +36,7 @@ async function join(token: string, id: string, mapId: string, reconnectToken?: s
   const sdk = new Client(URL.replace('http', 'ws'));
   const room = reconnectToken
     ? await sdk.reconnect(reconnectToken)
-    : await sdk.joinOrCreate('map', {
+    : await sdk.create('map', {
         token,
         characterId: id,
         mapId,
@@ -90,7 +90,7 @@ async function position(id: string, mapId: string, x: number, y: number) {
 }
 test(
   'Mira quest: proximity, acceptance, forged progress, real AUTO kills, durable single claim and disconnect during claim',
-  { timeout: 80000 },
+  { timeout: 180000 },
   async () => {
     let room: Room | undefined,
       userId = '';

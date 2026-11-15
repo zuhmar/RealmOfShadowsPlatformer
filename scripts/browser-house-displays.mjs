@@ -11,6 +11,7 @@ const browser = await chromium.launch({
   executablePath: '/usr/bin/chromium',
   args: ['--no-sandbox'],
 });
+const displayLoot = process.env.ROS_FROST_DISPLAY_TEST === '1' ? 'giant-heart' : 'fang';
 let userId;
 const errors = [];
 async function api(path, token, body) {
@@ -61,7 +62,7 @@ try {
         weapon: null,
         equippedGear: {},
         gear: [gear],
-        inventory: { fang: 2, 'oak-table': 1 },
+        inventory: { [displayLoot]: 2, 'oak-table': 1 },
         housing: {
           size: 'small',
           stage: 3,
@@ -72,7 +73,10 @@ try {
     },
   });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => {
+    errors.push(e.message);
+    console.error(e.stack);
+  });
   page.on('console', (m) => {
     if (
       ['error', 'warning'].includes(m.type()) &&
@@ -86,6 +90,24 @@ try {
   await page.getByRole('button', { name: /Enter world/ }).click();
   await page.locator('.phaser-host[aria-busy="false"] canvas').waitFor();
   await expect(page.locator('.world-title')).toContainText('Small House');
+  // Hidden hosts occur during exit/re-entry and must not allocate a zero-sized framebuffer.
+  await page.locator('.phaser-host').evaluate((host) => {
+    host.style.display = 'none';
+  });
+  await page.waitForTimeout(350);
+  await page.locator('.phaser-host').evaluate((host) => {
+    host.style.display = '';
+  });
+  await page.waitForTimeout(350);
+  console.log('Restored canvas:', await page.locator('.phaser-host').evaluate(host => ({host:[host.clientWidth,host.clientHeight],canvas:[host.querySelector('canvas')?.width,host.querySelector('canvas')?.height],style:host.getAttribute('style')})));
+  await expect
+    .poll(() =>
+      page.locator('.phaser-host').evaluate((host) => {
+        const canvas = host.querySelector('canvas');
+        return canvas?.width === host.clientWidth && canvas?.height === host.clientHeight;
+      }),
+    )
+    .toBe(true);
   async function decorate() {
     await page.getByRole('button', { name: 'Decorate house', exact: true }).click();
   }
@@ -98,7 +120,10 @@ try {
     await page.getByRole('button', { name: 'Place furniture', exact: true }).click();
     await expect(page.getByLabel('Furniture placement', { exact: true })).toHaveCount(0);
   }
-  await place(/^Display .*Fang$/i, 900);
+  await place(
+    displayLoot === 'giant-heart' ? /^Display .*Giant Heart$/i : /^Display .*Fang$/i,
+    900,
+  );
   await place('Display Cavern Keepsake', 650);
   await place('Place Oak Table', 420);
   await expect
@@ -108,7 +133,7 @@ try {
     )
     .toBe(4);
   let stored = (await db.character.findUnique({ where: { id: c.id } })).data;
-  expect(stored.inventory.fang).toBe(1);
+  expect(stored.inventory[displayLoot]).toBe(1);
   expect(stored.inventory['oak-table']).toBe(0);
   expect(stored.gear).toHaveLength(0);
   expect(stored.housing.furniture.find((f) => f.gear)?.gear).toEqual(gear);

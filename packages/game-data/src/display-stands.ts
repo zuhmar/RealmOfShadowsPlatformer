@@ -1,3 +1,4 @@
+import { FROSTFALL_ITEMS } from './frostfall';
 import { EQUIPMENT_TIERS, equipmentDefinition } from './island-equipment';
 import { recipeFromScroll } from './recipes';
 export type DisplayStandTheme = (typeof EQUIPMENT_TIERS)[number]['id'];
@@ -29,7 +30,7 @@ const resources: Record<DisplayStandTheme, readonly string[]> = {
     'bog-catfish',
     'venomfin',
   ],
-  frost: ['frostpine', 'frostleaf', 'icefin', 'frost-salmon', 'glacier-pike'],
+  frost: Object.keys(FROSTFALL_ITEMS),
   ember: ['emberwood', 'fireblossom', 'lavafin', 'ember-snapper', 'inferno-eel'],
   celestial: ['starwood', 'moonbloom', 'starfish', 'moonfin', 'celestial-koi'],
   shadow: ['shadowwood', 'nightshade', 'shadow-eel', 'nightfin', 'abyssal-leviathan'],

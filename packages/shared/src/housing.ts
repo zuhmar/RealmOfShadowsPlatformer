@@ -1,4 +1,5 @@
 import {
+  FROSTFALL_ITEMS,
   CARPENTRY_RECIPES,
   HOUSING_PLOTS,
   HOUSE_LAYOUTS,
@@ -71,6 +72,7 @@ function train(p: Player, xp: number) {
   if (s.level >= 100) s.xp = 0;
 }
 const DISPLAY_LOOT = new Set([
+  ...Object.keys(FROSTFALL_ITEMS),
   'fang',
   'oak-plank',
   'teleport-crystal',

@@ -710,7 +710,14 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     type: Phaser.AUTO,
     parent,
     backgroundColor: '#aec6ae',
-    scale: { mode: Phaser.Scale.RESIZE, width: parent.clientWidth, height: parent.clientHeight },
+    // A hidden or detached host briefly measures zero while leaving/re-entering the game.
+    // WebGL render targets require nonzero dimensions even during that transition.
+    scale: {
+      mode: Phaser.Scale.RESIZE,
+      width: Math.max(1, parent.clientWidth),
+      height: Math.max(1, parent.clientHeight),
+      min: { width: 1, height: 1 },
+    },
     physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 }, debug: false } },
     scene: RealmScene,
     render: { antialias: true },
@@ -723,7 +730,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
   bridge.prepareMap = prepare;
   const resize = new ResizeObserver(() => {
     if (parent.clientWidth && parent.clientHeight)
-      game.scale.resize(parent.clientWidth, parent.clientHeight);
+      game.scale.setParentSize(parent.clientWidth, parent.clientHeight);
   });
   resize.observe(parent);
   game.events.once(Phaser.Core.Events.DESTROY, () => {

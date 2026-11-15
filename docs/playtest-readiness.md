@@ -28,3 +28,10 @@ Recovery is checked by the server. **Unstuck** moves the character to the curren
 - With the local web/game servers: `node --env-file-if-exists=apps/server/.env scripts/browser-playtest-guide.mjs`
 
 The browser check covers desktop/mobile guide layout, current quest guidance, Discord destinations, return confirmation and independent volume/reduced-effect persistence. Screenshots are saved in `artifacts/playtest-*.png`. Multiplayer balance, phone performance and full progression remain playtest feedback areas.
+
+## Follow-up review fixes
+
+- Frostfall gathering resources, monster materials, boss keys and trophies are eligible for house displays. The display whitelist and stand theme now use the complete Frostfall item catalog so items such as Giant Heart and Wraith Essence use the Frost stand.
+- Equipment identification applies only the changed gear instance and inventory/gold deltas when its transaction completes. Loot collected during database waits remains in the live character and the next save. `tests/identification-loot.integration.ts` holds a real row lock while collecting a drop to cover this case.
+- Renderer sizing has a nonzero minimum for hidden/detached game containers. Resize observation updates Phaser's parent dimensions before refreshing the canvas, so restoring the host also restores the full viewport. `ROS_FROST_DISPLAY_TEST=1 node --env-file-if-exists=apps/server/.env scripts/browser-house-displays.mjs` covers hidden/restored rendering, Frostfall decoration placement, retrieval and saved re-entry.
+- Quest/recovery integration fixtures use isolated rooms to avoid inheriting other test characters' monster positions. The starter-quest test allows its full real-time hunt to complete before its outer deadline.

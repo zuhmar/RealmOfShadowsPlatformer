@@ -44,7 +44,7 @@ test('server recovery resets a stuck actor, prevents repeated recovery and saves
     });
     const client = new Client('ws://localhost:2567');
     const join = () =>
-      client.joinOrCreate('map', { token: guest.token, characterId: row.id, mapId: 'woods' });
+      client.create('map', { token: guest.token, characterId: row.id, mapId: 'woods' });
     const state: { snapshot?: Snapshot; notices: string[]; travel?: string } = { notices: [] };
     const attach = (r: Room) => {
       for (const name of ['welcome', 'events', 'chat', 'snapshotDelta'])

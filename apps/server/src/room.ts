@@ -787,10 +787,22 @@ export class MapRoom extends Room {
       .then(async () => {
         if (action !== 'identify' && !nearNpc(p, this.world.map, 'bram'))
           throw new Error('Stand near Bram to sell gear or buy Teleport Crystals.');
-        const next = await changeEquipment(structuredClone(p), id, action);
-        p.gear = next.gear;
-        p.inventory = next.inventory;
-        p.gold = next.gold;
+        const before = structuredClone(p);
+        const next = await changeEquipment(before, id, action);
+        // Hunting continues while the transaction waits: preserve loot collected meanwhile.
+        p.gear = p.gear?.flatMap((gear) =>
+          gear.id === id ? (next.gear?.filter((changed) => changed.id === id) ?? []) : [gear],
+        );
+        for (const item of new Set([
+          ...Object.keys(before.inventory),
+          ...Object.keys(next.inventory),
+        ])) {
+          const delta = (next.inventory[item] ?? 0) - (before.inventory[item] ?? 0);
+          if (!delta) continue;
+          p.inventory[item] = (p.inventory[item] ?? 0) + delta;
+          if (p.inventory[item] === 0) delete p.inventory[item];
+        }
+        p.gold += next.gold - before.gold;
         p.equipmentRevision = next.equipmentRevision;
         if (this.clients.includes(c))
           c.send(
