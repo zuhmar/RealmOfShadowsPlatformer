@@ -1,3 +1,4 @@
+import { CUTSCENES_ENABLED } from '@ros/game-data';
 import { beginCinematic, cutsceneEligible } from '@ros/shared';
 import { BattlegroundRun } from '@ros/shared';
 import { BATTLEGROUND_ID, BATTLEGROUND_RULES } from '@ros/game-data';
@@ -128,6 +129,7 @@ export class MapRoom extends Room {
         return;
       }
       if (
+        !CUTSCENES_ENABLED ||
         value.action !== 'start' ||
         !cutsceneEligible(p, this.world.map, value.id, value.replay === true)
       )
@@ -137,7 +139,11 @@ export class MapRoom extends Room {
       const task = this.saves
         .catch(() => {})
         .then(async () => {
-          if (!cutsceneEligible(p, this.world.map, value.id, value.replay === true)) return;
+          if (
+            !CUTSCENES_ENABLED ||
+            !cutsceneEligible(p, this.world.map, value.id, value.replay === true)
+          )
+            return;
           if (value.replay !== true) {
             const watched = await db.$transaction(async (tx) => {
               await tx.$queryRaw`SELECT id FROM "Character" WHERE id=${p.id} FOR UPDATE`;

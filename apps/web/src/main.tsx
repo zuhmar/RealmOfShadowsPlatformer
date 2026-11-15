@@ -1,5 +1,5 @@
 import { CutscenePlayer } from './CutscenePlayer';
-import { cutsceneById, CUTSCENES } from '@ros/game-data';
+import { cutsceneById, CUTSCENES, CUTSCENES_ENABLED } from '@ros/game-data';
 import { nextCutscene, idleInput } from '@ros/shared';
 import { BattlegroundHud } from './BattlegroundHud';
 import { FrostfallQuests } from './FrostfallQuests';
@@ -164,7 +164,11 @@ function App() {
   }, [page, snapshot?.mapId]);
   const p = snapshot?.players.find((x) => x.id === playerId);
   const map = MAPS[snapshot?.mapId ?? 'village'];
-  const activeFilm = p?.cinematic ? cutsceneById(p.cinematic.id) : undefined;
+  const activeFilm = CUTSCENES_ENABLED && p?.cinematic ? cutsceneById(p.cinematic.id) : undefined;
+  useEffect(() => {
+    if (!CUTSCENES_ENABLED && p?.cinematic)
+      bridge.current.send('cutscene', { action: 'finish', id: p.cinematic.id });
+  }, [p?.cinematic?.id]);
   useEffect(() => {
     bridge.current.held = {};
     game.current?.scene.getScene('realm')?.input.keyboard?.resetKeys();
@@ -172,6 +176,7 @@ function App() {
   }, [p?.cinematic?.id]);
   useEffect(() => {
     if (
+      !CUTSCENES_ENABLED ||
       page !== 'game' ||
       !p ||
       p.cinematic ||
@@ -1738,7 +1743,7 @@ function App() {
                 }}
               />
             )}
-            {panel === 'quests' && !!p.seenCutscenes?.length && (
+            {CUTSCENES_ENABLED && panel === 'quests' && !!p.seenCutscenes?.length && (
               <section className="cutscene-library">
                 <h3>Memories</h3>
                 <p>

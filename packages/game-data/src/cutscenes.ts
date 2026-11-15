@@ -1,3 +1,5 @@
+/** Cutscenes are retained for authoring but disconnected from live gameplay. */
+export const CUTSCENES_ENABLED = false;
 export type FilmActor = {
   kind: string;
   x: number;
