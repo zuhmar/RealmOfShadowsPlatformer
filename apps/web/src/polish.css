@@ -107,7 +107,7 @@
   justify-content: center;
   background: radial-gradient(ellipse at center, #9062cb33, transparent 65%);
 }
-.class-preview svg {
+.class-preview > svg {
   display: block;
   width: auto;
   max-width: 100%;

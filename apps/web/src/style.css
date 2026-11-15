@@ -1780,14 +1780,14 @@ footer i {
     font-size: 11px;
   }
 }
-.portrait-big svg {
+.portrait-big > svg {
   height: 130px;
   width: 110px;
   display: block;
   margin: auto;
   filter: drop-shadow(0 5px 5px #10251c55);
 }
-.portrait svg {
+.portrait > svg {
   width: 55px;
   height: 62px;
   display: block;
@@ -1799,7 +1799,7 @@ footer i {
   display: block;
 }
 @media (max-width: 600px) {
-  .portrait svg {
+  .portrait > svg {
     width: 41px;
     height: 48px;
   }
@@ -4023,7 +4023,7 @@ footer {
   height: 220px;
   margin: 8px auto;
 }
-.character-carousel .portrait-big svg {
+.character-carousel .portrait-big > svg {
   width: 220px;
   height: 220px;
 }
@@ -4109,7 +4109,7 @@ footer {
     min-height: 430px;
   }
   .character-carousel .portrait-big,
-  .character-carousel .portrait-big svg {
+  .character-carousel .portrait-big > svg {
     width: 180px;
     height: 180px;
   }

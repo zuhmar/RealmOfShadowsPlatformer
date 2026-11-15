@@ -1,6 +1,6 @@
 import type { Player } from '@ros/shared';
 import { classSkinSheet, baseSkinSheet } from '@ros/game-data';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type { SkinId } from '@ros/game-data';
 import { assetUrl } from './assets';
 
@@ -36,10 +36,12 @@ export function ClassSprite({
       : skin && skin !== 'golden-test'
         ? `/assets/characters/skins/celestial/${skin}-${armedPreview ? 'armed' : 'unarmed'}`
         : baseSkinSheet({ weapon }, !armedPreview).path;
-  const [atlas, setAtlas] = useState<SkinAtlas | null>(null);
+  const clipId = useId();
+  const [loaded, setLoaded] = useState<{ path: string; atlas: SkinAtlas } | null>(null);
+  const atlas = loaded?.path === path ? loaded.atlas : null;
   useEffect(() => {
     let active = true;
-    setAtlas(null);
+    setLoaded(null);
     {
       let promise = atlases.get(path);
       if (!promise) {
@@ -52,7 +54,7 @@ export function ClassSprite({
       }
       promise
         .then((a) => {
-          if (active) setAtlas(a);
+          if (active) setLoaded({ path, atlas: a });
         })
         .catch(() => {});
     }
@@ -63,6 +65,9 @@ export function ClassSprite({
 
   const f = atlas?.frames['idle-0'];
   const viewport = atlas ? 104 / atlas.meta.sourceFrame.scale : 256;
+  const x = f ? f.spriteSourceSize.x + viewport / 2 - f.sourceSize.w / 2 : 0;
+  const y =
+    atlas && f ? f.spriteSourceSize.y + viewport * 0.9 - atlas.meta.sourceFrame.baseline : 0;
   return (
     <svg
       role="img"
@@ -74,19 +79,21 @@ export function ClassSprite({
       className="class-sprite"
     >
       {atlas && f && (
-        <svg
-          x={f.spriteSourceSize.x + viewport / 2 - f.sourceSize.w / 2}
-          y={f.spriteSourceSize.y + viewport * 0.9 - atlas.meta.sourceFrame.baseline}
-          width={f.frame.w}
-          height={f.frame.h}
-          viewBox={`${f.frame.x} ${f.frame.y} ${f.frame.w} ${f.frame.h}`}
-        >
+        <g>
+          <defs>
+            <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+              <rect x={x} y={y} width={f.frame.w} height={f.frame.h} />
+            </clipPath>
+          </defs>
           <image
+            clipPath={`url(#${clipId})`}
+            x={x - f.frame.x}
+            y={y - f.frame.y}
             href={assetUrl(`${path}.png`)}
             width={atlas.meta.size.w}
             height={atlas.meta.size.h}
           />
-        </svg>
+        </g>
       )}
     </svg>
   );
