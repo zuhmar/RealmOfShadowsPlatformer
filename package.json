@@ -46,7 +46,8 @@
     "test:browser:crystal-terrain": "node scripts/browser-crystal-terrain.mjs",
     "test:browser:traversal": "node scripts/browser-island-traversal.mjs",
     "test:browser:ground-cache": "node scripts/browser-ground-cache.mjs",
-    "test:browser:gathering-skins": "node scripts/browser-gathering-skins.mjs"
+    "test:browser:gathering-skins": "node scripts/browser-gathering-skins.mjs",
+    "test:browser:journal": "node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-journal.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

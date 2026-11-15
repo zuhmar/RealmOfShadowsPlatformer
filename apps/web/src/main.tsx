@@ -1,10 +1,8 @@
-import { AdventureHint, PlaytestGuide } from './PlaytestGuide';
-import { cutsceneById, CUTSCENES, CUTSCENES_ENABLED } from '@ros/game-data';
+import { PlaytestGuide } from './PlaytestGuide';
+import { cutsceneById, CUTSCENES_ENABLED } from '@ros/game-data';
 import { nextCutscene, idleInput } from '@ros/shared';
 import { BattlegroundHud } from './BattlegroundHud';
-import { FrostfallQuests } from './FrostfallQuests';
 import { ArenaHud } from './arena-hud';
-import { MurkmireQuests } from './MurkmireQuests';
 import { decorationSelection } from '@ros/shared';
 import type { FurnitureTarget } from './furniture-placement';
 import { houseSize } from '@ros/game-data';
@@ -19,11 +17,9 @@ import { HudUpdates } from './hud-updates';
 import { SnapshotDecoder, type SnapshotKeyframe, type SnapshotDelta } from '@ros/shared';
 import { AudioSettings } from './AudioSettings';
 import { realmAudio } from './audio';
-import { CrystalQuests } from './CrystalQuests';
 import { ClassPanel } from './ClassPanel';
 import { OfflineActivities, activitySummary } from './OfflineActivities';
 import { SkillsPanel } from './SkillsPanel';
-import { WoodsQuests } from './WoodsQuests';
 import { ForgePanel } from './ForgePanel';
 import { GatheringTools } from './GatheringTools';
 import { ToolIcon } from './ToolIcon';
@@ -74,7 +70,9 @@ import type { Bridge } from './game';
 import './style.css';
 import './polish.css';
 import { Avatar } from './Avatar';
-import { QuestPanel } from './QuestPanel';
+const JournalView = lazy(() =>
+  import('./JournalView').then((module) => ({ default: module.JournalView })),
+);
 const CutscenePlayer = lazy(() =>
   import('./CutscenePlayer').then((module) => ({ default: module.CutscenePlayer })),
 );
@@ -669,6 +667,7 @@ function App() {
       !!cosmeticDialog ||
       !!placingFurniture ||
       !!connectionStatus ||
+      panel === 'quests' ||
       panel === 'mira' ||
       panel === 'bram' ||
       panel === 'frostfall-quests' ||
@@ -681,6 +680,7 @@ function App() {
       p?.cinematic ||
       cosmeticDialog ||
       placingFurniture ||
+      panel === 'quests' ||
       panel === 'mira' ||
       panel === 'bram' ||
       panel === 'frostfall-quests' ||
@@ -1645,346 +1645,320 @@ function App() {
           </Suspense>
         </HousePopup>
       )}
-      {panel && !['map', 'inventory', 'storage', 'decorate'].includes(panel) && p && (
-        <div className={`modal-backdrop ${panel === 'housing' ? 'housing-open-backdrop' : ''}`}>
-          <section className={`modal wide ${panel === 'housing' ? 'housing-open-modal' : ''}`}>
-            <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
-              <ControlIcon name="close" />
-            </button>
-            <span className="eyebrow">THE TRAVELER’S COMPANION</span>
-            <h2>
-              {
-                (
-                  {
-                    housing: 'Your Elderwood home.',
-                    inventory: 'Your satchel.',
-                    character: 'The road so far.',
-                    skills: 'Skills & attributes.',
-                    quests: 'Adventure journal.',
-                    mira: 'Mira · Village guide',
-                    bram: 'Bram’s Forge',
-                    'frostfall-quests': 'Frost Warden · Frostfall Tundra',
-                    'murkmire-quests': 'Mire Warden · Murkmire Swamp',
-                    'crystal-quests': 'Cavern Mentor · Crystal Caverns',
-                    map: 'Beyond the Elderwood.',
-                    settings: 'Settings.',
-                    guide: 'Your playtest companion.',
-                    recipes: 'Cooking & Alchemy',
-                  } as Record<string, string>
-                )[panel]
-              }
-            </h2>
-            {panel === 'housing' && (
-              <Suspense
-                fallback={
-                  <div className="toast" role="status">
-                    Opening…
-                  </div>
-                }
-              >
-                <HousingPanel
-                  player={p}
-                  onDecorate={() => setPanel('decorate')}
-                  players={snapshot?.players ?? []}
-                  invitedHomes={housingInvitations}
-                  onPlace={selectFurniture}
-                  send={bridge.current.send}
-                />
-              </Suspense>
-            )}
-            {panel === 'skills' && (
-              <>
-                <ClassPanel
-                  player={p}
-                  send={bridge.current.send}
-                  onBrowse={() => setCosmeticDialog('class')}
-                />
-                <button className="primary" onClick={() => setPanel('recipes')}>
-                  Cooking & Alchemy recipes
-                </button>
-                <SkillsPanel player={p} />
-              </>
-            )}
-            {panel === 'recipes' && (
-              <Suspense
-                fallback={
-                  <div className="toast" role="status">
-                    Opening…
-                  </div>
-                }
-              >
-                <RecipesPanel
-                  key={recipeSkill}
-                  player={p}
-                  initialSkill={recipeSkill}
-                  pending={recipePending}
-                  onAction={recipeAction}
-                />
-              </Suspense>
-            )}
-            {panel === 'character' && (
-              <>
-                <button className="primary" onClick={() => setCosmeticDialog('skin')}>
-                  Change skin
-                </button>
-                <div className={`portrait-big ${p.outfit}`}>
-                  <ClassSprite skin={p.skin ?? null} outfit={p.outfit} appearance={p.appearance} />
-                  <span>✦</span>
-                </div>
-                <h3>
-                  {p.name} · Level {p.level} {playerClassName(p)}
-                </h3>
-                <div className="stat-grid">
-                  {[
-                    ['Health', `${Math.floor(p.hp)} / ${playerAttributes(p).maxHealth}`],
-                    ['Mana', `${Math.floor(p.mp)} / ${playerAttributes(p).maxMana}`],
-                    ['Attack', `${attackPower(p)}`],
-                    ['Enemies defeated', p.kills],
-                    ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
-                    ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
-                    ['Class', playerClassName(p)],
-                    ['Attack range', `${weaponProfile(p.weapon).range}`],
-                    ['Attack interval', `${weaponProfile(p.weapon).cooldown} ms`],
-                  ].map(([k, v]) => (
-                    <div key={k}>
-                      <span>{k}</span>
-                      <b>{v}</b>
-                    </div>
-                  ))}
-                </div>
-                <h3>Accessory</h3>
-                <p>
-                  <ItemIcon id="forest-guardian-ring" /> Forest Guardian Ring · +4 attack ·{' '}
-                  {p.inventory['forest-guardian-ring'] ?? 0} owned
-                </p>
-                <button
-                  className="secondary"
-                  disabled={!(p.inventory['forest-guardian-ring'] > 0)}
-                  onClick={() =>
-                    room?.send(
-                      'equipAccessory',
-                      p.accessory === 'forest-guardian-ring' ? null : 'forest-guardian-ring',
+      {panel &&
+        ['quests', 'mira', 'crystal-quests', 'murkmire-quests', 'frostfall-quests'].includes(
+          panel,
+        ) &&
+        p && (
+          <Suspense
+            fallback={
+              <div className="toast" role="status">
+                Opening journal…
+              </div>
+            }
+          >
+            <JournalView
+              key={panel}
+              player={p}
+              panel={panel}
+              pending={questPending}
+              near={
+                panel === 'mira'
+                  ? closeToMira
+                  : nearNpc(
+                      p,
+                      map,
+                      panel === 'crystal-quests'
+                        ? 'mentor'
+                        : panel === 'murkmire-quests'
+                          ? 'mirewarden'
+                          : 'frostwarden',
                     )
+              }
+              onClose={() => setPanel(null)}
+              onQuest={(questId, action) => {
+                if (questPending) return;
+                setQuestPending(true);
+                room?.send('quest', { questId, action });
+              }}
+              onTalk={(npcId) => room?.send('interact', { npcId })}
+              onBrowse={() => setCosmeticDialog('class')}
+              crafting={
+                <ForgePanel
+                  player={p}
+                  near={closeToBram}
+                  pending={forgePending}
+                  onTalk={() => room?.send('interact', { npcId: 'bram' })}
+                  onAction={(action, recipeId) => {
+                    if (forgePending) return;
+                    setForgePending(true);
+                    room?.send('forge', { action, recipeId });
+                  }}
+                />
+              }
+            />
+          </Suspense>
+        )}
+      {panel &&
+        ![
+          'map',
+          'inventory',
+          'storage',
+          'decorate',
+          'quests',
+          'mira',
+          'crystal-quests',
+          'murkmire-quests',
+          'frostfall-quests',
+        ].includes(panel) &&
+        p && (
+          <div className={`modal-backdrop ${panel === 'housing' ? 'housing-open-backdrop' : ''}`}>
+            <section className={`modal wide ${panel === 'housing' ? 'housing-open-modal' : ''}`}>
+              <button className="close" aria-label="Close panel" onClick={() => setPanel(null)}>
+                <ControlIcon name="close" />
+              </button>
+              <span className="eyebrow">THE TRAVELER’S COMPANION</span>
+              <h2>
+                {
+                  (
+                    {
+                      housing: 'Your Elderwood home.',
+                      inventory: 'Your satchel.',
+                      character: 'The road so far.',
+                      skills: 'Skills & attributes.',
+                      quests: 'Adventure journal.',
+                      mira: 'Mira · Village guide',
+                      bram: 'Bram’s Forge',
+                      'frostfall-quests': 'Frost Warden · Frostfall Tundra',
+                      'murkmire-quests': 'Mire Warden · Murkmire Swamp',
+                      'crystal-quests': 'Cavern Mentor · Crystal Caverns',
+                      map: 'Beyond the Elderwood.',
+                      settings: 'Settings.',
+                      guide: 'Your playtest companion.',
+                      recipes: 'Cooking & Alchemy',
+                    } as Record<string, string>
+                  )[panel]
+                }
+              </h2>
+              {panel === 'housing' && (
+                <Suspense
+                  fallback={
+                    <div className="toast" role="status">
+                      Opening…
+                    </div>
                   }
                 >
-                  {p.accessory === 'forest-guardian-ring'
-                    ? 'Unequip Forest Guardian Ring'
-                    : 'Equip Forest Guardian Ring'}
-                </button>
-                <GatheringTools player={p} onEquip={(id) => room?.send('equipTool', id)} />
-                <details className="tool-tiers">
-                  <summary>View tool tiers</summary>
-                  <p>Forge Iron tools with Bram. Higher ore tiers arrive with later islands.</p>
-                  {TOOL_MATERIALS.map((material) => (
-                    <div className="tool-tier" key={material.id}>
-                      <span>{material.name}</span>
-                      {GATHERING_TOOLS.filter((tool) => tool.material === material.id).map(
-                        (tool) => (
-                          <ToolIcon key={tool.id} id={tool.id} />
-                        ),
-                      )}
+                  <HousingPanel
+                    player={p}
+                    onDecorate={() => setPanel('decorate')}
+                    players={snapshot?.players ?? []}
+                    invitedHomes={housingInvitations}
+                    onPlace={selectFurniture}
+                    send={bridge.current.send}
+                  />
+                </Suspense>
+              )}
+              {panel === 'skills' && (
+                <>
+                  <ClassPanel
+                    player={p}
+                    send={bridge.current.send}
+                    onBrowse={() => setCosmeticDialog('class')}
+                  />
+                  <button className="primary" onClick={() => setPanel('recipes')}>
+                    Cooking & Alchemy recipes
+                  </button>
+                  <SkillsPanel player={p} />
+                </>
+              )}
+              {panel === 'recipes' && (
+                <Suspense
+                  fallback={
+                    <div className="toast" role="status">
+                      Opening…
                     </div>
-                  ))}
-                </details>
-                <h3>Gathering skills</h3>
-                <div className="stat-grid">
-                  {GATHERING_SKILLS.map((name) => {
-                    const skill = p.gatheringSkills?.[name] ?? { level: 1, xp: 0 };
-                    return (
-                      <div key={name}>
-                        <span>{name}</span>
-                        <b>
-                          Lv. {skill.level} · {skill.xp}/{gatheringXpNeeded(skill.level)} XP
-                        </b>
+                  }
+                >
+                  <RecipesPanel
+                    key={recipeSkill}
+                    player={p}
+                    initialSkill={recipeSkill}
+                    pending={recipePending}
+                    onAction={recipeAction}
+                  />
+                </Suspense>
+              )}
+              {panel === 'character' && (
+                <>
+                  <button className="primary" onClick={() => setCosmeticDialog('skin')}>
+                    Change skin
+                  </button>
+                  <div className={`portrait-big ${p.outfit}`}>
+                    <ClassSprite
+                      skin={p.skin ?? null}
+                      outfit={p.outfit}
+                      appearance={p.appearance}
+                    />
+                    <span>✦</span>
+                  </div>
+                  <h3>
+                    {p.name} · Level {p.level} {playerClassName(p)}
+                  </h3>
+                  <div className="stat-grid">
+                    {[
+                      ['Health', `${Math.floor(p.hp)} / ${playerAttributes(p).maxHealth}`],
+                      ['Mana', `${Math.floor(p.mp)} / ${playerAttributes(p).maxMana}`],
+                      ['Attack', `${attackPower(p)}`],
+                      ['Enemies defeated', p.kills],
+                      ['Experience', `${p.xp} / ${xpNeeded(p.level)}`],
+                      ['Weapon', itemDefinition(p.weapon)?.name ?? 'Unarmed'],
+                      ['Class', playerClassName(p)],
+                      ['Attack range', `${weaponProfile(p.weapon).range}`],
+                      ['Attack interval', `${weaponProfile(p.weapon).cooldown} ms`],
+                    ].map(([k, v]) => (
+                      <div key={k}>
+                        <span>{k}</span>
+                        <b>{v}</b>
                       </div>
-                    );
-                  })}
-                </div>
-                <p>
-                  Civilians can try all four weapons. Complete the Crystal Caverns class quest to
-                  unlock your path and combat training. Open Skills for class talents and equipment
-                  attributes.
-                </p>
-              </>
-            )}
-            {panel === 'quests' && <AdventureHint player={p} />}
-            {panel === 'quests' && (
-              <article>
-                <h3>{STORY.title}</h3>
-                <p>{STORY.prologue}</p>
-                {p.originRevelation && (
-                  <section>
-                    <h3>{p.originRevelation.title}</h3>
-                    <p>{p.originRevelation.text}</p>
-                  </section>
-                )}
-              </article>
-            )}
-            {(panel === 'quests' || panel === 'mira') && (
-              <QuestPanel
-                player={p}
-                dialog={panel === 'mira'}
-                pending={questPending}
-                nearMira={closeToMira}
-                onTalk={() => room?.send('interact', { npcId: 'mira' })}
-                onAction={(action) => {
-                  if (questPending) return;
-                  setQuestPending(true);
-                  room?.send('quest', { questId: quest.id, action });
-                }}
-              />
-            )}
-            {CUTSCENES_ENABLED && panel === 'quests' && !!p.seenCutscenes?.length && (
-              <section className="cutscene-library">
-                <h3>Memories</h3>
-                <p>
-                  {p.mapId === 'village'
-                    ? 'Replay a chapter from your journey.'
-                    : 'Return to Elderwood Village to replay memories.'}
-                </p>
-                {CUTSCENES.filter(
-                  (f) => p.seenCutscenes?.includes(f.id) && (!f.spoiler || !!p.originRevelation),
-                ).map((f) => (
+                    ))}
+                  </div>
+                  <h3>Accessory</h3>
+                  <p>
+                    <ItemIcon id="forest-guardian-ring" /> Forest Guardian Ring · +4 attack ·{' '}
+                    {p.inventory['forest-guardian-ring'] ?? 0} owned
+                  </p>
                   <button
-                    key={f.id}
-                    disabled={p.mapId !== 'village'}
+                    className="secondary"
+                    disabled={!(p.inventory['forest-guardian-ring'] > 0)}
                     onClick={() =>
-                      bridge.current.send('cutscene', { action: 'start', id: f.id, replay: true })
+                      room?.send(
+                        'equipAccessory',
+                        p.accessory === 'forest-guardian-ring' ? null : 'forest-guardian-ring',
+                      )
                     }
                   >
-                    {f.title}
+                    {p.accessory === 'forest-guardian-ring'
+                      ? 'Unequip Forest Guardian Ring'
+                      : 'Equip Forest Guardian Ring'}
                   </button>
-                ))}
-              </section>
-            )}
-            {(panel === 'quests' || panel === 'murkmire-quests') && (
-              <MurkmireQuests
-                player={p}
-                dialog={panel === 'murkmire-quests'}
-                near={nearNpc(p, map, 'mirewarden')}
-                pending={questPending}
-                send={(type, payload) => {
-                  if (questPending) return;
-                  setQuestPending(true);
-                  bridge.current.send(type, payload);
-                }}
-              />
-            )}
-            {(panel === 'quests' || panel === 'frostfall-quests') && (
-              <FrostfallQuests
-                player={p}
-                dialog={panel === 'frostfall-quests'}
-                near={nearNpc(p, map, 'frostwarden')}
-                pending={questPending}
-                send={(type, payload) => {
-                  if (questPending) return;
-                  setQuestPending(true);
-                  bridge.current.send(type, payload);
-                }}
-              />
-            )}
-            {(panel === 'quests' || panel === 'crystal-quests') && (
-              <CrystalQuests
-                onBrowse={() => setCosmeticDialog('class')}
-                player={p}
-                dialog={panel === 'crystal-quests'}
-                near={nearNpc(p, map, 'mentor')}
-                pending={questPending}
-                send={bridge.current.send}
-              />
-            )}
-            {(panel === 'quests' || panel === 'mira') && (
-              <WoodsQuests
-                player={p}
-                dialog={panel === 'mira'}
-                pending={questPending}
-                nearMira={closeToMira}
-                onAction={(questId, action) => {
-                  if (questPending) return;
-                  setQuestPending(true);
-                  room?.send('quest', { questId, action });
-                }}
-              />
-            )}
-            {(panel === 'bram' || panel === 'quests') && (
-              <ForgePanel
-                player={p}
-                near={closeToBram}
-                pending={forgePending}
-                onTalk={() => room?.send('interact', { npcId: 'bram' })}
-                onAction={(action, recipeId) => {
-                  if (forgePending) return;
-                  setForgePending(true);
-                  room?.send('forge', { action, recipeId });
-                }}
-              />
-            )}
-            {panel === 'guide' && (
-              <PlaytestGuide
-                key={p.mapId}
-                player={p}
-                send={(type, value) => room?.send(type, value)}
-                openSettings={() => setPanel('settings')}
-              />
-            )}
-            {panel === 'settings' && (
-              <>
-                <AudioSettings />
-                <button onClick={() => setPanel('guide')}>Test guide & recovery</button>
-                <p>
-                  AUTO follows real platform connections and ladders. Moving or attacking manually
-                  cancels it immediately.
-                </p>
-                <div className="settings">
-                  {[
-                    ['skills', 'Use weapon skill automatically'],
-                    ['loot', 'Collect nearby loot'],
-                  ].map(([k, label]) => (
-                    <label key={k}>
-                      {label}
-                      <input
-                        type="checkbox"
-                        checked={p.settings[k as 'skills' | 'loot']}
+                  <GatheringTools player={p} onEquip={(id) => room?.send('equipTool', id)} />
+                  <details className="tool-tiers">
+                    <summary>View tool tiers</summary>
+                    <p>Forge Iron tools with Bram. Higher ore tiers arrive with later islands.</p>
+                    {TOOL_MATERIALS.map((material) => (
+                      <div className="tool-tier" key={material.id}>
+                        <span>{material.name}</span>
+                        {GATHERING_TOOLS.filter((tool) => tool.material === material.id).map(
+                          (tool) => (
+                            <ToolIcon key={tool.id} id={tool.id} />
+                          ),
+                        )}
+                      </div>
+                    ))}
+                  </details>
+                  <h3>Gathering skills</h3>
+                  <div className="stat-grid">
+                    {GATHERING_SKILLS.map((name) => {
+                      const skill = p.gatheringSkills?.[name] ?? { level: 1, xp: 0 };
+                      return (
+                        <div key={name}>
+                          <span>{name}</span>
+                          <b>
+                            Lv. {skill.level} · {skill.xp}/{gatheringXpNeeded(skill.level)} XP
+                          </b>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p>
+                    Civilians can try all four weapons. Complete the Crystal Caverns class quest to
+                    unlock your path and combat training. Open Skills for class talents and
+                    equipment attributes.
+                  </p>
+                </>
+              )}
+              {panel === 'bram' && (
+                <ForgePanel
+                  player={p}
+                  near={closeToBram}
+                  pending={forgePending}
+                  onTalk={() => room?.send('interact', { npcId: 'bram' })}
+                  onAction={(action, recipeId) => {
+                    if (forgePending) return;
+                    setForgePending(true);
+                    room?.send('forge', { action, recipeId });
+                  }}
+                />
+              )}
+              {panel === 'guide' && (
+                <PlaytestGuide
+                  key={p.mapId}
+                  player={p}
+                  send={(type, value) => room?.send(type, value)}
+                  openSettings={() => setPanel('settings')}
+                />
+              )}
+              {panel === 'settings' && (
+                <>
+                  <AudioSettings />
+                  <button onClick={() => setPanel('guide')}>Test guide & recovery</button>
+                  <p>
+                    AUTO follows real platform connections and ladders. Moving or attacking manually
+                    cancels it immediately.
+                  </p>
+                  <div className="settings">
+                    {[
+                      ['skills', 'Use weapon skill automatically'],
+                      ['loot', 'Collect nearby loot'],
+                    ].map(([k, label]) => (
+                      <label key={k}>
+                        {label}
+                        <input
+                          type="checkbox"
+                          checked={p.settings[k as 'skills' | 'loot']}
+                          onChange={(e) =>
+                            room?.send('settings', { ...p.settings, [k]: e.target.checked })
+                          }
+                        />
+                      </label>
+                    ))}
+                    <label>
+                      Target preference
+                      <select
+                        value={p.settings.target}
                         onChange={(e) =>
-                          room?.send('settings', { ...p.settings, [k]: e.target.checked })
+                          room?.send('settings', { ...p.settings, target: e.target.value })
+                        }
+                      >
+                        <option value="nearest">Nearest reachable</option>
+                        <option value="weakest">Weakest reachable</option>
+                      </select>
+                    </label>
+                    <label>
+                      Recover below {p.settings.healBelow}% HP
+                      <input
+                        type="range"
+                        min={0}
+                        max={70}
+                        value={p.settings.healBelow}
+                        onChange={(e) =>
+                          room?.send('settings', {
+                            ...p.settings,
+                            healBelow: Number(e.target.value),
+                          })
                         }
                       />
                     </label>
-                  ))}
-                  <label>
-                    Target preference
-                    <select
-                      value={p.settings.target}
-                      onChange={(e) =>
-                        room?.send('settings', { ...p.settings, target: e.target.value })
-                      }
-                    >
-                      <option value="nearest">Nearest reachable</option>
-                      <option value="weakest">Weakest reachable</option>
-                    </select>
-                  </label>
-                  <label>
-                    Recover below {p.settings.healBelow}% HP
-                    <input
-                      type="range"
-                      min={0}
-                      max={70}
-                      value={p.settings.healBelow}
-                      onChange={(e) =>
-                        room?.send('settings', { ...p.settings, healBelow: Number(e.target.value) })
-                      }
-                    />
-                  </label>
-                </div>
-                <p>
-                  Recovery adds a small regeneration bonus below the threshold. You respawn safely
-                  if defeated, without losing gold.
-                </p>
-              </>
-            )}
-          </section>
-        </div>
-      )}
+                  </div>
+                  <p>
+                    Recovery adds a small regeneration bonus below the threshold. You respawn safely
+                    if defeated, without losing gold.
+                  </p>
+                </>
+              )}
+            </section>
+          </div>
+        )}
     </div>
   );
 }
