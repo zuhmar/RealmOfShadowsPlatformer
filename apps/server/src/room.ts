@@ -1,3 +1,4 @@
+import { recoveryBlock, unstuckBlock } from '@ros/shared';
 import { CUTSCENES_ENABLED } from '@ros/game-data';
 import { beginCinematic, cutsceneEligible } from '@ros/shared';
 import { BattlegroundRun } from '@ros/shared';
@@ -304,6 +305,35 @@ export class MapRoom extends Room {
         c.send('saved', null);
       } catch {
         c.send('notice', 'Could not save. Please reconnect.');
+      }
+    });
+    this.onMessage('recover', (c, action) => {
+      const p = this.player(c, true);
+      if (!p || !this.rate(c, 100) || (action !== 'unstuck' && action !== 'village')) return;
+      const now = Date.now();
+      const blocked = action === 'village' ? recoveryBlock(p, now) : unstuckBlock(p, now);
+      if (blocked) {
+        c.send('notice', blocked);
+        return;
+      }
+      p.lastRecoveryAt = now;
+      if (action === 'village') {
+        void this.travel(c, undefined, { mapId: 'village' });
+      } else {
+        const map = this.world.map;
+        p.x = map.spawn.x;
+        p.y = map.spawn.y;
+        p.vx = p.vy = 0;
+        p.grounded = true;
+        p.climbing = false;
+        p.auto = false;
+        p.targetId = null;
+        p.platform =
+          map.platforms.find((f) => Math.abs(f.y - p.y) < 1 && p.x >= f.x && p.x <= f.x + f.width)
+            ?.id ?? 'ground';
+        delete p.gathering;
+        this.inputs.set(p.id, idleInput());
+        c.send('notice', 'Returned to this map’s entrance. Your items and progress are unchanged.');
       }
     });
     this.onMessage('travel', (c) => this.travel(c));

@@ -1,3 +1,4 @@
+import { reducedEffects } from './visual-settings';
 import { fitArtwork } from './artwork';
 import { assetUrl } from './assets';
 import Phaser from 'phaser';
@@ -53,6 +54,7 @@ export function registerWeaponEffects(scene: Phaser.Scene) {
       });
 }
 export function skillEffect(scene: Phaser.Scene, event: Event) {
+  if (reducedEffects()) return;
   const kind = event.skill === 'unarmed' ? 'sword' : event.skill;
   if (!kind || !kinds.includes(kind)) return;
   const impact = event.phase === 'impact';

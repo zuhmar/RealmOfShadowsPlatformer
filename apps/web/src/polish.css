@@ -194,3 +194,54 @@
   border-color: #f0c5ff;
   background: #bf76f0;
 }
+
+.playtest-guide {
+  display: grid;
+  gap: 14px;
+}
+.playtest-guide p {
+  margin: 0;
+  line-height: 1.6;
+}
+.playtest-guide details {
+  border-bottom: 1px solid #a67bba55;
+  padding: 10px 0;
+}
+.playtest-guide summary {
+  cursor: pointer;
+  color: #ead2ff;
+  font-weight: 700;
+  min-height: 32px;
+}
+.playtest-guide details p {
+  padding: 8px 0;
+}
+.playtest-guide a {
+  color: #ddb6ff;
+  text-decoration: underline;
+}
+.adventure-hint {
+  border-left: 3px solid #bc83f5;
+  padding: 4px 14px;
+  margin-bottom: 12px;
+}
+.adventure-hint h3 {
+  margin-top: 0;
+}
+.recovery-actions,
+.recovery-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.recovery-confirm p {
+  flex-basis: 100%;
+}
+.reduced-effects .loading-rune,
+.reduced-effects .loading-trail {
+  animation: none !important;
+}
+.reduced-effects .modal,
+.reduced-effects .toast {
+  animation: none !important;
+}

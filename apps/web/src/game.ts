@@ -1,3 +1,4 @@
+import { reducedEffects } from './visual-settings';
 import { FrostfallScenery, preloadFrostfall } from './frostfall';
 import { MurkmireScenery, preloadMurkmire, mireWarden } from './murkmire';
 import { FurniturePlacement, type FurnitureSelection } from './furniture-placement';
@@ -78,6 +79,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     miraMarker?: Phaser.GameObjects.Text;
     bossWarnings!: BossWarnings;
     nextPrepareAt = 3000;
+    effectsReduced?: boolean;
     constructor() {
       super('realm');
     }
@@ -234,7 +236,7 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           .setDepth(50);
         this.tweens.add({
           targets: t,
-          y: e.y - 65,
+          y: reducedEffects() ? e.y : e.y - 65,
           alpha: 0,
           duration: e.gear ? 2200 : 1300,
           onComplete: () => t.destroy(),
@@ -408,7 +410,9 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
       }
       // Tiny fireflies move softly without obscuring the playable silhouettes.
       for (let n = 0; n < 22; n++) {
-        const dot = this.add.circle(120 + n * 107, 300 + (n % 5) * 70, 2, 0xffedab, 0.6);
+        const dot = this.add
+          .circle(120 + n * 107, 300 + (n % 5) * 70, 2, 0xffedab, 0.6)
+          .setName('ambient-firefly');
         this.tweens.add({
           targets: dot,
           y: dot.y - 22,
@@ -631,6 +635,18 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           game.scene.add('realm', new RealmScene(), true);
         });
         return;
+      }
+      if (this.effectsReduced !== reducedEffects()) {
+        this.effectsReduced = reducedEffects();
+        for (const dot of this.children
+          .getChildren()
+          .filter((child) => child.name === 'ambient-firefly')) {
+          (dot as Phaser.GameObjects.Arc).setVisible(!reducedEffects());
+          for (const tween of this.tweens.getTweensOf(dot)) {
+            if (reducedEffects()) tween.pause();
+            else tween.resume();
+          }
+        }
       }
       this.sync(s);
       this.housing?.update(s.players.find((p) => p.id === bridge.id));

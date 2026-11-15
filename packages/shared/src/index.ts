@@ -1,3 +1,4 @@
+export * from './recovery';
 export * from './cutscenes';
 import type { CinematicState } from './cutscenes';
 export * from './battlegrounds';
@@ -155,6 +156,7 @@ export type Player = Actor & {
   nextAttackAt?: number;
   lastSkill: number;
   lastHit: number;
+  lastRecoveryAt?: number;
   mapId: string;
   kills: number;
   bossKills?: Record<string, number>;

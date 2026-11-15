@@ -1,11 +1,26 @@
 import type { Event } from '@ros/shared';
-export type AudioSettings = { effects: boolean; music: boolean; muted: boolean; volume: number };
-const defaults: AudioSettings = { effects: true, music: false, muted: false, volume: 0.35 };
+export type AudioSettings = {
+  effects: boolean;
+  music: boolean;
+  muted: boolean;
+  volume: number;
+  effectsVolume: number;
+  musicVolume: number;
+};
+const defaults: AudioSettings = {
+  effects: true,
+  music: false,
+  muted: false,
+  volume: 0.35,
+  effectsVolume: 1,
+  musicVolume: 1,
+};
 class RealmAudio {
   settings: AudioSettings;
   private context?: AudioContext;
   private master?: GainNode;
   private musicGain?: GainNode;
+  private effectsGain?: GainNode;
   private biome: string | null = null;
   private musicTimer?: ReturnType<typeof setInterval>;
   private voices = 0;
@@ -22,6 +37,12 @@ class RealmAudio {
     this.settings = {
       effects: typeof stored?.effects === 'boolean' ? stored.effects : defaults.effects,
       music: stored?.music === true,
+      effectsVolume: Number.isFinite(stored?.effectsVolume)
+        ? Math.max(0, Math.min(1, stored.effectsVolume))
+        : 1,
+      musicVolume: Number.isFinite(stored?.musicVolume)
+        ? Math.max(0, Math.min(1, stored.musicVolume))
+        : 1,
       muted: stored?.muted === true,
       volume: Number.isFinite(stored?.volume)
         ? Math.max(0, Math.min(1, stored.volume))
@@ -59,6 +80,8 @@ class RealmAudio {
       this.master.connect(this.context.destination);
       this.musicGain = this.context.createGain();
       this.musicGain.connect(this.master);
+      this.effectsGain = this.context.createGain();
+      this.effectsGain.connect(this.master);
       this.applyVolume();
     }
     try {
@@ -72,7 +95,14 @@ class RealmAudio {
       0,
       Math.min(1, Number.isFinite(this.settings.volume) ? this.settings.volume : defaults.volume),
     );
-    localStorage.setItem('ros-audio', JSON.stringify(this.settings));
+    for (const key of ['musicVolume', 'effectsVolume'] as const)
+      this.settings[key] = Math.max(
+        0,
+        Math.min(1, Number.isFinite(this.settings[key]) ? this.settings[key] : 1),
+      );
+    try {
+      localStorage.setItem('ros-audio', JSON.stringify(this.settings));
+    } catch {}
     this.applyVolume();
     this.stopMusic();
     void this.unlock();
@@ -84,6 +114,18 @@ class RealmAudio {
     this.startMusic();
   }
   private applyVolume() {
+    if (this.context) {
+      this.musicGain?.gain.setTargetAtTime(
+        this.settings.musicVolume,
+        this.context.currentTime,
+        0.025,
+      );
+      this.effectsGain?.gain.setTargetAtTime(
+        this.settings.effectsVolume,
+        this.context.currentTime,
+        0.025,
+      );
+    }
     if (this.master && this.context)
       this.master.gain.setTargetAtTime(
         this.settings.muted ? 0 : this.settings.volume,
@@ -103,7 +145,7 @@ class RealmAudio {
     gain.gain.linearRampToValueAtTime(music ? 0.025 : 0.1, at + (music ? 0.7 : 0.008));
     gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
     osc.connect(gain);
-    gain.connect(music ? this.musicGain! : this.master!);
+    gain.connect(music ? this.musicGain! : this.effectsGain!);
     if (music) this.musicVoices.add(osc);
     else this.voices++;
     osc.onended = () => {

@@ -1,3 +1,4 @@
+import { PlaytestGuide, AdventureHint } from './PlaytestGuide';
 import { CutscenePlayer } from './CutscenePlayer';
 import { cutsceneById, CUTSCENES, CUTSCENES_ENABLED } from '@ros/game-data';
 import { nextCutscene, idleInput } from '@ros/shared';
@@ -661,7 +662,9 @@ function App() {
       panel === 'frostfall-quests' ||
       panel === 'murkmire-quests' ||
       panel === 'crystal-quests' ||
-      panel === 'recipes';
+      panel === 'recipes' ||
+      panel === 'guide' ||
+      panel === 'settings';
     if (
       p?.cinematic ||
       cosmeticDialog ||
@@ -671,7 +674,9 @@ function App() {
       panel === 'frostfall-quests' ||
       panel === 'murkmire-quests' ||
       panel === 'crystal-quests' ||
-      panel === 'recipes'
+      panel === 'recipes' ||
+      panel === 'guide' ||
+      panel === 'settings'
     )
       bridge.current.held = {};
   }, [panel, connectionStatus, cosmeticDialog, placingFurniture, p?.cinematic]);
@@ -736,7 +741,7 @@ function App() {
         </a>
         <nav>
           <span className="build-badge">
-            FIRST LIGHT <i>α 0.1</i>
+            PLAYTEST <i>α 0.1</i>
           </span>
           <span className="online">
             <i />
@@ -1035,10 +1040,18 @@ function App() {
                 <span className="eyebrow">{map.island.toUpperCase()}</span>
                 <h1>
                   {map.name}
-                  <span>CH. 01</span>
+                  <span>TEST BUILD</span>
                 </h1>
               </div>
               <div className="world-actions">
+                <button
+                  className="icon-button utility-button"
+                  aria-label="Test guide and recovery"
+                  title="Test guide and recovery"
+                  onClick={() => setPanel('guide')}
+                >
+                  <MenuIcon name="journal" />
+                </button>
                 <button
                   className="icon-button utility-button"
                   aria-label="Chat"
@@ -1594,7 +1607,8 @@ function App() {
                     'murkmire-quests': 'Mire Warden · Murkmire Swamp',
                     'crystal-quests': 'Cavern Mentor · Crystal Caverns',
                     map: 'Beyond the Elderwood.',
-                    settings: 'Hunt your way.',
+                    settings: 'Settings.',
+                    guide: 'Your playtest companion.',
                     recipes: 'Cooking & Alchemy',
                   } as Record<string, string>
                 )[panel]
@@ -1717,6 +1731,7 @@ function App() {
                 </p>
               </>
             )}
+            {panel === 'quests' && <AdventureHint player={p} />}
             {panel === 'quests' && (
               <article>
                 <h3>{STORY.title}</h3>
@@ -1828,9 +1843,18 @@ function App() {
                 }}
               />
             )}
+            {panel === 'guide' && (
+              <PlaytestGuide
+                key={p.mapId}
+                player={p}
+                send={(type, value) => room?.send(type, value)}
+                openSettings={() => setPanel('settings')}
+              />
+            )}
             {panel === 'settings' && (
               <>
                 <AudioSettings />
+                <button onClick={() => setPanel('guide')}>Test guide & recovery</button>
                 <p>
                   AUTO follows real platform connections and ladders. Moving or attacking manually
                   cancels it immediately.

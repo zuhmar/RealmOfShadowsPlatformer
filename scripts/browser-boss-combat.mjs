@@ -7,6 +7,8 @@ const page = await browser.newPage({ viewport: { width: 1100, height: 750 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 try {
+  if (process.env.ROS_REDUCED_EFFECTS === '1')
+    await page.addInitScript(() => localStorage.setItem('ros-reduced-effects', 'true'));
   await page.goto('http://localhost:5173');
   await page.evaluate(
     async (shared) => {
@@ -71,6 +73,30 @@ try {
       ),
     )
     .toBe(true);
+  if (process.env.ROS_REDUCED_EFFECTS === '1') {
+    const visibility = await page.evaluate(async () => {
+      const { skillEffect } = await import('/src/combat-effects.ts');
+      const scene = window.bossTest.game.scene.getScene('realm');
+      const warning = scene.children.list.find((c) => c.name === 'boss-danger-zone');
+      const label = scene.children.list.find((c) => c.name === 'boss-danger-label');
+      skillEffect(scene, {
+        type: 'skill',
+        skill: 'sword',
+        x: 300,
+        y: 760,
+        text: '',
+        phase: 'cast',
+      });
+      return {
+        warning: warning?.visible,
+        label: label?.visible && label.text.includes('MOVE!'),
+        bursts: scene.children.list.filter((c) => c.name === 'weapon-skill-effect').length,
+        fireflies: scene.children.list.filter((c) => c.name === 'ambient-firefly' && c.visible)
+          .length,
+      };
+    });
+    expect(visibility).toEqual({ warning: true, label: true, bursts: 0, fireflies: 0 });
+  }
   for (const [label, width, height] of [
     ['desktop', 1100, 750],
     ['mobile', 390, 844],

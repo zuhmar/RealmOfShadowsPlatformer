@@ -1,3 +1,4 @@
+import { reducedEffects } from './visual-settings';
 import frostSlam from '../public/assets/effects/frost-giant-slam.json';
 import venomAtlas from '../public/assets/effects/hydra-venom.json';
 import { skillEffect } from './combat-effects';
@@ -90,7 +91,10 @@ export class BossWarnings {
       g.clear()
         .setPosition(zone.x, zone.y)
         .setData({ radius: r, height: h, impactAt: zone.impactAt });
-      g.fillStyle(0xe52b38, 0.22 + Math.sin((now - zone.startedAt) / 100) * 0.07);
+      g.fillStyle(
+        0xe52b38,
+        0.22 + (reducedEffects() ? 0 : Math.sin((now - zone.startedAt) / 100) * 0.07),
+      );
       g.fillRect(-r, -h, r * 2, h);
       g.lineStyle(3, 0xffae65, 0.95);
       g.strokeRect(-r, -h, r * 2, h);
