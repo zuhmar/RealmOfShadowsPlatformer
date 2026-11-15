@@ -35,3 +35,15 @@ The browser check covers desktop/mobile guide layout, current quest guidance, Di
 - Equipment identification applies only the changed gear instance and inventory/gold deltas when its transaction completes. Loot collected during database waits remains in the live character and the next save. `tests/identification-loot.integration.ts` holds a real row lock while collecting a drop to cover this case.
 - Renderer sizing has a nonzero minimum for hidden/detached game containers. Resize observation updates Phaser's parent dimensions before refreshing the canvas, so restoring the host also restores the full viewport. `ROS_FROST_DISPLAY_TEST=1 node --env-file-if-exists=apps/server/.env scripts/browser-house-displays.mjs` covers hidden/restored rendering, Frostfall decoration placement, retrieval and saved re-entry.
 - Quest/recovery integration fixtures use isolated rooms to avoid inheriting other test characters' monster positions. The starter-quest test allows its full real-time hunt to complete before its outer deadline.
+
+## Quest and combat transaction review
+
+Quest giver locations are resolved from the map NPC catalog. This fixes the Frost Warden being incorrectly routed through the village-only fallback, which prevented Frostfall quest acceptance and turn-ins. The server checks proximity before queueing and again when the queued action begins; clicking a distant Frost Warden now gives an approach notice.
+
+Quest results apply only changed quest states plus inventory/gold deltas. Class actions also apply gold deltas. Loot and progress from other hunts that arrive while a database action waits remain intact. A potion accepted before a Battleground knockout cannot restore the eliminated player's health when its save finishes. AUTO's zero-percent recovery threshold is now preserved instead of defaulting to thirty percent.
+
+Regression coverage:
+
+- `tests/frostfall-quest-rpc.integration.ts`: all four Frostfall quests through real player requests, giver proximity, forged-progress rejection, single rewards, persisted results and a zero-percent AUTO threshold.
+- `tests/action-save-races.integration.ts`: real database row locks around potion/knockout, class talent/gold and quest reward/loot races.
+- `node --env-file-if-exists=apps/server/.env --import tsx scripts/browser-frostfall-quests.mjs`: actual Frost Warden interaction, dialog, quest acceptance and mobile layout.

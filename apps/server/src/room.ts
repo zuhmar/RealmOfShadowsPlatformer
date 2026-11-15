@@ -211,11 +211,12 @@ export class MapRoom extends Room {
     this.onMessage('settings', (c, s) => {
       const p = this.player(c);
       if (!p || !s || !this.rate(c, 100)) return;
+      const healBelow = Number(s.healBelow);
       p.settings = {
         skills: s.skills === true,
         loot: s.loot === true,
         target: s.target === 'weakest' ? 'weakest' : 'nearest',
-        healBelow: Math.max(0, Math.min(70, Number(s.healBelow) || 30)),
+        healBelow: Number.isFinite(healBelow) ? Math.max(0, Math.min(70, healBelow)) : 30,
       };
     });
     this.onMessage('equip', (c, item) => {
@@ -398,7 +399,9 @@ export class MapRoom extends Room {
         delete p.gathering;
         this.inputs.set(p.id, idleInput());
         c.send('npc', { id: station.id });
-      } else if (payload?.npcId === 'mirewarden')
+      } else if (payload?.npcId === 'frostwarden')
+        c.send('notice', 'Climb to the Frost Warden’s ledge to speak.');
+      else if (payload?.npcId === 'mirewarden')
         c.send('notice', 'Climb to the Mire Warden’s ledge to speak.');
       else if (payload?.npcId === 'mentor')
         c.send('notice', 'Climb to the Cavern Mentor’s ledge to speak.');
@@ -457,14 +460,15 @@ export class MapRoom extends Room {
     const task = this.saves
       .catch(() => {})
       .then(async () => {
-        const next = await changeClass(structuredClone(p), action, id);
+        const before = structuredClone(p);
+        const next = await changeClass(before, action, id);
+        p.gold += next.gold - before.gold;
         for (const key of [
           'classId',
           'skin',
           'skinConceptVersion',
           'classTalents',
           'classRevision',
-          'gold',
           'weapon',
           'equippedGear',
         ] as const)
@@ -585,19 +589,10 @@ export class MapRoom extends Room {
       return;
     }
     const giver = QUESTS[value.questId as keyof typeof QUESTS].npcId;
-    if (
-      !nearNpc(p, this.world.map, giver) ||
-      this.world.map.id !==
-        (giver === 'mirewarden' ? 'murkmire' : giver === 'mentor' ? 'crystal' : 'village')
-    ) {
-      result(
-        false,
-        giver === 'mirewarden'
-          ? 'Return to the Mire Warden.'
-          : giver === 'mentor'
-            ? 'Return to the Cavern Mentor.'
-            : 'Return to Mira in Elderwood Village to do that.',
-      );
+    const giverMap = Object.values(MAPS).find((map) => map.npcs.some((npc) => npc.id === giver));
+    const giverName = giverMap?.npcs.find((npc) => npc.id === giver)?.name ?? 'the quest giver';
+    if (!giverMap || this.world.map.id !== giverMap.id || !nearNpc(p, this.world.map, giver)) {
+      result(false, `Return to ${giverName}${giverMap ? ` in ${giverMap.name}` : ''} to do that.`);
       return;
     }
     const action = value.action;
@@ -608,10 +603,24 @@ export class MapRoom extends Room {
       .catch(() => {})
       .then(async () => {
         const wasClaimed = p.quests?.['mira-wolves']?.claimed === true;
-        const next = await changeQuest(structuredClone(p), questId, action);
-        p.quests = next.quests;
-        p.gold = next.gold;
-        p.inventory = next.inventory;
+        if (!nearNpc(p, this.world.map, giver)) throw new Error(`Return to ${giverName}.`);
+        const before = structuredClone(p);
+        const next = await changeQuest(before, questId, action);
+        // Other accepted hunts can still advance from projectiles while this save waits.
+        for (const [id, state] of Object.entries(next.quests ?? {})) {
+          const prior = before.quests?.[id];
+          if (JSON.stringify(prior) !== JSON.stringify(state)) (p.quests ??= {})[id] = state;
+        }
+        p.gold += next.gold - before.gold;
+        for (const item of new Set([
+          ...Object.keys(before.inventory),
+          ...Object.keys(next.inventory),
+        ])) {
+          const delta = (next.inventory[item] ?? 0) - (before.inventory[item] ?? 0);
+          if (!delta) continue;
+          p.inventory[item] = (p.inventory[item] ?? 0) + delta;
+          if (p.inventory[item] === 0) delete p.inventory[item];
+        }
         result(
           true,
           questId !== 'mira-wolves'
@@ -705,8 +714,11 @@ export class MapRoom extends Room {
         p.foodBuff = next.foodBuff;
         p.potionReadyAt = next.potionReadyAt;
         const stats = playerAttributes(p);
-        p.hp = Math.min(stats.maxHealth, p.hp + Math.max(0, next.hp - before.hp));
-        p.mp = Math.min(stats.maxMana, p.mp + Math.max(0, next.mp - before.mp));
+        // A potion requested before a knockout cannot revive an eliminated participant.
+        if (p.hp > 0) {
+          p.hp = Math.min(stats.maxHealth, p.hp + Math.max(0, next.hp - before.hp));
+          p.mp = Math.min(stats.maxMana, p.mp + Math.max(0, next.mp - before.mp));
+        }
         result(true, message);
       });
     this.questTasks.set(p.id, task);
