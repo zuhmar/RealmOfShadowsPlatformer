@@ -113,7 +113,9 @@ export function PlaytestGuide({
       <h3>Controls</h3>
       <p>
         Move: A/D or ←/→ · Climb: W/S or ↑/↓ · Jump: Space · Attack: J · Special: K · Interact: E.
-        On phones, use the on-screen buttons. Manual movement cancels AUTO.
+        Click or tap NPCs, gathering nodes, portals, crafting benches, house doors and chests to
+        interact when nearby. E still works. On phones, use the on-screen buttons. Manual movement
+        cancels AUTO.
       </p>
       {topics.map(([title, text]) => (
         <details key={title}>

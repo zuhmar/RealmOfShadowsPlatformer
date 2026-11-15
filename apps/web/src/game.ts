@@ -289,28 +289,31 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
     drawWorld() {
       const m = this.map;
       const woods = m.island === 'Whispering Woods';
+      const interact = (type: string, value: unknown) => {
+        if (!bridge.blocked && !bridge.furniturePlacement) bridge.send(type, value);
+      };
       if (houseSize(m.id))
         this.interior = new HouseInterior(
           this,
           m,
           () => {
-            if (!bridge.furniturePlacement) bridge.send('housing', { action: 'exit' });
+            if (!bridge.furniturePlacement) interact('housing', { action: 'exit' });
           },
           (id) => {
             if (!bridge.furniturePlacement) bridge.onChest?.(id);
           },
         );
-      else if (woods) this.woods = new WoodsScenery(this, m, (id) => bridge.send('gather', id));
+      else if (woods) this.woods = new WoodsScenery(this, m, (id) => interact('gather', id));
       else if (m.island === 'Murkmire Swamp')
-        this.murkmire = new MurkmireScenery(this, m, (id) => bridge.send('gather', id));
+        this.murkmire = new MurkmireScenery(this, m, (id) => interact('gather', id));
       else if (m.island === 'Frostfall Tundra')
-        this.frostfall = new FrostfallScenery(this, m, (id) => bridge.send('gather', id));
+        this.frostfall = new FrostfallScenery(this, m, (id) => interact('gather', id));
       else if (m.island === 'Crystal Caverns')
-        this.crystal = new CrystalScenery(this, m, (id) => bridge.send('gather', id));
+        this.crystal = new CrystalScenery(this, m, (id) => interact('gather', id));
       else {
         this.village = new VillageScenery(this, m);
-        this.events.on('enter-house', () => bridge.send('housing', { action: 'enter' }));
-        this.events.on('crafting-bram', () => bridge.send('interact', { npcId: 'bram' }));
+        this.events.on('enter-house', () => interact('housing', { action: 'enter' }));
+        this.events.on('crafting-bram', () => interact('interact', { npcId: 'bram' }));
         this.housing = new HousingScenery(this);
       }
       this.floor = this.physics.add.staticGroup();
@@ -319,9 +322,11 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
         this.physics.add.existing(body, true);
         this.floor.add(body);
       }
-      addBossEntrance(this, m, () => bridge.send('travel', null));
+      addBossEntrance(this, m, () =>
+        interact('portal', m.portals.find((portal) => portal.key)?.target),
+      );
       for (const p of houseSize(m.id) ? [] : m.portals) {
-        if (!p.key || !m.bossEntrance) addPortal(this, m.id, p, () => bridge.send('travel', null));
+        if (!p.key || !m.bossEntrance) addPortal(this, m.id, p, () => interact('portal', p.target));
         if (p.key)
           fitArtwork(
             this.add.image(
@@ -403,35 +408,13 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
           )
           .setOrigin(0.5);
         c.setDepth(8);
-        if (
-          npc.id === 'cooking-station' ||
-          npc.id === 'alchemy-station' ||
-          npc.id === 'carpentry-station'
-        )
+        if (npc.id)
           this.add
-            .zone(npc.x, npc.y - 45, 140, 110)
+            .zone(npc.x, npc.y - 45, npc.id.endsWith('-station') ? 140 : 100, 130)
+            .setDepth(9)
+            .setName(`interact-${npc.id}`)
             .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => bridge.send('interact', { npcId: npc.id }));
-        if (npc.id === 'bram')
-          this.add
-            .zone(npc.x, npc.y - 40, 80, 100)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => bridge.send('interact', { npcId: 'bram' }));
-        if (npc.id === 'frostwarden')
-          this.add
-            .zone(npc.x, npc.y - 40, 100, 120)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => bridge.send('interact', { npcId: 'frostwarden' }));
-        if (npc.id === 'mirewarden')
-          this.add
-            .zone(npc.x, npc.y - 40, 100, 120)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => bridge.send('interact', { npcId: 'mirewarden' }));
-        if (npc.id === 'mentor')
-          this.add
-            .zone(npc.x, npc.y - 40, 100, 120)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => bridge.send('interact', { npcId: 'mentor' }));
+            .on('pointerdown', () => interact('interact', { npcId: npc.id }));
         if (npc.id === 'mira') {
           this.miraMarker = this.add
             .text(npc.x, npc.y - 126, '!', {
@@ -443,10 +426,6 @@ export function mountGame(parent: HTMLElement, bridge: Bridge) {
             })
             .setOrigin(0.5)
             .setDepth(11);
-          this.add
-            .zone(npc.x, npc.y - 40, 80, 100)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => bridge.send('interact', { npcId: 'mira' }));
         }
       }
       // Tiny fireflies move softly without obscuring the playable silhouettes.

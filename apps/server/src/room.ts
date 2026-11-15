@@ -339,6 +339,9 @@ export class MapRoom extends Room {
       }
     });
     this.onMessage('travel', (c) => this.travel(c));
+    this.onMessage('portal', (c, target) => {
+      if (typeof target === 'string') void this.travel(c, undefined, undefined, target);
+    });
     this.onMessage('teleport', (c, target) => {
       if (typeof target === 'string') void this.travel(c, target);
     });
@@ -346,6 +349,25 @@ export class MapRoom extends Room {
     this.onMessage('interact', (c, payload) => {
       const p = this.player(c);
       if (!p || !this.rate(c, 100)) return;
+      // A click addresses that exact NPC/bench; E keeps the nearest-interaction behavior.
+      if (payload && typeof payload === 'object' && 'npcId' in payload) {
+        const npc = this.world.map.npcs.find(
+          (npc) => typeof payload.npcId === 'string' && npc.id === payload.npcId,
+        );
+        if (!npc?.id) {
+          c.send('notice', 'That interaction is not available here.');
+          return;
+        }
+        if (!nearNpc(p, this.world.map, npc.id)) {
+          c.send('notice', `Walk closer to ${npc.name} to interact.`);
+          return;
+        }
+        p.auto = false;
+        delete p.gathering;
+        this.inputs.set(p.id, idleInput());
+        c.send('npc', { id: npc.id });
+        return;
+      }
       if (
         this.world.map.id === 'village' &&
         Math.abs(p.x - 900) < 100 &&
@@ -489,6 +511,7 @@ export class MapRoom extends Room {
     c: Client,
     destination?: string,
     housingTarget?: { mapId: string; ownerId?: string; battlegroundId?: string },
+    portalTarget?: string,
   ) {
     const p = this.player(c, true);
     if (!p || !this.rate(c, 100)) return;
@@ -517,7 +540,9 @@ export class MapRoom extends Room {
         delete p.gathering;
       } else
         target =
-          destination !== undefined ? useTeleport(p, destination) : usePortal(p, this.world.map);
+          destination !== undefined
+            ? useTeleport(p, destination)
+            : usePortal(p, this.world.map, portalTarget);
     } catch (error) {
       c.send('notice', error instanceof Error ? error.message : 'Could not travel.');
       return;

@@ -79,7 +79,9 @@ export function addPortal(
     .setScale(0.32)
     .setDepth(6)
     .setName('travel-portal')
-    .setData({ target: portal.target, theme });
+    .setData({ target: portal.target, theme })
+    .setInteractive({ useHandCursor: true })
+    .on('pointerdown', () => onEnter?.());
   const align = () => {
     const index = Number(String(sprite.frame.name).replace('idle-', ''));
     const origin = art[theme].origins[index];

@@ -66,3 +66,19 @@ test('boars award keys only on a successful roll and a kill cannot reward twice'
   assert.equal(p.bossKills?.['forest-bear'], 1);
   assert.equal(p.inventory[FOREST_BEAR_KEY], 1);
 });
+
+test('clicked portals select the requested nearby destination and reject unrelated targets without mutation', () => {
+  const p = createPlayer('click', 'Click', 'woods');
+  p.level = 40;
+  const source = {
+    ...MAPS.woods,
+    portals: [
+      { x: p.x, y: p.y, target: 'village', label: 'Village' },
+      { x: p.x, y: p.y, target: 'woods-2', label: 'Next hunt' },
+    ],
+  };
+  const before = structuredClone(p);
+  assert.throws(() => usePortal(p, source, 'crystal-boss'), /portal/);
+  assert.deepEqual(p, before);
+  assert.equal(usePortal(p, source, 'woods-2'), 'woods-2');
+});
